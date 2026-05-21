@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(curl -s http://localhost:5173)",
+      "Bash(curl -sf http://localhost:5173)",
+      "Bash(npx playwright *)",
+      "Bash(curl -sf http://localhost:5174)",
+      "Bash(curl -s \"http://localhost:5174/src/components/LoginPage.tsx\")",
+      "Bash(node *)",
+      "Bash(npx tsc *)",
+      "Bash(curl -s \"http://localhost:5173/src/components/layout/Sidebar.tsx?t=1779282818113\")"
+    ]
+  }
+}
