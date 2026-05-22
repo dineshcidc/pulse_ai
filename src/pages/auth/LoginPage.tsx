@@ -77,7 +77,7 @@ const BRAND = {
 }
 
 interface LoginPageProps {
-  onLoginSuccess: () => void
+  onLoginSuccess: (role: Role) => void
 }
 
 export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
@@ -95,7 +95,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
     setIsLoading(true)
     setTimeout(() => {
       setIsLoading(false)
-      onLoginSuccess()
+      onLoginSuccess(activeRole)
     }, 1800)
   }
 

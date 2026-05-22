@@ -8,6 +8,7 @@ import {
   BarChart3,
   ChevronDown,
   LogOut,
+  Briefcase,
 } from 'lucide-react'
 
 type NavChild = { id: string; label: string }
@@ -16,54 +17,71 @@ type NavItem  = {
   label: string
   Icon: React.ElementType
   children?: NavChild[]
+  neutralDots?: boolean  // dot + line stay neutral regardless of active child
 }
 
 type NavSection = { label: string | null; items: NavItem[] }
 
-const NAV: NavSection[] = [
-  {
-    label: null,
-    items: [
-      { id: 'dashboard',  label: 'Dashboard',  Icon: LayoutDashboard },
-      {
-        id: 'timesheets', label: 'Timesheets', Icon: Clock,
-        children: [
-          { id: 'timesheet-add',     label: 'Add Timesheet' },
-          { id: 'timesheet-history', label: 'Timesheet History' },
-        ],
-      },
-    ],
-  },
-  {
-    label: 'MANAGE',
-    items: [
-      {
-        id: 'leave', label: 'Leave', Icon: CalendarDays,
-        children: [
-          { id: 'leave-create',   label: 'Create Leave Request' },
-          { id: 'leave-status',   label: 'Leave Approval Status' },
-          { id: 'leave-history',  label: 'Leave History' },
-        ],
-      },
-      {
-        id: 'hrms', label: 'HRMS', Icon: Users,
-        children: [
-          { id: 'my-profile',    label: 'My Profile' },
-          { id: 'org-structure', label: 'Org Structure' },
-          { id: 'tickets',       label: 'Tickets' },
-        ],
-      },
-      { id: 'payroll', label: 'Payroll', Icon: Wallet    },
-      { id: 'reports', label: 'Reports', Icon: BarChart3 },
-    ],
-  },
-]
+const MY_PROJECTS_ITEM: NavItem = {
+  id: 'my-projects', label: 'My Projects', Icon: Briefcase,
+  neutralDots: true,
+  children: [
+    { id: 'project-list',           label: 'Project List'           },
+    { id: 'team-dashboard',         label: 'Team Dashboard'         },
+    { id: 'team-timesheets',        label: 'Team Timesheets'        },
+    { id: 'team-leave',             label: 'Team Leave Requests'    },
+    { id: 'project-announcements',  label: 'Project Announcements'  },
+  ],
+}
+
+function buildNav(role: 'employee' | 'manager'): NavSection[] {
+  return [
+    {
+      label: null,
+      items: [
+        { id: 'dashboard', label: 'Dashboard', Icon: LayoutDashboard },
+        {
+          id: 'timesheets', label: 'Timesheets', Icon: Clock,
+          children: [
+            { id: 'timesheet-add',     label: 'Add Timesheet'     },
+            { id: 'timesheet-history', label: 'Timesheet History' },
+          ],
+        },
+        ...(role === 'manager' ? [MY_PROJECTS_ITEM] : []),
+      ],
+    },
+    {
+      label: 'MANAGE',
+      items: [
+        {
+          id: 'leave', label: 'Leave', Icon: CalendarDays,
+          children: [
+            { id: 'leave-create',  label: 'Create Leave Request'  },
+            { id: 'leave-status',  label: 'Leave Approval Status' },
+            { id: 'leave-history', label: 'Leave History'         },
+          ],
+        },
+        {
+          id: 'hrms', label: 'HRMS', Icon: Users,
+          children: [
+            { id: 'my-profile',    label: 'My Profile'    },
+            { id: 'org-structure', label: 'Org Structure' },
+            { id: 'tickets',       label: 'Tickets'       },
+          ],
+        },
+        { id: 'payroll', label: 'Payroll', Icon: Wallet    },
+        { id: 'reports', label: 'Reports', Icon: BarChart3 },
+      ],
+    },
+  ]
+}
 
 interface SidebarProps {
   isOpen: boolean
   activeItem: string
   onNavigate: (id: string) => void
   onLogout?: () => void
+  role?: 'employee' | 'manager'
 }
 
 const C = {
@@ -72,10 +90,13 @@ const C = {
   border: 'rgba(255,255,255,0.07)',
 }
 
-export default function Sidebar({ isOpen, activeItem, onNavigate, onLogout }: SidebarProps) {
-  const [expanded, setExpanded]         = useState<string[]>(['leave', 'hrms', 'timesheets'])
+export default function Sidebar({ isOpen, activeItem, onNavigate, onLogout, role = 'employee' }: SidebarProps) {
+  const initExpanded: string[] = []
+  const [expanded, setExpanded]               = useState<string[]>(initExpanded)
   const [showLogoutModal, setShowLogoutModal] = useState(false)
   const [logoutLoading, setLogoutLoading]     = useState(false)
+
+  const NAV = buildNav(role)
 
   async function handleConfirmLogout() {
     setLogoutLoading(true)
@@ -260,9 +281,15 @@ export default function Sidebar({ isOpen, activeItem, onNavigate, onLogout }: Si
                                 e.currentTarget.style.color = childActive ? C.gold : 'rgba(255,255,255,0.38)'
                               }}
                             >
+                              {/* Dot — neutral always for neutralDots items, gold-on-active for others */}
                               <span
                                 className="rounded-full flex-shrink-0"
-                                style={{ width: 5, height: 5, background: childActive ? C.gold : 'rgba(255,255,255,0.2)' }}
+                                style={{
+                                  width: 5, height: 5,
+                                  background: (!item.neutralDots && childActive)
+                                    ? C.gold
+                                    : 'rgba(255,255,255,0.2)',
+                                }}
                               />
                               <span className="text-sm font-medium whitespace-nowrap">
                                 {child.label}
@@ -337,7 +364,6 @@ export default function Sidebar({ isOpen, activeItem, onNavigate, onLogout }: Si
             textAlign: 'center',
           }}
         >
-          {/* Icon */}
           <div
             style={{
               width: 60, height: 60, borderRadius: 18,
@@ -349,18 +375,15 @@ export default function Sidebar({ isOpen, activeItem, onNavigate, onLogout }: Si
             <LogOut size={26} strokeWidth={1.8} style={{ color: '#E84855' }} />
           </div>
 
-          {/* Title */}
           <div style={{ fontSize: 18, fontWeight: 700, color: '#1C2035', marginBottom: 8 }}>
             Confirm Logout
           </div>
 
-          {/* Message */}
           <p style={{ fontSize: 13.5, color: '#8B90A7', lineHeight: 1.65, marginBottom: 28 }}>
             Are you sure you want to logout?<br />
             You'll need to sign in again to access your workspace.
           </p>
 
-          {/* Buttons */}
           <div style={{ display: 'flex', gap: 10 }}>
             <button
               onClick={() => setShowLogoutModal(false)}

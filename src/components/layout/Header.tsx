@@ -10,6 +10,7 @@ interface HeaderProps {
   onToggleSidebar:  () => void
   onNavigate?:      (id: string) => void
   onLogout?:        () => void
+  userRole?:        string
 }
 
 const C = {
@@ -114,7 +115,7 @@ const NOTIFICATIONS = [
   },
 ] as const
 
-export default function Header({ isSidebarOpen, onToggleSidebar, onNavigate, onLogout }: HeaderProps) {
+export default function Header({ isSidebarOpen, onToggleSidebar, onNavigate, onLogout, userRole = 'Employee' }: HeaderProps) {
   const [notifOpen,      setNotifOpen]      = useState(false)
   const [profileOpen,    setProfileOpen]    = useState(false)
   const [showLogout,     setShowLogout]     = useState(false)
@@ -269,7 +270,7 @@ export default function Header({ isSidebarOpen, onToggleSidebar, onNavigate, onL
             </div>
             <div className="text-left leading-tight">
               <div className="text-sm font-semibold whitespace-nowrap" style={{ color: C.navy }}>John Doe</div>
-              <div className="text-xs" style={{ color: C.muted }}>Employee</div>
+              <div className="text-xs" style={{ color: C.muted }}>{userRole}</div>
             </div>
             <ChevronDown size={13} style={{
               color: C.muted, flexShrink: 0, transition: 'transform 0.2s',
@@ -294,7 +295,7 @@ export default function Header({ isSidebarOpen, onToggleSidebar, onNavigate, onL
                     style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', border: `2px solid ${C.border}`, flexShrink: 0 }} />
                   <div>
                     <div style={{ fontSize: 13.5, fontWeight: 700, color: C.navy, lineHeight: 1.3 }}>John Doe</div>
-                    <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>EMP-2024-0042 · Employee</div>
+                    <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>EMP-2024-0042 · {userRole}</div>
                   </div>
                 </div>
               </div>
