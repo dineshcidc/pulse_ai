@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CheckCircle, XCircle, CalendarDays, MessageSquare, X, Search, Calendar, ChevronDown } from 'lucide-react'
+import { CheckCircle, XCircle, CalendarDays, MessageSquare, X, Search, Calendar } from 'lucide-react'
 
 type LeaveStatus = 'pending' | 'approved' | 'rejected'
 type LeaveType   = 'Annual' | 'Sick' | 'Casual' | 'WFH' | 'Comp Off'
@@ -56,32 +56,6 @@ interface RemarksModal {
   id: number | null
   action: 'approve' | 'reject' | null
   remarks: string
-}
-
-/* ── Minimal native select ── */
-function Dropdown({ value, options, onChange, width }: { value: string; options: string[]; onChange: (v: string) => void; width?: number }) {
-  return (
-    <div style={{ position: 'relative', flexShrink: 0 }}>
-      <select
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        style={{
-          height: 38, padding: '0 30px 0 12px',
-          border: `1px solid ${C.border}`, borderRadius: 9,
-          fontSize: 13, fontWeight: 500, color: value.startsWith('All') ? C.muted : C.navy,
-          background: '#fff', outline: 'none',
-          cursor: 'pointer', appearance: 'none',
-          fontFamily: "'DM Sans', system-ui, sans-serif",
-          width: width ?? 'auto', minWidth: 130,
-        }}
-        onFocus={e => { e.target.style.borderColor = '#6366F1' }}
-        onBlur={e => { e.target.style.borderColor = C.border }}
-      >
-        {options.map(o => <option key={o}>{o}</option>)}
-      </select>
-      <ChevronDown size={12} style={{ position: 'absolute', right: 9, top: '50%', transform: 'translateY(-50%)', color: C.muted, pointerEvents: 'none' }} />
-    </div>
-  )
 }
 
 export default function TeamLeaveRequestsPage() {

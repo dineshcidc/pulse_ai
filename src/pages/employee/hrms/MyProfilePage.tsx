@@ -60,21 +60,6 @@ function FieldGrid({ cols = 2, children, gap = 18, rowGap }: { cols?: number; ch
   )
 }
 
-function SubHead({ label }: { label: string }) {
-  return (
-    <div style={{ fontSize: 11.5, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12, marginTop: 4 }}>
-      {label}
-    </div>
-  )
-}
-
-const COL_STYLE: Record<string, { bg: string; color: string }> = {
-  CL: { bg: '#EFF6FF', color: '#2563EB' },
-  SL: { bg: '#FFF1F2', color: '#E11D48' },
-  EL: { bg: '#F0FDF4', color: '#16A34A' },
-  CO: { bg: '#FFF7ED', color: '#EA580C' },
-}
-
 export default function MyProfilePage() {
   return (
     <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
