@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { ChevronLeft, ChevronRight, Clock, CheckCircle2, FileEdit, X, User, MessageSquare } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Clock, CheckCircle2, FileEdit, CalendarX, X, User, MessageSquare } from 'lucide-react'
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 
@@ -178,6 +178,152 @@ function totalHoursForDay(record: DayRecord | undefined) {
 
 function fmtHours(h: number) {
   return Number.isInteger(h) ? `${h}h` : `${h}h`
+}
+
+// ─── Entry Row ────────────────────────────────────────────────────────────────
+
+function EntryRow({ entry, index }: { entry: HistoryEntry; index: number }) {
+  return (
+    <div
+      style={{
+        display: 'flex', alignItems: 'flex-start', gap: 14,
+        padding: '14px 0',
+              }}
+    >
+      {/* Index */}
+      <div style={{
+        width: 28, height: 28, borderRadius: 8, flexShrink: 0,
+        background: C.surface, display: 'flex', alignItems: 'center',
+        justifyContent: 'center', fontSize: 11.5, fontWeight: 700, color: C.muted,
+        marginTop: 1,
+      }}>
+        {String(index + 1).padStart(2,'0')}
+      </div>
+
+      {/* Project badge */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0,
+        background: `${entry.projectColor}12`,
+        padding: '4px 10px', borderRadius: 16,
+        border: `1px solid ${entry.projectColor}22`,
+        marginTop: 2,
+      }}>
+        <div style={{ width: 6, height: 6, borderRadius: '50%', background: entry.projectColor }} />
+        <span style={{ fontSize: 12, fontWeight: 700, color: entry.projectColor, whiteSpace: 'nowrap' }}>
+          {entry.projectName}
+        </span>
+      </div>
+
+      {/* Task type */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0, marginTop: 2 }}>
+        <span style={{ fontSize: 13 }}>{entry.taskIcon}</span>
+        <span style={{ fontSize: 12.5, fontWeight: 600, color: C.navy, whiteSpace: 'nowrap' }}>
+          {entry.taskLabel}
+        </span>
+      </div>
+
+      {/* Duration chip */}
+      <div style={{
+        height: 24, paddingLeft: 8, paddingRight: 8, borderRadius: 6,
+        background: 'rgba(28,32,53,0.07)', display: 'flex', alignItems: 'center',
+        fontSize: 12, fontWeight: 700, color: C.navy, flexShrink: 0, gap: 3, marginTop: 2,
+      }}>
+        <Clock size={10} style={{ color: C.muted }} />
+        {entry.duration}
+      </div>
+
+      {/* Comment */}
+      <span style={{ flex: 1, fontSize: 12.5, color: C.muted, lineHeight: 1.6, minWidth: 0 }}>
+        {entry.comment || <em style={{ color: '#C5C8D8' }}>No comment</em>}
+      </span>
+    </div>
+  )
+}
+
+// ─── Day Detail Panel ─────────────────────────────────────────────────────────
+
+function DayDetail({ iso }: { iso: string }) {
+  const record = DATA[iso]
+  const hours  = totalHoursForDay(record)
+
+  if (!record) {
+    const d = new Date(iso + 'T00:00:00')
+    const isWeekend = d.getDay() === 0 || d.getDay() === 6
+    return (
+      <div style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        justifyContent: 'center', padding: '48px 0', gap: 12,
+      }}>
+        <div style={{
+          width: 52, height: 52, borderRadius: 16, background: C.surface,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <CalendarX size={22} strokeWidth={1.5} style={{ color: C.muted }} />
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: C.navy, marginBottom: 4 }}>
+            {isWeekend ? 'Weekend' : 'No Timesheet'}
+          </div>
+          <div style={{ fontSize: 13, color: C.muted }}>
+            {isWeekend
+              ? 'This is a weekend day — no timesheet required.'
+              : 'No timesheet has been submitted for this date yet.'}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const isSubmitted = record.status === 'submitted'
+
+  return (
+    <div>
+      {/* Status bar */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        marginBottom: 4,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {isSubmitted ? (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              background: 'rgba(16,185,129,0.09)', padding: '5px 12px',
+              borderRadius: 20, border: '1px solid rgba(16,185,129,0.2)',
+            }}>
+              <CheckCircle2 size={13} style={{ color: '#10B981' }} />
+              <span style={{ fontSize: 12.5, fontWeight: 700, color: '#10B981' }}>Submitted</span>
+            </div>
+          ) : (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              background: 'rgba(245,166,35,0.09)', padding: '5px 12px',
+              borderRadius: 20, border: '1px solid rgba(245,166,35,0.25)',
+            }}>
+              <FileEdit size={13} style={{ color: C.amber }} />
+              <span style={{ fontSize: 12.5, fontWeight: 700, color: C.amber }}>Draft</span>
+            </div>
+          )}
+          <span style={{ fontSize: 12.5, color: C.muted }}>
+            {record.entries.length} {record.entries.length === 1 ? 'entry' : 'entries'}
+          </span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 700, color: C.navy }}>
+          <Clock size={13} style={{ color: C.muted }} />
+          {fmtHours(hours)}
+          <span style={{ fontSize: 11.5, fontWeight: 500, color: hours >= 8 ? '#10B981' : C.muted }}>
+            {hours >= 8 ? '· Full day' : hours >= 4 ? '· Half day' : ''}
+          </span>
+        </div>
+      </div>
+
+      {/* Entries */}
+      <div>
+        {record.entries.map((entry, i) => (
+          <EntryRow key={entry.id} entry={entry} index={i} />
+        ))}
+      </div>
+    </div>
+  )
 }
 
 // ─── Pending Panel ───────────────────────────────────────────────────────────
@@ -1025,6 +1171,7 @@ export default function TimesheetHistoryPage({ onNavigate }: { onNavigate: (id: 
               const date    = new Date(iso + 'T00:00:00')
               const dow     = date.getDay()
               const isToday = iso === todayISO
+              const isSel   = iso === selectedISO
               const record  = DATA[iso]
               const isWeekend = dow === 0 || dow === 6
 

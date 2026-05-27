@@ -1,0 +1,114 @@
+import { useState } from 'react'
+import Sidebar from '../../components/layout/Sidebar'
+import Header from '../../components/layout/Header'
+import AdminDashboardPage from './dashboard/AdminDashboardPage'
+import AllUsersPage from './users/AllUsersPage'
+import AddEmployeePage from './users/AddEmployeePage'
+import RoleAccessPage from './users/RoleAccessPage'
+import AllLeaveRequestsPage from './leave/AllLeaveRequestsPage'
+import LeaveBalancePage from './leave/LeaveBalancePage'
+import AllTimesheetsPage from './timesheet/AllTimesheetsPage'
+
+const PAGE_LABELS: Record<string, string> = {
+  'admin-dashboard':      'Dashboard',
+  'all-users':            'All Users',
+  'add-employee':         'Add Employee',
+  'role-access':          'Role & Access Control',
+  'leave-policy':         'Leave Policy Setup',
+  'all-leave-requests':   'All Leave Requests',
+  'leave-calendar':       'Leave Calendar',
+  'leave-balance':        'Leave Balance Overview',
+  'all-timesheets':       'All Timesheets',
+  'pending-approvals':    'Pending Approvals',
+  'timesheet-policies':   'Timesheet Policies',
+  'department-management':'Department Management',
+  'project-setup':        'Project Setup',
+  'team-allocation':      'Team Allocation',
+  'admin-org':            'Org Structure',
+  'attendance-report':    'Attendance Report',
+  'leave-report':         'Leave Report',
+  'audit-trail':          'Audit Trail',
+  'org-profile':          'Organization Profile',
+  'working-hours':        'Working Hours & Holidays',
+  'email-notifications':  'Email Notifications',
+  'announcements':        'System Announcements',
+}
+
+function ComingSoon({ id }: { id: string }) {
+  const label = PAGE_LABELS[id] ?? id
+  return (
+    <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+      <div className="mb-5">
+        <h1 className="text-xl font-bold" style={{ color: '#1C2035' }}>{label}</h1>
+        <p className="text-sm mt-0.5" style={{ color: '#8B90A7' }}>
+          Manage {label.toLowerCase()} here
+        </p>
+      </div>
+      <div
+        className="rounded-2xl flex items-center justify-center"
+        style={{ background: '#fff', border: '1px solid #E4E6EF', minHeight: 320 }}
+      >
+        <div className="text-center">
+          <div
+            className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3"
+            style={{ background: '#F0F2F8' }}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8B90A7" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="7" height="7" rx="1" />
+              <rect x="14" y="3" width="7" height="7" rx="1" />
+              <rect x="3" y="14" width="7" height="7" rx="1" />
+              <rect x="14" y="14" width="7" height="7" rx="1" />
+            </svg>
+          </div>
+          <p className="text-sm font-semibold" style={{ color: '#1C2035' }}>{label}</p>
+          <p className="text-xs mt-1" style={{ color: '#8B90A7' }}>Coming soon</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function PageContent({ activeItem, onNavigate }: { activeItem: string; onNavigate: (id: string) => void }) {
+  if (activeItem === 'admin-dashboard') return <AdminDashboardPage onNavigate={onNavigate} />
+  if (activeItem === 'all-users')       return <AllUsersPage onNavigate={onNavigate} />
+  if (activeItem === 'add-employee')    return <AddEmployeePage />
+  if (activeItem === 'role-access')          return <RoleAccessPage />
+  if (activeItem === 'all-leave-requests')   return <AllLeaveRequestsPage />
+  if (activeItem === 'leave-balance')        return <LeaveBalancePage />
+  if (activeItem === 'all-timesheets')       return <AllTimesheetsPage />
+  return <ComingSoon id={activeItem} />
+}
+
+export default function AdminDashboard({ onLogout }: { onLogout: () => void }) {
+  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [activeItem, setActiveItem]   = useState('admin-dashboard')
+
+  return (
+    <div
+      className="flex h-screen overflow-hidden"
+      style={{ background: '#F0F2F8', fontFamily: "'DM Sans', system-ui, sans-serif" }}
+    >
+      <Sidebar
+        isOpen={sidebarOpen}
+        activeItem={activeItem}
+        onNavigate={setActiveItem}
+        onLogout={onLogout}
+        role="admin"
+      />
+
+      <div className="flex flex-col flex-1 overflow-hidden min-w-0">
+        <Header
+          isSidebarOpen={sidebarOpen}
+          onToggleSidebar={() => setSidebarOpen(p => !p)}
+          onNavigate={setActiveItem}
+          onLogout={onLogout}
+          userRole="Admin"
+        />
+
+        <main className="flex-1 overflow-auto py-6 px-8 scrollbar-hide">
+          <PageContent activeItem={activeItem} onNavigate={setActiveItem} />
+        </main>
+      </div>
+    </div>
+  )
+}

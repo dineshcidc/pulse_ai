@@ -41,11 +41,6 @@ const TASK_TYPES = [
   { id: 't10',label: 'Training',          icon: '📚', description: 'Learning, onboarding sessions'     },
 ]
 
-const DURATION_OPTS = [
-  '0.5h', '1h', '1.5h', '2h', '2.5h', '3h', '3.5h',
-  '4h', '4.5h', '5h', '5.5h', '6h', '6.5h', '7h', '7.5h', '8h',
-]
-
 // Pending dates (last 5 business days without a submitted timesheet, excluding today)
 function getPendingDates() {
   const today = new Date()
@@ -276,49 +271,60 @@ function FieldTrigger({
   )
 }
 
-// ─── Duration Picker ─────────────────────────────────────────────────────────
+// ─── Duration Input ───────────────────────────────────────────────────────────
 
-function DurationPicker({ value, onChange, error }: { value: string; onChange: (v: string) => void; error?: boolean }) {
+function DurationInput({ value, onChange, error }: { value: string; onChange: (v: string) => void; error?: boolean }) {
+  const [focused, setFocused] = useState(false)
+
   return (
     <div>
       <label style={{ display: 'block', fontSize: 12.5, fontWeight: 600, color: C.muted, marginBottom: 6, letterSpacing: '0.03em', textTransform: 'uppercase' }}>
         Duration
       </label>
-      <div
-        style={{
-          display: 'flex', flexWrap: 'wrap', gap: 8,
-          padding: '14px 16px',
-          background: '#fff',
-          border: `1px solid ${error ? '#E84855' : C.border}`,
-          borderRadius: 12,
-        }}
-      >
-        {DURATION_OPTS.map(d => {
-          const sel = value === d
-          return (
-            <button
-              key={d}
-              onClick={() => onChange(sel ? '' : d)}
-              style={{
-                height: 34, paddingLeft: 14, paddingRight: 14,
-                borderRadius: 8, fontSize: 13, fontWeight: 600,
-                cursor: 'pointer', transition: 'all 0.12s',
-                border: sel ? 'none' : `1px solid ${C.border}`,
-                background: sel ? C.navy : '#fff',
-                color: sel ? '#fff' : C.muted,
-                boxShadow: sel ? '0 2px 8px rgba(28,32,53,0.18)' : 'none',
-                fontFamily: "'DM Sans', system-ui, sans-serif",
-              }}
-            >
-              {d}
-            </button>
-          )
-        })}
+      <div style={{ position: 'relative' }}>
+        <div
+          style={{
+            position: 'absolute', left: 12, top: 0, bottom: 0,
+            display: 'flex', alignItems: 'center', pointerEvents: 'none',
+          }}
+        >
+          <div
+            style={{
+              width: 28, height: 28, borderRadius: 7, flexShrink: 0,
+              background: value ? 'rgba(99,102,241,0.12)' : C.surface,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            <Clock size={13} style={{ color: value ? '#6366F1' : C.muted }} />
+          </div>
+        </div>
+        <input
+          type="text"
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          placeholder="e.g. 2h"
+          style={{
+            width: '100%', height: 50,
+            paddingLeft: 48, paddingRight: 12,
+            borderRadius: 12,
+            border: `1px solid ${error ? '#E84855' : focused ? '#6366F1' : C.border}`,
+            background: value ? 'rgba(99,102,241,0.04)' : '#fff',
+            fontSize: 14, fontWeight: value ? 600 : 400,
+            color: value ? C.navy : C.muted,
+            outline: 'none',
+            boxSizing: 'border-box',
+            fontFamily: "'DM Sans', system-ui, sans-serif",
+            transition: 'border-color 0.15s, background 0.15s',
+            boxShadow: focused ? '0 0 0 3px rgba(99,102,241,0.12)' : 'none',
+          }}
+        />
       </div>
       {error && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
           <AlertCircle size={12} style={{ color: '#E84855' }} />
-          <span style={{ fontSize: 11.5, color: '#E84855' }}>Please select a duration</span>
+          <span style={{ fontSize: 11.5, color: '#E84855' }}>Enter duration (e.g. 2h)</span>
         </div>
       )}
     </div>
@@ -527,6 +533,45 @@ function EntryCard({
   )
 }
 
+// ─── Comment Field ────────────────────────────────────────────────────────────
+
+function CommentField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [focused, setFocused] = useState(false)
+
+  return (
+    <div>
+      <label style={{ display: 'block', fontSize: 12.5, fontWeight: 600, color: C.muted, marginBottom: 6, letterSpacing: '0.03em', textTransform: 'uppercase' }}>
+        Comment
+      </label>
+      <textarea
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        placeholder="Describe work done…"
+        rows={1}
+        style={{
+          width: '100%',
+          minHeight: 50,
+          borderRadius: 12,
+          border: `1px solid ${focused ? '#6366F1' : C.border}`,
+          padding: '14px',
+          fontSize: 13.5, color: C.navy,
+          background: '#fff',
+          outline: 'none',
+          boxSizing: 'border-box',
+          fontFamily: "'DM Sans', system-ui, sans-serif",
+          lineHeight: 1.55,
+          transition: 'border-color 0.15s, box-shadow 0.15s',
+          boxShadow: focused ? '0 0 0 3px rgba(99,102,241,0.10)' : 'none',
+          resize: 'vertical',
+          overflow: 'auto',
+        }}
+      />
+    </div>
+  )
+}
+
 // ─── Entry Form ────────────────────────────────────────────────────────────────
 
 function EntryForm({
@@ -551,7 +596,8 @@ function EntryForm({
     const e: Record<string, boolean> = {}
     if (!form.project)  e.project  = true
     if (!form.taskType) e.taskType = true
-    if (!form.duration) e.duration = true
+    const dur = parseFloat(form.duration.replace(/h$/i, '').trim())
+    if (!form.duration.trim() || isNaN(dur) || dur <= 0) e.duration = true
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -661,11 +707,13 @@ function EntryForm({
       />
 
       {/* Form body */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+        {/* ── Single row: Project | Task Type | Duration | Comment ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1.2fr 110px 1.8fr', gap: 12, alignItems: 'start' }}>
           <FieldTrigger
             label="Project"
-            placeholder="Select a project…"
+            placeholder="Select project…"
             value={form.project ? `${form.project.code} — ${form.project.name}` : undefined}
             icon={Briefcase}
             accent={form.project?.color ?? '#6366F1'}
@@ -674,35 +722,21 @@ function EntryForm({
           />
           <FieldTrigger
             label="Task Type"
-            placeholder="Select task type…"
+            placeholder="Select type…"
             value={form.taskType ? `${form.taskType.icon}  ${form.taskType.label}` : undefined}
             icon={Tag}
             accent="#6366F1"
             onClick={() => setTaskTypeOpen(true)}
             error={errors.taskType}
           />
-        </div>
-
-        <DurationPicker value={form.duration} onChange={d => { setForm(f => ({ ...f, duration: d })); setErrors(e => ({ ...e, duration: false })) }} error={errors.duration} />
-
-        <div>
-          <label style={{ display: 'block', fontSize: 12.5, fontWeight: 600, color: C.muted, marginBottom: 6, letterSpacing: '0.03em', textTransform: 'uppercase' }}>
-            Comment
-          </label>
-          <textarea
+          <DurationInput
+            value={form.duration}
+            onChange={d => { setForm(f => ({ ...f, duration: d })); setErrors(e => ({ ...e, duration: false })) }}
+            error={errors.duration}
+          />
+          <CommentField
             value={form.comment}
-            onChange={e => setForm(f => ({ ...f, comment: e.target.value }))}
-            placeholder="Briefly describe the work done (optional)…"
-            rows={3}
-            style={{
-              width: '100%', borderRadius: 12, border: `1px solid ${C.border}`,
-              padding: '12px 16px', fontSize: 13.5, color: C.navy, resize: 'vertical',
-              outline: 'none', fontFamily: "'DM Sans', system-ui, sans-serif",
-              lineHeight: 1.6, boxSizing: 'border-box', background: '#fff',
-              transition: 'border-color 0.15s',
-            }}
-            onFocus={e => { e.currentTarget.style.borderColor = '#6366F1' }}
-            onBlur={e => { e.currentTarget.style.borderColor = C.border }}
+            onChange={v => setForm(f => ({ ...f, comment: v }))}
           />
         </div>
 
@@ -804,7 +838,10 @@ export default function AddTimesheetPage() {
   }
 
   const totalHours = useMemo(() => {
-    return entries.reduce((sum, e) => sum + parseFloat(e.duration.replace('h', '')), 0)
+    return entries.reduce((sum, e) => {
+      const v = parseFloat(e.duration.replace(/h$/i, '').trim())
+      return sum + (isNaN(v) ? 0 : v)
+    }, 0)
   }, [entries])
 
   async function handleSubmit() {
@@ -830,7 +867,8 @@ export default function AddTimesheetPage() {
         @keyframes tsScaleIn { from { transform: scale(0.86); opacity: 0 } to { transform: scale(1); opacity: 1 } }
         .ts-entry-fade { animation: tsFadeUp 0.25s ease forwards; }
         textarea::-webkit-scrollbar { width: 4px } textarea::-webkit-scrollbar-track { background: transparent }
-        textarea::-webkit-scrollbar-thumb { background: #E4E6EF; border-radius: 4px }
+        textarea::-webkit-scrollbar-thumb { background: #D0D3E6; border-radius: 4px }
+        textarea::-webkit-resizer { background: transparent }
       `}</style>
 
       {/* ════ Success Modal ════ */}

@@ -698,6 +698,7 @@ function TaxPlanningPanel() {
   }
 
   const d     = DATA[regime]
+  const inr   = (n: number) => '₹' + n.toLocaleString('en-IN')
   const pct   = (n: number) => d.totalTax > 0 ? (n / d.totalTax) * 100 : 0
   const isOptimized = d.potential === 0 && d.toBePaid === 0
 
@@ -706,6 +707,18 @@ function TaxPlanningPanel() {
     { key: 'saved',     value: d.saved,      color: '#0EA86A', label: 'Tax Saved'            },
     { key: 'potential', value: d.potential,  color: '#D97706', label: 'Tax Saving Potential' },
     { key: 'toBePaid',  value: d.toBePaid,   color: '#E84855', label: 'Tax To Be Paid'       },
+  ]
+
+  const SLABS = [
+    { range: 'Up to ₹3,00,000',        rate: 'Nil', tax: '—',        color: '#0EA86A', pct: 33 },
+    { range: '₹3,00,001 – ₹7,00,000', rate: '5%',  tax: '₹20,000', color: '#3B82F6', pct: 43 },
+    { range: '₹7,00,001 – ₹10,00,000',rate: '10%', tax: '₹14,500', color: '#7C3AED', pct: 24 },
+  ]
+
+  const SAVINGS = [
+    { label: 'NPS Contribution',  section: 'Sec. 80CCD(1B)', deduction: '₹50,000',    taxSaved: '₹5,000',  Icon: TrendingUp, color: '#0D9488', bg: 'rgba(13,148,136,0.08)', border: 'rgba(13,148,136,0.20)' },
+    { label: 'Health Insurance',  section: 'Sec. 80D',       deduction: '₹25,000',    taxSaved: '₹2,500',  Icon: Shield,     color: '#3B82F6', bg: 'rgba(59,130,246,0.08)', border: 'rgba(59,130,246,0.20)' },
+    { label: 'ELSS / Mutual Fund',section: 'Sec. 80C',       deduction: '₹1,50,000', taxSaved: '₹15,000', Icon: BarChart2,  color: '#7C3AED', bg: 'rgba(124,58,237,0.08)',border: 'rgba(124,58,237,0.20)'},
   ]
 
   return (
@@ -1033,6 +1046,30 @@ function IncrementPanel() {
             </div>
           )
         })}
+      </div>
+    </div>
+  )
+}
+
+// ── Coming soon placeholder ────────────────────────────────────────────────
+function ComingSoon({ label }: { label: string }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 320 }}>
+      <div style={{ textAlign: 'center' }}>
+        <div
+          style={{
+            width: 48, height: 48, borderRadius: 14, background: C.surface,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 12px',
+          }}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={C.muted} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" />
+            <rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" />
+          </svg>
+        </div>
+        <div style={{ fontSize: 14, fontWeight: 700, color: C.navy, marginBottom: 4 }}>{label}</div>
+        <div style={{ fontSize: 12.5, color: C.muted }}>Coming soon</div>
       </div>
     </div>
   )

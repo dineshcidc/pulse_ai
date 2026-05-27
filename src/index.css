@@ -10,7 +10,7 @@
   --color-amber: #F5A623;
 }
 
-*, *::before, *::after {
+*::before, *::after {
   box-sizing: border-box;
     scrollbar-width: none;
   -ms-overflow-style: none;

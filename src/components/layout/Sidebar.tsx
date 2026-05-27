@@ -9,7 +9,12 @@ import {
   ChevronDown,
   LogOut,
   Briefcase,
+  UserCog,
+  Building2,
+  Settings,
+  FolderKanban,
 } from 'lucide-react'
+
 
 type NavChild = { id: string; label: string }
 type NavItem  = {
@@ -76,12 +81,89 @@ function buildNav(role: 'employee' | 'manager'): NavSection[] {
   ]
 }
 
+function buildAdminNav(): NavSection[] {
+  return [
+    {
+      label: null,
+      items: [
+        { id: 'admin-dashboard', label: 'Dashboard', Icon: LayoutDashboard },
+        {
+          id: 'user-management', label: 'User Management', Icon: UserCog,
+          children: [
+            { id: 'all-users',    label: 'All Users'    },
+            { id: 'add-employee', label: 'Add Employee' },
+          ],
+        },
+      ],
+    },
+    {
+      label: 'OPERATIONS',
+      items: [
+        {
+          id: 'admin-leave', label: 'Leave Management', Icon: CalendarDays,
+          children: [
+            { id: 'all-leave-requests', label: 'All Leave Requests'     },
+            { id: 'leave-balance',      label: 'Leave Balance Overview' },
+          ],
+        },
+        {
+          id: 'admin-timesheet', label: 'Timesheet Management', Icon: Clock,
+          children: [
+            { id: 'all-timesheets',    label: 'All Timesheets'    },
+            { id: 'pending-approvals', label: 'Pending Approvals' },
+          ],
+        },
+      ],
+    },
+    {
+      label: 'ORGANIZATION',
+      items: [
+        {
+          id: 'dept-projects', label: 'Departments & Projects', Icon: FolderKanban,
+          children: [
+            { id: 'department-management', label: 'Department Management' },
+            { id: 'project-setup',         label: 'Project Setup'         },
+            { id: 'team-allocation',       label: 'Team Allocation'       },
+          ],
+        },
+        { id: 'admin-org', label: 'Org Structure', Icon: Building2 },
+      ],
+    },
+    {
+      label: 'INSIGHTS',
+      items: [
+        {
+          id: 'admin-reports', label: 'Reports & Analytics', Icon: BarChart3,
+          children: [
+            { id: 'attendance-report', label: 'Attendance Report' },
+            { id: 'leave-report',      label: 'Leave Report'      },
+          ],
+        },
+      ],
+    },
+    {
+      label: 'SYSTEM',
+      items: [
+        {
+          id: 'system-settings', label: 'System Settings', Icon: Settings,
+          children: [
+            { id: 'org-profile',          label: 'Organization Profile'      },
+            { id: 'working-hours',        label: 'Working Hours & Holidays'  },
+            { id: 'email-notifications',  label: 'Email Notifications'       },
+            { id: 'announcements',        label: 'System Announcements'      },
+          ],
+        },
+      ],
+    },
+  ]
+}
+
 interface SidebarProps {
   isOpen: boolean
   activeItem: string
   onNavigate: (id: string) => void
   onLogout?: () => void
-  role?: 'employee' | 'manager'
+  role?: 'employee' | 'manager' | 'admin'
 }
 
 const C = {
@@ -96,7 +178,7 @@ export default function Sidebar({ isOpen, activeItem, onNavigate, onLogout, role
   const [showLogoutModal, setShowLogoutModal] = useState(false)
   const [logoutLoading, setLogoutLoading]     = useState(false)
 
-  const NAV = buildNav(role)
+  const NAV = role === 'admin' ? buildAdminNav() : buildNav(role)
 
   async function handleConfirmLogout() {
     setLogoutLoading(true)
