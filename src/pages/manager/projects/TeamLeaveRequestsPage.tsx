@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CheckCircle, XCircle, CalendarDays, MessageSquare, X, Search, Calendar, Eye, User, Clock } from 'lucide-react'
+import { CheckCircle, XCircle, CalendarDays, MessageSquare, X, Search, Calendar, ChevronDown, Eye, User, Clock } from 'lucide-react'
 
 type LeaveStatus = 'pending' | 'approved' | 'rejected'
 type LeaveType   = 'Annual' | 'Sick' | 'Casual' | 'WFH' | 'Comp Off'
@@ -58,6 +58,7 @@ interface RemarksModal {
   action: 'approve' | 'reject' | null
   remarks: string
 }
+
 
 /* ── Leave Detail Modal ── */
 function LeaveDetailModal({

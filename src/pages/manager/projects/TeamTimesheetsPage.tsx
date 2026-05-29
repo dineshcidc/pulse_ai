@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, Fragment } from 'react'
 import {
   CheckCircle, XCircle, Clock, ChevronDown, Check,
   Search, Calendar, Eye, X, ArrowLeft,
@@ -505,6 +505,14 @@ export default function TeamTimesheetsPage() {
   const [rows,          setRows]          = useState(ROWS)
   const [selected,      setSelected]      = useState<number[]>([])
   const [viewRow,       setViewRow]       = useState<TimesheetRow | null>(null)
+  const [expandedRow,   setExpandedRow]   = useState<number | null>(null)
+  const [returnRow,     setReturnRow]     = useState<TimesheetRow | null>(null)
+  const [toastMsg,      setToastMsg]      = useState<string | null>(null)
+
+  function showToast() {
+    setToastMsg('Timesheet Approved')
+    setTimeout(() => setToastMsg(null), 3200)
+  }
 
   function updateStatus(id: number, status: TSStatus) {
     setRows(prev => prev.map(r => r.id === id ? { ...r, status } : r))
@@ -535,22 +543,36 @@ export default function TeamTimesheetsPage() {
   // Grid columns: checkbox | employee | project | date | hours | status | action
   const COLS = '36px 1.8fr 1.7fr 1fr 0.65fr 1fr 1fr'
 
-  // ── Detail view ──
-  if (viewRow) {
-    const liveRow = rows.find(r => r.id === viewRow.id) ?? viewRow
-    return (
-      <TimesheetDetailView
-        row={liveRow}
-        onBack={() => setViewRow(null)}
-        onApprove={id => updateStatus(id, 'approved')}
-        onReturn={id => updateStatus(id, 'rejected')}
-      />
-    )
-  }
+  const liveViewRow = viewRow ? (rows.find(r => r.id === viewRow.id) ?? viewRow) : null
 
-  // ── List view ──
   return (
     <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+      <style>{`
+        @keyframes tsAccIn { from { opacity:0; transform:translateY(-6px) } to { opacity:1; transform:translateY(0) } }
+        @keyframes toastIn  { from { opacity:0; transform:translateX(24px) } to { opacity:1; transform:translateX(0) } }
+      `}</style>
+
+      {/* Toast */}
+      {toastMsg && (
+        <div style={{ position: 'fixed', top: 24, right: 28, zIndex: 99999, display: 'flex', alignItems: 'center', gap: 12, background: '#0EA86A', color: '#fff', padding: '13px 20px 13px 14px', borderRadius: 14, boxShadow: '0 8px 32px rgba(14,168,106,0.30)', fontFamily: "'DM Sans', system-ui, sans-serif", animation: 'toastIn 0.3s cubic-bezier(0.34,1.56,0.64,1)' }}>
+          <div style={{ width: 32, height: 32, borderRadius: 9, background: 'rgba(255,255,255,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <CheckCircle size={17} strokeWidth={2.5} />
+          </div>
+          <div>
+            <div style={{ fontSize: 13.5, fontWeight: 800, lineHeight: 1.3 }}>Timesheet Approved</div>
+            <div style={{ fontSize: 11.5, fontWeight: 500, opacity: 0.85, marginTop: 1 }}>Status updated successfully</div>
+          </div>
+        </div>
+      )}
+
+      {liveViewRow ? (
+        <TimesheetDetailView
+          row={liveViewRow}
+          onBack={() => setViewRow(null)}
+          onApprove={id => { updateStatus(id, 'approved'); showToast() }}
+          onReturn={id => updateStatus(id, 'rejected')}
+        />
+      ) : (<>
 
       {/* Page header */}
       <div className="flex items-start justify-between mb-5">
@@ -666,97 +688,158 @@ export default function TeamTimesheetsPage() {
           </div>
         ) : (
           filtered.map((row, idx) => {
-            const st        = STATUS_CFG[row.status]
+            const st         = STATUS_CFG[row.status]
             const isPending  = row.status === 'pending'
             const isSelected = selected.includes(row.id)
+            const isExpanded = isPending && expandedRow === row.id
+            const showBorder = idx < filtered.length - 1
 
             return (
-              <div
-                key={row.id}
-                className="grid items-center"
-                style={{
-                  gridTemplateColumns: COLS,
-                  padding: '16px 20px',
-                  borderBottom: idx < filtered.length - 1 ? `1px solid #F0F2F8` : 'none',
-                  background: isSelected ? 'rgba(99,102,241,0.03)' : '#fff',
-                  transition: 'background 0.12s',
-                }}
-                onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = C.surface }}
-                onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = '#fff' }}
-              >
-                {/* Checkbox */}
+              <Fragment key={row.id}>
                 <div
-                  onClick={() => isPending && setSelected(prev => prev.includes(row.id) ? prev.filter(x => x !== row.id) : [...prev, row.id])}
-                  style={{ width: 18, height: 18, borderRadius: 5, border: `1.5px solid ${isSelected ? '#6366F1' : C.border}`, background: isSelected ? '#6366F1' : '#fff', cursor: isPending ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: isPending ? 1 : 0.35, flexShrink: 0 }}
+                  className="grid items-center"
+                  style={{
+                    gridTemplateColumns: COLS,
+                    padding: '16px 20px',
+                    borderBottom: showBorder && !isExpanded ? `1px solid #F0F2F8` : 'none',
+                    background: isSelected ? 'rgba(99,102,241,0.03)' : '#fff',
+                    transition: 'background 0.12s',
+                  }}
+                  onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = C.surface }}
+                  onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = '#fff' }}
                 >
-                  {isSelected && <Check size={11} style={{ color: '#fff' }} strokeWidth={2.5} />}
-                </div>
+                  {/* Checkbox */}
+                  <div
+                    onClick={() => isPending && setSelected(prev => prev.includes(row.id) ? prev.filter(x => x !== row.id) : [...prev, row.id])}
+                    style={{ width: 18, height: 18, borderRadius: 5, border: `1.5px solid ${isSelected ? '#6366F1' : C.border}`, background: isSelected ? '#6366F1' : '#fff', cursor: isPending ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: isPending ? 1 : 0.35, flexShrink: 0 }}
+                  >
+                    {isSelected && <Check size={11} style={{ color: '#fff' }} strokeWidth={2.5} />}
+                  </div>
 
-                {/* Employee */}
-                <div className="flex items-center gap-3 min-w-0">
-                  <img src={`https://i.pravatar.cc/150?img=${row.avatar}`} alt={row.employee} style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: `2px solid ${C.border}` }} />
-                  <div className="min-w-0">
-                    <div style={{ fontSize: 13.5, fontWeight: 600, color: C.navy, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{row.employee}</div>
-                    <div style={{ fontSize: 11.5, color: C.muted, marginTop: 2 }}>{row.designation}</div>
+                  {/* Employee */}
+                  <div className="flex items-center gap-3 min-w-0">
+                    <img src={`https://i.pravatar.cc/150?img=${row.avatar}`} alt={row.employee} style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: `2px solid ${C.border}` }} />
+                    <div className="min-w-0">
+                      <div style={{ fontSize: 13.5, fontWeight: 600, color: C.navy, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{row.employee}</div>
+                      <div style={{ fontSize: 11.5, color: C.muted, marginTop: 2 }}>{row.designation}</div>
+                    </div>
+                  </div>
+
+                  {/* Project */}
+                  <div style={{ fontSize: 13, fontWeight: 600, color: '#3D4266', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {row.project}
+                  </div>
+
+                  {/* Date */}
+                  <div>
+                    <div style={{ fontSize: 12.5, color: '#3D4266', fontWeight: 500 }}>{row.dateLabel.split(',')[0]}</div>
+                    <div style={{ fontSize: 11.5, color: C.muted, marginTop: 2 }}>{row.dateLabel.split(', ')[1]}</div>
+                  </div>
+
+                  {/* Hours */}
+                  <div style={{ fontSize: 15, fontWeight: 800, color: C.navy, display: 'inline-flex', alignItems: 'baseline', gap: 2 }}>
+                    {row.hours}<span style={{ fontSize: 11, fontWeight: 600, color: C.muted }}>h</span>
+                  </div>
+
+                  {/* Status */}
+                  <span style={{ fontSize: 11.5, fontWeight: 700, padding: '5px 10px', borderRadius: 7, background: st.bg, color: st.color, border: `1px solid ${st.border}`, whiteSpace: 'nowrap' as const, width: 'fit-content' }}>
+                    {st.label}
+                  </span>
+
+                  {/* Action */}
+                  <div className="flex items-center gap-1.5">
+                    {/* Eye: pending → accordion toggle; others → detail page */}
+                    <button
+                      onClick={() => isPending
+                        ? setExpandedRow(prev => prev === row.id ? null : row.id)
+                        : setViewRow(row)}
+                      title={isPending ? 'Quick Preview' : 'View Details'}
+                      style={{ width: 32, height: 32, borderRadius: 9, border: 'none', background: isExpanded ? 'rgba(99,102,241,0.20)' : 'rgba(99,102,241,0.09)', color: '#4B4ECC', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.14s' }}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.20)' }}
+                      onMouseLeave={e => { e.currentTarget.style.background = isExpanded ? 'rgba(99,102,241,0.20)' : 'rgba(99,102,241,0.09)' }}
+                    >
+                      <Eye size={14} strokeWidth={1.8} />
+                    </button>
                   </div>
                 </div>
 
-                {/* Project */}
-                <div style={{ fontSize: 13, fontWeight: 600, color: '#3D4266', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {row.project}
-                </div>
+                {/* ── Accordion (pending Eye click only) ── */}
+                {isExpanded && (
+                  <div style={{
+                    borderTop: `1px solid #EEF0FA`,
+                    borderBottom: showBorder ? `1px solid #F0F2F8` : 'none',
+                    background: 'rgba(99,102,241,0.015)',
+                    padding: '20px 28px 24px',
+                    animation: 'tsAccIn 0.18s ease',
+                  }}>
+                    {/* Tree entries */}
+                    <div style={{ position: 'relative', marginBottom: 18 }}>
+                      <div style={{
+                        position: 'absolute', left: 19, top: 14,
+                        width: 2, height: `calc(100% - 28px)`,
+                        background: `linear-gradient(to bottom, ${row.projectColor}50, ${row.projectColor}08)`,
+                        borderRadius: 2,
+                      }} />
+                      {row.entries.map((entry, ei) => {
+                        const isLastEntry = ei === row.entries.length - 1
+                        return (
+                          <div key={entry.id} style={{ display: 'flex', gap: 20, marginBottom: isLastEntry ? 0 : 16, position: 'relative' }}>
+                            {/* Node dot */}
+                            <div style={{ width: 40, flexShrink: 0, display: 'flex', justifyContent: 'center', paddingTop: 3 }}>
+                              <div style={{ width: 16, height: 16, borderRadius: '50%', background: '#fff', border: `2.5px solid ${row.projectColor}`, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1, position: 'relative' }}>
+                                <div style={{ width: 6, height: 6, borderRadius: '50%', background: row.projectColor }} />
+                              </div>
+                            </div>
+                            {/* Entry card */}
+                            <div style={{ flex: 1, background: C.surface, borderRadius: 12, padding: '14px 16px', border: `1px solid ${C.border}` }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap' as const, marginBottom: 9 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: `${entry.projectColor}14`, padding: '3px 10px', borderRadius: 16, border: `1px solid ${entry.projectColor}28` }}>
+                                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: entry.projectColor }} />
+                                  <span style={{ fontSize: 12, fontWeight: 700, color: entry.projectColor }}>{entry.projectName}</span>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#fff', padding: '3px 10px', borderRadius: 16, border: `1px solid ${C.border}` }}>
+                                  <span style={{ fontSize: 12, fontWeight: 600, color: C.navy }}>{entry.taskLabel}</span>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(28,32,53,0.07)', padding: '3px 10px', borderRadius: 8 }}>
+                                  <Clock size={10} style={{ color: C.muted }} />
+                                  <span style={{ fontSize: 12, fontWeight: 700, color: C.navy }}>{entry.duration}</span>
+                                </div>
+                                <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4 }}>
+                                  <Clock size={10} style={{ color: C.muted }} />
+                                  <span style={{ fontSize: 11.5, color: C.muted, fontWeight: 500 }}>Added {entry.timeAdded}</span>
+                                </div>
+                              </div>
+                              {entry.comment && (
+                                <div style={{ fontSize: 12.5, color: C.muted, lineHeight: 1.65 }}>{entry.comment}</div>
+                              )}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
 
-                {/* Date */}
-                <div>
-                  <div style={{ fontSize: 12.5, color: '#3D4266', fontWeight: 500 }}>{row.dateLabel.split(',')[0]}</div>
-                  <div style={{ fontSize: 11.5, color: C.muted, marginTop: 2 }}>{row.dateLabel.split(', ')[1]}</div>
-                </div>
-
-                {/* Hours */}
-                <div style={{ fontSize: 15, fontWeight: 800, color: C.navy, display: 'inline-flex', alignItems: 'baseline', gap: 2 }}>
-                  {row.hours}<span style={{ fontSize: 11, fontWeight: 600, color: C.muted }}>h</span>
-                </div>
-
-                {/* Status */}
-                <span style={{ fontSize: 11.5, fontWeight: 700, padding: '5px 10px', borderRadius: 7, background: st.bg, color: st.color, border: `1px solid ${st.border}`, whiteSpace: 'nowrap' as const, width: 'fit-content' }}>
-                  {st.label}
-                </span>
-
-                {/* Action */}
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={() => setViewRow(row)}
-                    title="View Details"
-                    style={{ width: 32, height: 32, borderRadius: 9, border: 'none', background: 'rgba(99,102,241,0.09)', color: '#4B4ECC', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.14s' }}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.18)' }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.09)' }}
-                  >
-                    <Eye size={14} strokeWidth={1.8} />
-                  </button>
-                  {isPending && (
-                    <>
+                    {/* Approve / Return text buttons */}
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, paddingTop: 16, borderTop: `1px solid ${C.border}` }}>
                       <button
-                        onClick={() => setViewRow(row)}
-                        title="Approve"
-                        style={{ width: 32, height: 32, borderRadius: 9, border: 'none', background: 'rgba(14,168,106,0.10)', color: '#0A8A58', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.14s' }}
-                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(14,168,106,0.22)' }}
-                        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(14,168,106,0.10)' }}
-                      >
-                        <CheckCircle size={14} strokeWidth={1.8} />
-                      </button>
-                      <button
-                        onClick={() => setViewRow(row)}
-                        title="Return"
-                        style={{ width: 32, height: 32, borderRadius: 9, border: 'none', background: 'rgba(232,72,85,0.09)', color: '#E84855', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.14s' }}
-                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(232,72,85,0.20)' }}
+                        onClick={() => setReturnRow(row)}
+                        style={{ height: 36, padding: '0 18px', borderRadius: 10, border: 'none', background: 'rgba(232,72,85,0.09)', color: '#E84855', fontSize: 13.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 6, transition: 'background 0.15s' }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(232,72,85,0.18)' }}
                         onMouseLeave={e => { e.currentTarget.style.background = 'rgba(232,72,85,0.09)' }}
                       >
-                        <XCircle size={14} strokeWidth={1.8} />
+                        <XCircle size={14} strokeWidth={1.8} /> Return
                       </button>
-                    </>
-                  )}
-                </div>
-              </div>
+                      <button
+                        onClick={() => { updateStatus(row.id, 'approved'); showToast(); setExpandedRow(null) }}
+                        style={{ height: 36, padding: '0 22px', borderRadius: 10, border: 'none', background: '#0EA86A', color: '#fff', fontSize: 13.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 6, transition: 'background 0.15s' }}
+                        onMouseEnter={e => { e.currentTarget.style.background = '#0A8A58' }}
+                        onMouseLeave={e => { e.currentTarget.style.background = '#0EA86A' }}
+                      >
+                        <CheckCircle size={14} strokeWidth={1.8} /> Approve
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </Fragment>
             )
           })
         )}
@@ -779,6 +862,20 @@ export default function TeamTimesheetsPage() {
           </div>
         </div>
       </div>
+
+      {/* Return modal triggered from accordion */}
+      {returnRow && (
+        <ReturnModal
+          row={returnRow}
+          onClose={() => setReturnRow(null)}
+          onConfirm={id => {
+            updateStatus(id, 'rejected')
+            setReturnRow(null)
+            setExpandedRow(null)
+          }}
+        />
+      )}
+      </>)}
     </div>
   )
 }

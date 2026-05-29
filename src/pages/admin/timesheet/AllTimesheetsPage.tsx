@@ -251,6 +251,7 @@ function fmtFull(d: string) {
   return `${wd}, ${day} ${mon} ${dt.getFullYear()}`
 }
 
+
 /* ─── Employee date-list + accordion view ─── */
 function EmployeeDateListView({ summary, onBack }: { summary: EmployeeSummary; onBack: () => void }) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
@@ -502,6 +503,7 @@ export default function AllTimesheetsPage() {
     setSearchQuery(emp.name)
     setShowSuggestions(false)
     setHasGenerated(false)
+    setSelectedProjects(new Set())
   }
 
   function clearEmployee() {
@@ -509,6 +511,7 @@ export default function AllTimesheetsPage() {
     setSearchQuery('')
     setShowSuggestions(false)
     setHasGenerated(false)
+    setSelectedProjects(new Set())
   }
 
   function toggleProject(p: string) {
@@ -567,6 +570,10 @@ export default function AllTimesheetsPage() {
       setHasGenerated(true)
     }, 1200)
   }
+
+  const displayProjects: string[] = selectedEmployee
+    ? [...new Set(DATA.filter(e => e.employee === selectedEmployee.name).map(e => e.project))].sort()
+    : PROJECTS
 
   const labelStyle: React.CSSProperties = {
     margin: '0 0 8px', fontSize: 11.5, fontWeight: 700,
@@ -797,9 +804,18 @@ export default function AllTimesheetsPage() {
 
           {/* ── Projects ── */}
           <div>
-            <p style={labelStyle}>Projects</p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <p style={{ ...labelStyle, margin: 0 }}>
+                {selectedEmployee ? 'Mapped Projects' : 'Projects'}
+              </p>
+              {selectedEmployee && (
+                <span style={{ fontSize: 11, fontWeight: 600, color: '#4B4ECC', background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.18)', borderRadius: 999, padding: '2px 9px' }}>
+                  {displayProjects.length} {displayProjects.length === 1 ? 'project' : 'projects'}
+                </span>
+              )}
+            </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {PROJECTS.map(p => {
+              {displayProjects.map(p => {
                 const active = selectedProjects.has(p)
                 return (
                   <button key={p} onClick={() => toggleProject(p)}

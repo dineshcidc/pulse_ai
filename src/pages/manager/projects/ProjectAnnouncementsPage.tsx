@@ -108,6 +108,8 @@ function ComposePage({ onBack, onPublish }: { onBack: () => void; onPublish: (a:
     onBack()
   }
 
+  const pc = PRIORITY_CFG[priority]
+
   const sectionLabel = (text: string) => (
     <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase' as const, letterSpacing: '0.07em', marginBottom: 10 }}>{text}</div>
   )
