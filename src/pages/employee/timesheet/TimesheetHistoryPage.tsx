@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { ChevronLeft, ChevronRight, Clock, CheckCircle2, FileEdit, CalendarX, X, User, MessageSquare } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Clock, CheckCircle2, FileEdit, X, User, MessageSquare } from 'lucide-react'
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 
@@ -178,66 +178,6 @@ function totalHoursForDay(record: DayRecord | undefined) {
 
 function fmtHours(h: number) {
   return Number.isInteger(h) ? `${h}h` : `${h}h`
-}
-
-// ─── Entry Row ────────────────────────────────────────────────────────────────
-
-function EntryRow({ entry, index }: { entry: HistoryEntry; index: number }) {
-  return (
-    <div
-      style={{
-        display: 'flex', alignItems: 'flex-start', gap: 14,
-        padding: '14px 0',
-              }}
-    >
-      {/* Index */}
-      <div style={{
-        width: 28, height: 28, borderRadius: 8, flexShrink: 0,
-        background: C.surface, display: 'flex', alignItems: 'center',
-        justifyContent: 'center', fontSize: 11.5, fontWeight: 700, color: C.muted,
-        marginTop: 1,
-      }}>
-        {String(index + 1).padStart(2,'0')}
-      </div>
-
-      {/* Project badge */}
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0,
-        background: `${entry.projectColor}12`,
-        padding: '4px 10px', borderRadius: 16,
-        border: `1px solid ${entry.projectColor}22`,
-        marginTop: 2,
-      }}>
-        <div style={{ width: 6, height: 6, borderRadius: '50%', background: entry.projectColor }} />
-        <span style={{ fontSize: 12, fontWeight: 700, color: entry.projectColor, whiteSpace: 'nowrap' }}>
-          {entry.projectName}
-        </span>
-      </div>
-
-      {/* Task type */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0, marginTop: 2 }}>
-        <span style={{ fontSize: 13 }}>{entry.taskIcon}</span>
-        <span style={{ fontSize: 12.5, fontWeight: 600, color: C.navy, whiteSpace: 'nowrap' }}>
-          {entry.taskLabel}
-        </span>
-      </div>
-
-      {/* Duration chip */}
-      <div style={{
-        height: 24, paddingLeft: 8, paddingRight: 8, borderRadius: 6,
-        background: 'rgba(28,32,53,0.07)', display: 'flex', alignItems: 'center',
-        fontSize: 12, fontWeight: 700, color: C.navy, flexShrink: 0, gap: 3, marginTop: 2,
-      }}>
-        <Clock size={10} style={{ color: C.muted }} />
-        {entry.duration}
-      </div>
-
-      {/* Comment */}
-      <span style={{ flex: 1, fontSize: 12.5, color: C.muted, lineHeight: 1.6, minWidth: 0 }}>
-        {entry.comment || <em style={{ color: '#C5C8D8' }}>No comment</em>}
-      </span>
-    </div>
-  )
 }
 
 // ─── Pending Panel ───────────────────────────────────────────────────────────
