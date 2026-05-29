@@ -2,7 +2,13 @@ import { useState, useEffect } from 'react'
 import {
   Briefcase, Clock, CalendarDays, Ticket, ClipboardList,
   ChevronDown, X, Shield, FileText, FolderOpen, ExternalLink,
+  ChevronRight,
 } from 'lucide-react'
+
+interface DashboardPageProps {
+  managerMode?: boolean
+  onNavigateTeam?: (id: string) => void
+}
 
 function getGreeting() {
   const h = new Date().getHours()
@@ -140,7 +146,7 @@ const C = {
   hover:  '#F0F2F8',
 }
 
-export default function DashboardPage() {
+export default function DashboardPage({ managerMode = false, onNavigateTeam }: DashboardPageProps = {}) {
   const [alertsOpen, setAlertsOpen]     = useState(true)
   const [alerts, setAlerts]             = useState(INITIAL_ALERTS)
   const [pageSize, setPageSize]         = useState(5)
@@ -230,9 +236,9 @@ export default function DashboardPage() {
         {/* ── Left column ── */}
         <div className="flex flex-col gap-5">
 
-          {/* Stats 2×2 */}
-          <div className="grid grid-cols-2 gap-4">
-            {STATS.map(({ label, count, sub, Icon, color, bg, border }) => (
+          {/* Stats */}
+          <div className="grid gap-4" style={{ gridTemplateColumns: managerMode ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)' }}>
+            {(managerMode ? STATS.filter(s => s.label !== 'Pending Tasks') : STATS).map(({ label, count, sub, Icon, color, bg, border }) => (
               <div
                 key={label}
                 className="stat-card"
@@ -257,6 +263,69 @@ export default function DashboardPage() {
               </div>
             ))}
           </div>
+
+          {/* ── Team Stats (manager only) ── */}
+          {managerMode && (
+            <div>
+              {/* Section header */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                <span style={{ fontSize: 14, fontWeight: 700, color: C.navy }}>Team Stats</span>
+                <button
+                  onClick={() => onNavigateTeam?.('team-dashboard')}
+                  style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 12, fontWeight: 700, color: '#6366F1', background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit' }}
+                  onMouseEnter={e => { e.currentTarget.style.opacity = '0.7' }}
+                  onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
+                >
+                  View All <ChevronRight size={13} strokeWidth={2.5} />
+                </button>
+              </div>
+
+              {/* 2 stat cards */}
+              <div className="grid grid-cols-2 gap-4">
+                {/* Team Pending Timesheets */}
+                <div
+                  className="stat-card"
+                  style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, padding: '22px 22px 20px', cursor: 'default' }}
+                >
+                  <div className="flex items-start justify-between mb-5">
+                    <span style={{ fontSize: 13, fontWeight: 500, color: '#5A6080', lineHeight: 1.4, maxWidth: 110 }}>
+                      Team Pending Timesheets
+                    </span>
+                    <div
+                      className="flex items-center justify-center flex-shrink-0"
+                      style={{ width: 40, height: 40, borderRadius: 11, background: 'rgba(99,102,241,0.09)', border: '1px solid rgba(99,102,241,0.15)' }}
+                    >
+                      <Clock size={18} style={{ color: '#6366F1' }} strokeWidth={1.8} />
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 34, fontWeight: 700, color: C.navy, lineHeight: 1, letterSpacing: '-0.5px' }}>6</div>
+                  <div style={{ fontSize: 12, color: '#B0B4C8', marginTop: 6, fontWeight: 500 }}>awaiting review</div>
+                  <div style={{ height: 3, borderRadius: 99, background: 'rgba(99,102,241,0.09)', marginTop: 16, border: '1px solid rgba(99,102,241,0.15)' }} />
+                </div>
+
+                {/* Pending Team Leave Approvals */}
+                <div
+                  className="stat-card"
+                  style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, padding: '22px 22px 20px', cursor: 'default' }}
+                >
+                  <div className="flex items-start justify-between mb-5">
+                    <span style={{ fontSize: 13, fontWeight: 500, color: '#5A6080', lineHeight: 1.4, maxWidth: 110 }}>
+                      Pending Team Leave Approvals
+                    </span>
+                    <div
+                      className="flex items-center justify-center flex-shrink-0"
+                      style={{ width: 40, height: 40, borderRadius: 11, background: 'rgba(217,119,6,0.09)', border: '1px solid rgba(217,119,6,0.15)' }}
+                    >
+                      <CalendarDays size={18} style={{ color: '#D97706' }} strokeWidth={1.8} />
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 34, fontWeight: 700, color: C.navy, lineHeight: 1, letterSpacing: '-0.5px' }}>3</div>
+                  <div style={{ fontSize: 12, color: '#B0B4C8', marginTop: 6, fontWeight: 500 }}>pending approval</div>
+                  <div style={{ height: 3, borderRadius: 99, background: 'rgba(217,119,6,0.09)', marginTop: 16, border: '1px solid rgba(217,119,6,0.15)' }} />
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* ── Alerts section ── */}
           <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden' }}>

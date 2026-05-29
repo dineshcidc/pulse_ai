@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import {
   Clock, CalendarDays, Users, AlertTriangle,
-  Eye, Check, X, ChevronRight, Activity, User,
+  Eye, Check, X, ChevronRight, Activity,
 } from 'lucide-react'
 
 type TSStatus = 'pending' | 'approved' | 'rejected'
@@ -12,7 +12,7 @@ interface TSRow {
   submitted: string; hours: number; status: TSStatus
 }
 interface LeaveReq {
-  id: number; employee: string; avatar: string; type: string
+  id: number; employee: string; avatar: string; face: string; type: string
   from: string; to: string; days: number; status: LVStatus
 }
 
@@ -25,10 +25,10 @@ const INIT_TS: TSRow[] = [
   { id: 6, employee: 'Karthik Nair',  face: 'https://i.pravatar.cc/40?img=15', project: 'TechCorp ERP', submitted: 'May 18, 2026', hours: 7.5, status: 'pending' },
 ]
 const INIT_LEAVES: LeaveReq[] = [
-  { id: 1, employee: 'James Wilson', avatar: 'JW', type: 'Annual Leave', from: 'May 26', to: 'May 28', days: 3, status: 'pending'  },
-  { id: 2, employee: 'Lisa Garcia',  avatar: 'LG', type: 'Sick Leave',   from: 'May 23', to: 'May 23', days: 1, status: 'pending'  },
-  { id: 3, employee: 'Tom Davis',    avatar: 'TD', type: 'Casual Leave', from: 'Jun 2',  to: 'Jun 3',  days: 2, status: 'approved' },
-  { id: 4, employee: 'Anjali Singh', avatar: 'AS', type: 'Annual Leave', from: 'Jun 5',  to: 'Jun 7',  days: 3, status: 'pending'  },
+  { id: 1, employee: 'James Wilson', avatar: 'JW', face: 'https://i.pravatar.cc/40?img=12', type: 'Annual Leave', from: 'May 26', to: 'May 28', days: 3, status: 'pending'  },
+  { id: 2, employee: 'Lisa Garcia',  avatar: 'LG', face: 'https://i.pravatar.cc/40?img=44', type: 'Sick Leave',   from: 'May 23', to: 'May 23', days: 1, status: 'pending'  },
+  { id: 3, employee: 'Tom Davis',    avatar: 'TD', face: 'https://i.pravatar.cc/40?img=8',  type: 'Casual Leave', from: 'Jun 2',  to: 'Jun 3',  days: 2, status: 'approved' },
+  { id: 4, employee: 'Anjali Singh', avatar: 'AS', face: 'https://i.pravatar.cc/40?img=31', type: 'Annual Leave', from: 'Jun 5',  to: 'Jun 7',  days: 3, status: 'pending'  },
 ]
 const RECENT_UPDATES = [
   { id: 1, text: 'Sarah Johnson submitted weekly timesheet',       time: '2h ago', face: 'https://i.pravatar.cc/40?img=47' },
@@ -47,13 +47,6 @@ const UPCOMING_LEAVES = [
   { name: 'David Brown',  type: 'Annual', from: 'Jun 16', to: 'Jun 18', days: 3 },
 ]
 
-const AVATAR_COLORS = [
-  { bg: 'rgba(99,102,241,0.12)',  color: '#6366F1' },
-  { bg: 'rgba(14,168,106,0.12)', color: '#0A8A58' },
-  { bg: 'rgba(217,119,6,0.12)',  color: '#D97706' },
-  { bg: 'rgba(8,145,178,0.12)',  color: '#0891B2' },
-  { bg: 'rgba(232,72,85,0.10)',  color: '#E84855' },
-]
 const TS_CFG: Record<TSStatus, { label: string; color: string; bg: string }> = {
   pending:  { label: 'Pending',  color: '#D97706', bg: 'rgba(217,119,6,0.09)'   },
   approved: { label: 'Approved', color: '#0A8A58', bg: 'rgba(14,168,106,0.10)'  },
@@ -70,15 +63,6 @@ const LV_TYPE_CFG: Record<string, { color: string; bg: string }> = {
   Casual:  { color: '#0891B2', bg: 'rgba(8,145,178,0.09)'   },
 }
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', hover: '#F0F2F8', surface: '#F7F8FC' }
-
-function Avatar({ idx }: { idx: number }) {
-  const ac = AVATAR_COLORS[idx % AVATAR_COLORS.length]
-  return (
-    <div style={{ width: 34, height: 34, borderRadius: 10, background: ac.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-      <User size={16} strokeWidth={1.8} style={{ color: ac.color }} />
-    </div>
-  )
-}
 
 export default function TeamDashboardPage({ onNavigate }: { onNavigate?: (id: string) => void }) {
   const [tsRows,    setTsRows]    = useState<TSRow[]>(INIT_TS)
@@ -235,23 +219,27 @@ export default function TeamDashboardPage({ onNavigate }: { onNavigate?: (id: st
               const sc = LV_CFG[row.status]
               return (
                 <div key={row.id}
-                  style={{ padding: '13px 20px', borderBottom: i < leaveRows.length - 1 ? `1px solid ${C.border}` : 'none', transition: 'background 0.12s' }}
+                  style={{ padding: '16px 20px', borderBottom: i < leaveRows.length - 1 ? `1px solid ${C.border}` : 'none', transition: 'background 0.12s' }}
                   onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = C.surface }}
                   onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = 'transparent' }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                    <Avatar idx={i + 2} />
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                    <img
+                      src={row.face}
+                      alt={row.employee}
+                      style={{ width: 38, height: 38, borderRadius: 11, objectFit: 'cover', flexShrink: 0, border: `1px solid ${C.border}` }}
+                    />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 2 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 4 }}>
                         <div style={{ fontSize: 13, fontWeight: 700, color: C.navy, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.employee}</div>
-                        <span style={{ fontSize: 10.5, fontWeight: 700, padding: '2px 8px', borderRadius: 5, background: sc.bg, color: sc.color, flexShrink: 0 }}>{sc.label}</span>
+                        <span style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 9px', borderRadius: 6, background: sc.bg, color: sc.color, flexShrink: 0 }}>{sc.label}</span>
                       </div>
-                      <div style={{ fontSize: 11.5, color: C.muted }}>{row.type} · {row.from} – {row.to} · {row.days}d</div>
+                      <div style={{ fontSize: 12, color: C.muted, marginBottom: row.status === 'pending' ? 10 : 0 }}>{row.type} · {row.from} – {row.to} · {row.days}d</div>
                       {row.status === 'pending' && (
-                        <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+                        <div style={{ display: 'flex', gap: 7 }}>
                           <button
                             onClick={() => approveLeave(row.id)}
-                            style={{ flex: 1, height: 28, borderRadius: 7, border: 'none', background: 'rgba(14,168,106,0.10)', color: '#0A8A58', fontSize: 11.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, transition: 'background 0.14s' }}
+                            style={{ flex: 1, height: 30, borderRadius: 8, border: 'none', background: 'rgba(14,168,106,0.10)', color: '#0A8A58', fontSize: 11.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, transition: 'background 0.14s' }}
                             onMouseEnter={e => { e.currentTarget.style.background = 'rgba(14,168,106,0.18)' }}
                             onMouseLeave={e => { e.currentTarget.style.background = 'rgba(14,168,106,0.10)' }}
                           >
@@ -259,7 +247,7 @@ export default function TeamDashboardPage({ onNavigate }: { onNavigate?: (id: st
                           </button>
                           <button
                             onClick={() => rejectLeave(row.id)}
-                            style={{ flex: 1, height: 28, borderRadius: 7, border: 'none', background: 'rgba(232,72,85,0.09)', color: '#E84855', fontSize: 11.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, transition: 'background 0.14s' }}
+                            style={{ flex: 1, height: 30, borderRadius: 8, border: 'none', background: 'rgba(232,72,85,0.09)', color: '#E84855', fontSize: 11.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, transition: 'background 0.14s' }}
                             onMouseEnter={e => { e.currentTarget.style.background = 'rgba(232,72,85,0.18)' }}
                             onMouseLeave={e => { e.currentTarget.style.background = 'rgba(232,72,85,0.09)' }}
                           >

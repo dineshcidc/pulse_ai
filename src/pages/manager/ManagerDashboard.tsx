@@ -75,7 +75,7 @@ function ComingSoon({ id }: { id: string }) {
 
 function PageContent({ activeItem, onNavigate }: { activeItem: string; onNavigate: (id: string) => void }) {
   // Shared employee pages
-  if (activeItem === 'dashboard')        return <DashboardPage />
+  if (activeItem === 'dashboard')        return <DashboardPage managerMode onNavigateTeam={onNavigate} />
   if (activeItem === 'timesheet-add')    return <AddTimesheetPage />
   if (activeItem === 'timesheet-history') return <TimesheetHistoryPage onNavigate={onNavigate} />
   if (activeItem === 'leave-create')     return <LeaveCreatePage />
