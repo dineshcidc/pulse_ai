@@ -251,17 +251,6 @@ function fmtFull(d: string) {
   return `${wd}, ${day} ${mon} ${dt.getFullYear()}`
 }
 
-const TASK_DESC: Record<string, string> = {
-  'Development':   'Implemented the required features as per the sprint task definition, ensuring code quality by following established patterns and adding unit tests for new logic. Submitted pull request for peer review with a detailed description of all changes made. Verified integration with dependent modules and confirmed no regression in existing functionality.',
-  'Design':        'Completed high-fidelity design assets and updated the shared component library with the latest approved styles. Collaborated with the development team to clarify interaction patterns, spacing, and responsive breakpoints. All final assets have been exported and uploaded to the project folder for handoff.',
-  'Testing':       'Executed the defined test cases covering functional, regression, boundary, and negative scenarios as per the test plan. Identified and logged defects with detailed reproduction steps, expected vs actual results, and severity classification. Updated the test tracker and shared the run summary report with the project manager and QA lead.',
-  'Meeting':       'Attended the scheduled team sync and contributed status updates on current sprint progress, blockers, and upcoming deliverables. Action items were captured, documented, and distributed to the respective owners with target dates. Follow-up tasks have been added to the project board for tracking.',
-  'Review':        'Conducted a thorough review of the submitted work against acceptance criteria, coding standards, and design specifications. Provided written feedback highlighting specific areas for improvement and confirmed items that met the expected quality bar. Awaiting the author\'s response before marking as approved.',
-  'DevOps':        'Completed the required infrastructure changes in the staging environment and verified all deployments are stable and performing within expected thresholds. Monitoring dashboards updated and alert rules configured as per the runbook guidelines. Documentation has been updated to reflect the new configurations and rollback procedures.',
-  'Documentation': 'Authored comprehensive documentation covering all new and updated features introduced in this sprint cycle, including endpoint references, sample payloads, and usage notes. Incorporated feedback from the last review cycle to improve clarity and completeness. Document is currently under peer review and will be published to the knowledge base upon approval.',
-  'Analysis':      'Gathered and analyzed requirements from stakeholder interviews, existing system data, and backlog grooming sessions. Translated the findings into structured user stories with clear acceptance criteria, dependency notes, and edge case scenarios. Findings were reviewed and approved by the product owner, and the stories are now ready for development planning.',
-}
-
 /* ─── Employee date-list + accordion view ─── */
 function EmployeeDateListView({ summary, onBack }: { summary: EmployeeSummary; onBack: () => void }) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set())

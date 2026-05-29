@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import {
   CheckCircle, XCircle, Clock, ChevronDown, Check,
-  Search, Calendar, Eye, X, ArrowLeft, User,
+  Search, Calendar, Eye, X, ArrowLeft,
 } from 'lucide-react'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -413,7 +413,6 @@ function ReturnModal({ row, onClose, onConfirm }: {
   row: TimesheetRow; onClose: () => void; onConfirm: (id: number) => void
 }) {
   const [reason, setReason] = useState('')
-  const st = STATUS_CFG[row.status]
 
   return (
     <div

@@ -380,7 +380,7 @@ const EntryForm = forwardRef<EntryFormHandle, {
   isCancelable?: boolean
   compact?: boolean
   hideActions?: boolean
-}>(function EntryForm({ initial, onSave, onCancel, isCancelable, compact, hideActions }, ref) {
+}>(function EntryForm({ initial, onSave, compact, hideActions }, ref) {
   const [form, setForm] = useState<FormState>({
     project:  initial?.project  ?? null,
     taskType: initial?.taskType ?? null,
