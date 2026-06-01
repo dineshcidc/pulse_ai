@@ -127,7 +127,6 @@ function CategoryCard({ cat, globalOff, onToggleItem, onToggleAll }: {
   const { icon: Icon } = cat
   const activeCount = cat.items.filter(i => i.enabled).length
   const allOn  = activeCount === cat.items.length
-  const allOff = activeCount === 0
 
   return (
     <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden' }}>

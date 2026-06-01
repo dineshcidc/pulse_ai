@@ -348,7 +348,7 @@ function LeaveCardView({ card, delay=0 }: { card:LeaveCard; delay?:number }) {
             <div>
               {/* Month chips row */}
               <div style={{ display:'flex', flexWrap:'wrap' as const, gap:6, marginBottom: expandedMonth ? 10 : 0 }}>
-                {card.leaveByMonth.map(({ label, short })=>{
+                {card.leaveByMonth.map(({ short })=>{
                   const isOpen = expandedMonth === short
                   return (
                     <button key={short} onClick={()=>setExpandedMonth(isOpen?null:short)} style={{
@@ -657,7 +657,6 @@ export default function LeaveReportPage() {
                 const avgLeave   = +(totalLeave/cards.length).toFixed(1)
                 const totPlan    = cards.reduce((s,c)=>s+c.plannedLeave,0)
                 const totUnplan  = cards.reduce((s,c)=>s+c.unplannedLeave,0)
-                const totOther   = cards.reduce((s,c)=>s+c.otherLeave,0)
                 return (
                   <div style={{ background:'#fff', border:`1px solid ${C.border}`, borderRadius:16, overflow:'hidden', marginBottom:14, animation:'cardIn 0.3s cubic-bezier(0.22,1,0.36,1) both' }}>
                     <div style={{ height:3, background:'linear-gradient(90deg,#F59E0B,#FCD34D)' }}/>

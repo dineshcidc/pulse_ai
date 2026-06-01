@@ -207,12 +207,6 @@ const STATUS_CFG: Record<EmpStatus, { color: string; bg: string; border: string 
   'Inactive': { color: '#6B7280', bg: 'rgba(107,114,128,0.09)', border: 'rgba(107,114,128,0.18)' },
 }
 
-const PROJ_STATUS_CFG = {
-  'active':    { color: '#0A8A58', bg: 'rgba(14,168,106,0.10)',  border: 'rgba(14,168,106,0.20)'  },
-  'on-hold':   { color: '#92400E', bg: 'rgba(245,158,11,0.10)',  border: 'rgba(245,158,11,0.20)'  },
-  'completed': { color: '#3B82F6', bg: 'rgba(59,130,246,0.10)',  border: 'rgba(59,130,246,0.20)'  },
-}
-
 /* ── Count-up hook ── */
 function useCountUp(target: number, duration = 900, delay = 0) {
   const [value, setValue] = useState(0)
@@ -659,17 +653,6 @@ function Field({ label, required, error, children }: {
       {error && <p style={{ fontSize: 11.5, color: '#E84855', margin: '5px 0 0', fontWeight: 500 }}>{error}</p>}
     </div>
   )
-}
-
-function inputStyle(hasError: boolean): React.CSSProperties {
-  return {
-    width: '100%', height: 38, padding: '0 12px',
-    border: `1px solid ${hasError ? '#E84855' : C.border}`,
-    borderRadius: 9, fontSize: 13, color: C.navy,
-    background: C.hover, outline: 'none', fontFamily: 'inherit',
-    boxSizing: 'border-box' as const,
-    transition: 'border-color 0.15s, background 0.15s',
-  }
 }
 
 /* ── Detail view ── */

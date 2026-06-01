@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import {
   Search, X, ChevronLeft, ChevronRight, FileSpreadsheet,
   ClipboardList, Users, Briefcase,
-  CalendarDays, CheckCircle2, AlertCircle, TrendingUp, Download,
+  CalendarDays, CheckCircle2, TrendingUp, Download,
 } from 'lucide-react'
 
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', bg: '#F0F2F8', surface: '#F7F8FC' }

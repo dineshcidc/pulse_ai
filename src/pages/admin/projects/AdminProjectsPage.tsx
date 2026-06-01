@@ -453,7 +453,6 @@ export default function AdminProjectsPage() {
   const activeCount    = PROJECTS.filter(p => p.status === 'active').length
   const completedCount = PROJECTS.filter(p => p.status === 'completed').length
   const totalMembers   = PROJECTS.reduce((a, p) => a + p.members, 0)
-  const departments    = [...new Set(PROJECTS.map(p => p.department))].length
 
   return (
     <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
