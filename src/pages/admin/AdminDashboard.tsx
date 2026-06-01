@@ -8,6 +8,15 @@ import RoleAccessPage from './users/RoleAccessPage'
 import AllLeaveRequestsPage from './leave/AllLeaveRequestsPage'
 import LeaveBalancePage from './leave/LeaveBalancePage'
 import AllTimesheetsPage from './timesheet/AllTimesheetsPage'
+import PendingTimesheetsPage from './timesheet/PendingTimesheetsPage'
+import AdminProjectsPage from './projects/AdminProjectsPage'
+import DepartmentManagementPage from './projects/DepartmentManagementPage'
+import AdminOrgStructurePage from './AdminOrgStructurePage'
+import AttendanceReportPage from './reports/AttendanceReportPage'
+import LeaveReportPage from './reports/LeaveReportPage'
+import OrgProfilePage from './settings/OrgProfilePage'
+import WorkingHoursPage from './settings/WorkingHoursPage'
+import AdminAnnouncementsPage from './settings/AdminAnnouncementsPage'
 
 const PAGE_LABELS: Record<string, string> = {
   'admin-dashboard':      'Dashboard',
@@ -19,10 +28,11 @@ const PAGE_LABELS: Record<string, string> = {
   'leave-calendar':       'Leave Calendar',
   'leave-balance':        'Leave Balance Overview',
   'all-timesheets':       'All Timesheets',
+  'pending-timesheets':   'Pending Timesheets',
   'pending-approvals':    'Pending Approvals',
   'timesheet-policies':   'Timesheet Policies',
   'department-management':'Department Management',
-  'project-setup':        'Project Setup',
+  'project-setup':        'Projects',
   'team-allocation':      'Team Allocation',
   'admin-org':            'Org Structure',
   'attendance-report':    'Attendance Report',
@@ -31,7 +41,7 @@ const PAGE_LABELS: Record<string, string> = {
   'org-profile':          'Organization Profile',
   'working-hours':        'Working Hours & Holidays',
   'email-notifications':  'Email Notifications',
-  'announcements':        'System Announcements',
+  'announcements':        'Announcements',
 }
 
 function ComingSoon({ id }: { id: string }) {
@@ -76,6 +86,15 @@ function PageContent({ activeItem, onNavigate }: { activeItem: string; onNavigat
   if (activeItem === 'all-leave-requests')   return <AllLeaveRequestsPage />
   if (activeItem === 'leave-balance')        return <LeaveBalancePage />
   if (activeItem === 'all-timesheets')       return <AllTimesheetsPage />
+  if (activeItem === 'pending-timesheets')   return <PendingTimesheetsPage />
+  if (activeItem === 'project-setup')          return <AdminProjectsPage />
+  if (activeItem === 'department-management')  return <DepartmentManagementPage />
+  if (activeItem === 'admin-org')              return <AdminOrgStructurePage />
+  if (activeItem === 'attendance-report')      return <AttendanceReportPage />
+  if (activeItem === 'leave-report')           return <LeaveReportPage />
+  if (activeItem === 'org-profile')            return <OrgProfilePage />
+  if (activeItem === 'working-hours')          return <WorkingHoursPage />
+  if (activeItem === 'announcements')          return <AdminAnnouncementsPage />
   return <ComingSoon id={activeItem} />
 }
 

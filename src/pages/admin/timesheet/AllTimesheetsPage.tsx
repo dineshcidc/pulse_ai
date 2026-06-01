@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Search, Info, Eye, ArrowLeft, Clock, FileText, AlertCircle, Users, X } from 'lucide-react'
+import { Search, Info, Eye, ArrowLeft, Clock, FileText, AlertCircle, Users, X, Download } from 'lucide-react'
 
 type Status = 'Approved' | 'Pending' | 'Rejected'
 
@@ -314,13 +314,32 @@ function EmployeeDateListView({ summary, onBack }: { summary: EmployeeSummary; o
             </div>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 10, flexShrink: 0 }}>
-          {statBadges.map(s => (
-            <div key={s.label} style={{ padding: '10px 18px', borderRadius: 10, textAlign: 'center' as const, background: s.bg, border: `1px solid ${s.border}`, minWidth: 76 }}>
-              <p style={{ margin: 0, fontSize: 20, fontWeight: 900, color: s.color, lineHeight: 1 }}>{s.value}</p>
-              <p style={{ margin: '4px 0 0', fontSize: 10, fontWeight: 700, color: s.color, opacity: 0.75, textTransform: 'uppercase' as const, letterSpacing: '0.04em' }}>{s.label}</p>
-            </div>
-          ))}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 12, flexShrink: 0 }}>
+          <div style={{ display: 'flex', gap: 10 }}>
+            {statBadges.map(s => (
+              <div key={s.label} style={{ padding: '10px 18px', borderRadius: 10, textAlign: 'center' as const, background: s.bg, border: `1px solid ${s.border}`, minWidth: 76 }}>
+                <p style={{ margin: 0, fontSize: 20, fontWeight: 900, color: s.color, lineHeight: 1 }}>{s.value}</p>
+                <p style={{ margin: '4px 0 0', fontSize: 10, fontWeight: 700, color: s.color, opacity: 0.75, textTransform: 'uppercase' as const, letterSpacing: '0.04em' }}>{s.label}</p>
+              </div>
+            ))}
+          </div>
+          <button
+            title="Download individual timesheet as Excel"
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              height: 34, padding: '0 16px', borderRadius: 8,
+              border: '1px solid rgba(21,128,61,0.30)',
+              background: 'rgba(21,128,61,0.08)', color: '#15803D',
+              fontSize: 12.5, fontWeight: 700, cursor: 'pointer',
+              fontFamily: "'DM Sans',system-ui,sans-serif",
+              transition: 'all 0.15s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(21,128,61,0.15)'; e.currentTarget.style.borderColor = 'rgba(21,128,61,0.50)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(21,128,61,0.08)'; e.currentTarget.style.borderColor = 'rgba(21,128,61,0.30)' }}
+          >
+            <Download size={13} strokeWidth={2.2} />
+            Download Excel
+          </button>
         </div>
       </div>
 
@@ -893,13 +912,31 @@ export default function AllTimesheetsPage() {
                 <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: C.navy }}>
                   {results.length} {results.length === 1 ? 'employee' : 'employees'} found
                 </p>
-                {selectedProjects.size > 0 && (
-                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                    {[...selectedProjects].map(p => (
-                      <span key={p} style={{ padding: '2px 9px', borderRadius: 5, fontSize: 11.5, fontWeight: 600, color: C.navy, background: C.surface, border: `1px solid ${C.border}` }}>{p}</span>
-                    ))}
-                  </div>
-                )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                  {selectedProjects.size > 0 && (
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                      {[...selectedProjects].map(p => (
+                        <span key={p} style={{ padding: '2px 9px', borderRadius: 5, fontSize: 11.5, fontWeight: 600, color: C.navy, background: C.surface, border: `1px solid ${C.border}` }}>{p}</span>
+                      ))}
+                    </div>
+                  )}
+                  <button
+                    title="Download Excel"
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 6,
+                      height: 34, padding: '0 14px', borderRadius: 8, border: '1px solid rgba(21,128,61,0.30)',
+                      background: 'rgba(21,128,61,0.08)', color: '#15803D',
+                      fontSize: 12.5, fontWeight: 700, cursor: 'pointer',
+                      fontFamily: "'DM Sans',system-ui,sans-serif", flexShrink: 0,
+                      transition: 'all 0.15s',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(21,128,61,0.15)'; e.currentTarget.style.borderColor = 'rgba(21,128,61,0.50)' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(21,128,61,0.08)'; e.currentTarget.style.borderColor = 'rgba(21,128,61,0.30)' }}
+                  >
+                    <Download size={13} strokeWidth={2.2} />
+                    Download Excel
+                  </button>
+                </div>
               </div>
 
               {results.length === 0 ? (

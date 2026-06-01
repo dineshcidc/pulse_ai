@@ -1,13 +1,17 @@
-# Admin Workflow — Phase 1
+# Admin Workflow — Current Implementation
 **Role:** IT Organization System Administrator  
-**Purpose:** Operational control over users, policies, payroll, and system configuration.  
-**Note:** Admin UI is strictly operational — no employee-style sections (no personal timesheets, no personal leave, no personal payroll).
+**Purpose:** Operational control over users, policies, and system configuration.  
+**Note:** Admin UI is strictly operational — no employee-style sections (no personal timesheets, no personal leave, no personal payroll).  
+**Last Updated:** June 1, 2026 — reflects menus fully designed and live in the UI.
 
 ---
 
-## Sidebar Menu Structure
+## Sidebar Menu Structure (Implemented)
 
 ### 1. Dashboard
+**Section:** (top-level, no section header)  
+**Route ID:** `admin-dashboard`  
+**Page:** `AdminDashboardPage`  
 **Purpose:** High-level operational snapshot of the entire organization.
 
 | Widget | Content |
@@ -16,109 +20,106 @@
 | Role Breakdown | Employee / Manager / Admin counts |
 | Pending Actions | Leave requests awaiting approval, timesheets pending review |
 | Recent Activity | Latest user additions, policy changes, system events |
-| Quick Stats | Active projects count, departments count, monthly payroll status |
+| Quick Stats | Active projects count, departments count |
 
 ---
 
 ### 2. User Management
+**Section:** (top-level, no section header)  
+**Route ID:** `user-management`  
 **Purpose:** Full lifecycle management of all system users across all roles.
 
-| Sub-section | Content |
-|-------------|---------|
-| All Users | Table: Name, Email, Role, Department, Status (Active/Inactive), Joined Date |
-| Add New Employee | Form: Personal info, role assignment, department, reporting manager |
-| Edit / Deactivate User | Update profile details, change role, deactivate/reactivate account |
-| Role & Access Control | Assign or change roles (Employee → Manager → Admin) |
+| Sub-menu | Route ID | Page | Status |
+|----------|----------|------|--------|
+| All Users | `all-users` | `AllUsersPage` | ✅ Implemented |
+| Add Employee | `add-employee` | `AddEmployeePage` | ✅ Implemented |
+
+> **Note:** Role & Access Control (`RoleAccessPage`) is built and routed at `role-access` but is not yet exposed as a sidebar menu item. It is accessible via internal navigation from the All Users page.
 
 ---
 
 ### 3. Leave Management
-**Purpose:** Configure leave policies and oversee all leave requests org-wide.
+**Section:** OPERATIONS  
+**Route ID:** `admin-leave`  
+**Purpose:** Org-wide visibility and control over all leave requests.
 
-| Sub-section | Content |
-|-------------|---------|
-| Leave Policy Setup | Define leave types (Annual, Sick, Casual), set per-role limits, carryover rules |
-| All Leave Requests | Table of all submissions across org: Employee, Type, Dates, Status, Approver |
-| Leave Calendar | Org-wide calendar view showing approved leaves by team/department |
-| Leave Balance Overview | Per-employee balance summary: allocated vs. consumed vs. remaining |
+| Sub-menu | Route ID | Page | Status |
+|----------|----------|------|--------|
+| All Leave Requests | `all-leave-requests` | `AllLeaveRequestsPage` | ✅ Implemented |
+| Leave Balance Overview | `leave-balance` | `LeaveBalancePage` | ✅ Implemented |
 
 ---
 
 ### 4. Timesheet Management
+**Section:** OPERATIONS  
+**Route ID:** `admin-timesheet`  
 **Purpose:** Org-wide visibility and audit control over all timesheet submissions.
 
-| Sub-section | Content |
-|-------------|---------|
-| All Timesheets | Table: Employee, Date Range, Project, Hours, Status (Submitted/Approved/Rejected) |
-| Pending Approvals | Escalated view — timesheets awaiting manager approval beyond SLA |
-| Timesheet Policies | Set submission deadlines, max daily hours, overtime rules |
-| Audit Log | Change history on any timesheet edit or approval action |
-
---
-
-### 5. Payroll Management
-**Purpose:** Configure salary structures and oversee payroll processing.
-
-| Sub-section | Content |
-|-------------|---------|
-| Salary Structure | Define base pay bands, allowances, and deduction templates per role/grade |
-| Payroll Run | Trigger monthly payroll processing, review computed payslips before release |
-| Payslip Management | View, download, or reissue payslips for any employee |
-| Tax & Deductions Config | Set tax slabs, PF, insurance deductions at org level |
+| Sub-menu | Route ID | Page | Status |
+|----------|----------|------|--------|
+| All Timesheets | `all-timesheets` | `AllTimesheetsPage` | ✅ Implemented |
+| Pending Timesheets | `pending-timesheets` | `PendingTimesheetsPage` | ✅ Implemented |
 
 ---
 
-### 6. Departments & Projects
+### 5. Projects & Departments
+**Section:** ORGANIZATION  
+**Route ID:** `dept-projects`  
 **Purpose:** Manage organizational structure and project assignments.
 
-| Sub-section | Content |
-|-------------|---------|
-| Department Management | Create/edit departments, assign department heads |
-| Project Setup | Create new projects, set timelines, assign to departments |
-| Team Allocation | Assign/remove employees from projects, view project headcount |
-| Project Archive | View and archive completed projects |
+| Sub-menu | Route ID | Page | Status |
+|----------|----------|------|--------|
+| Projects | `project-setup` | `AdminProjectsPage` | ✅ Implemented |
+| Department Management | `department-management` | `DepartmentManagementPage` | ✅ Implemented |
+
+---
+
+### 6. Org Structure
+**Section:** ORGANIZATION  
+**Route ID:** `admin-org`  
+**Page:** `AdminOrgStructurePage`  
+**Purpose:** Visual org chart showing company hierarchy across departments and roles.
 
 ---
 
 ### 7. Reports & Analytics
-**Purpose:** System-wide reporting for compliance, audits, and business insight.
+**Section:** INSIGHTS  
+**Route ID:** `admin-reports`  
+**Purpose:** System-wide reporting for compliance and business insight.
 
-| Report | Content |
-|--------|---------|
-| Attendance Report | Daily/monthly attendance status across the org |
-| Leave Report | Leave consumption trends by department, role, or date range |
-| Payroll Report | Monthly payroll summary: total disbursed, breakdowns by department |
-| Timesheet Report | Hours logged per project, per employee, per period |
-| Audit Trail | Full log of admin-level actions: user changes, policy updates, payroll runs |
+| Sub-menu | Route ID | Page | Status |
+|----------|----------|------|--------|
+| Attendance Report | `attendance-report` | `AttendanceReportPage` | ✅ Implemented |
+| Leave Report | `leave-report` | `LeaveReportPage` | ✅ Implemented |
 
 ---
 
 ### 8. System Settings
+**Section:** SYSTEM  
+**Route ID:** `system-settings`  
 **Purpose:** Platform-wide configuration managed only by the Admin.
 
-| Sub-section | Content |
-|-------------|---------|
-| Organization Profile | Company name, logo, address, contact details |
-| Working Hours & Holidays | Define work week (Mon–Fri), public holiday calendar |
-| Email Notifications | Configure which events trigger system emails and to whom |
-| System Announcements | Broadcast org-wide notices visible to all roles on login |
+| Sub-menu | Route ID | Page | Status |
+|----------|----------|------|--------|
+| Organization Profile | `org-profile` | `OrgProfilePage` | ✅ Implemented |
+| Working Hours & Holidays | `working-hours` | `WorkingHoursPage` | ✅ Implemented |
+| Announcements | `announcements` | `AdminAnnouncementsPage` | ✅ Implemented |
 
 ---
 
-## Phase 1 Summary
+## Implemented Summary
 
-| # | Sidebar Menu | Priority |
-|---|-------------|----------|
-| 1 | Dashboard | High |
-| 2 | User Management | High |
-| 3 | Leave Management | High |
-| 4 | Timesheet Management | Medium |
-| 5 | Payroll Management | Medium |
-| 6 | Departments & Projects | Medium |
-| 7 | Reports & Analytics | Low |
-| 8 | System Settings | Low |
+| # | Sidebar Menu | Section | Sub-menus | Status |
+|---|-------------|---------|-----------|--------|
+| 1 | Dashboard | — | — | ✅ Done |
+| 2 | User Management | — | All Users, Add Employee | ✅ Done |
+| 3 | Leave Management | OPERATIONS | All Leave Requests, Leave Balance Overview | ✅ Done |
+| 4 | Timesheet Management | OPERATIONS | All Timesheets, Pending Timesheets | ✅ Done |
+| 5 | Projects & Departments | ORGANIZATION | Projects, Department Management | ✅ Done |
+| 6 | Org Structure | ORGANIZATION | — | ✅ Done |
+| 7 | Reports & Analytics | INSIGHTS | Attendance Report, Leave Report | ✅ Done |
+| 8 | System Settings | SYSTEM | Organization Profile, Working Hours & Holidays, Announcements | ✅ Done |
 
 ---
 
-> Phase 1 covers all core operational surfaces an IT org Admin needs day-to-day.  
-> Phase 2 can extend into integrations, SSO, advanced role permissions, and analytics dashboards.
+> See `admin-flow.md` for the exact sidebar order and the full list of menus still to be designed.

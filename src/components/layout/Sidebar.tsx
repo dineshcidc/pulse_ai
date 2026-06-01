@@ -109,8 +109,8 @@ function buildAdminNav(): NavSection[] {
         {
           id: 'admin-timesheet', label: 'Timesheet Management', Icon: Clock,
           children: [
-            { id: 'all-timesheets',    label: 'All Timesheets'    },
-            { id: 'pending-approvals', label: 'Pending Approvals' },
+            { id: 'all-timesheets',     label: 'All Timesheets'     },
+            { id: 'pending-timesheets', label: 'Pending Timesheets' },
           ],
         },
       ],
@@ -119,11 +119,10 @@ function buildAdminNav(): NavSection[] {
       label: 'ORGANIZATION',
       items: [
         {
-          id: 'dept-projects', label: 'Departments & Projects', Icon: FolderKanban,
+          id: 'dept-projects', label: 'Projects & Departments', Icon: FolderKanban,
           children: [
+            { id: 'project-setup',         label: 'Projects'              },
             { id: 'department-management', label: 'Department Management' },
-            { id: 'project-setup',         label: 'Project Setup'         },
-            { id: 'team-allocation',       label: 'Team Allocation'       },
           ],
         },
         { id: 'admin-org', label: 'Org Structure', Icon: Building2 },
@@ -149,8 +148,7 @@ function buildAdminNav(): NavSection[] {
           children: [
             { id: 'org-profile',          label: 'Organization Profile'      },
             { id: 'working-hours',        label: 'Working Hours & Holidays'  },
-            { id: 'email-notifications',  label: 'Email Notifications'       },
-            { id: 'announcements',        label: 'System Announcements'      },
+            { id: 'announcements',        label: 'Announcements'             },
           ],
         },
       ],
