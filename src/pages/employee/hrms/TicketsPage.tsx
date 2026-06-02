@@ -997,10 +997,6 @@ export default function TicketsPage() {
         const t   = viewTicket
         const ss  = STATUS_STYLE[t.status]
         const ps  = PRIORITY_STYLE[t.priority]
-        const cb  = CAT_BADGE[t.category] ?? { bg: '#F0F2F8', color: C.muted }
-        const CatIcon = CATEGORIES.find(c => c.id === t.category)?.Icon ?? Ticket
-        const catColor = CATEGORIES.find(c => c.id === t.category)?.color ?? C.muted
-        const catBg    = CATEGORIES.find(c => c.id === t.category)?.bg    ?? '#F0F2F8'
         const DUMMY_ATTACHMENT = { name: `${t.id}_Support_Document.pdf`, size: '284 KB', pages: '3 pages' }
 
         return (

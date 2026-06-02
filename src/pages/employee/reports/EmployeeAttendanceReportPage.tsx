@@ -39,16 +39,10 @@ function pctColor(p: number) {
   return '#E84855'
 }
 function pctBg(p: number) {
-  if (p >= 90) return 'rgba(14,168,106,0.09)'
-  if (p >= 75) return 'rgba(245,158,11,0.09)'
-  return 'rgba(232,72,85,0.09)'
-}
-function pctBorder(p: number) {
-  if (p >= 90) return 'rgba(14,168,106,0.22)'
   if (p >= 75) return 'rgba(245,158,11,0.22)'
   return 'rgba(232,72,85,0.22)'
 }
-function pctTrack(p: number) {
+function pctBorder(p: number) {
   if (p >= 90) return 'rgba(14,168,106,0.15)'
   if (p >= 75) return 'rgba(245,158,11,0.15)'
   return 'rgba(232,72,85,0.15)'
@@ -202,7 +196,6 @@ function AttendanceCardView({ card }: { card: ReportCard }) {
   const col    = pctColor(card.attendancePct)
   const bg     = pctBg(card.attendancePct)
   const border = pctBorder(card.attendancePct)
-  const track  = pctTrack(card.attendancePct)
 
   const STATS = [
     { label:'Working Days', value:card.workingDays,                        color:'#6366F1', bg:'rgba(99,102,241,0.09)',  icon:CalendarDays  },

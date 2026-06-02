@@ -1,8 +1,8 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import {
   ArrowLeft, Users, Clock, TrendingUp, Calendar,
   Edit2, Trash2, Plus, CheckCircle, XCircle, Mail,
-  DollarSign, Briefcase, Code2, Tag, Search, X, Camera,
+  DollarSign, Briefcase, Code2, Tag,
 } from 'lucide-react'
 
 type Status = 'active' | 'on-hold' | 'completed'
