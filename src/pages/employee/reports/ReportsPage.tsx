@@ -1,8 +1,11 @@
 import { useState } from 'react'
 import {
   BarChart3, CalendarDays, UserCheck, Clock, Ticket, Users, Wallet,
-  ChevronRight, ChevronDown,
+  ChevronRight,
 } from 'lucide-react'
+import EmployeeLeaveReportPage from './EmployeeLeaveReportPage'
+import EmployeeAttendanceReportPage from './EmployeeAttendanceReportPage'
+import EmployeeTimesheetReportPage from './EmployeeTimesheetReportPage'
 
 type ReportId = 'leave' | 'attendance' | 'timesheet' | 'ticket' | 'employee' | 'payroll'
 
@@ -84,7 +87,12 @@ const REPORTS = [
 ] as const
 
 export default function ReportsPage() {
-  const [activeReport, setActiveReport] = useState<ReportId | null>(null)
+  const [activePage, setActivePage] = useState<ReportId | null>(null)
+
+  /* ── Sub-pages ── */
+  if (activePage === 'leave')       return <EmployeeLeaveReportPage       onBack={() => setActivePage(null)} />
+  if (activePage === 'attendance')  return <EmployeeAttendanceReportPage  onBack={() => setActivePage(null)} />
+  if (activePage === 'timesheet')   return <EmployeeTimesheetReportPage   onBack={() => setActivePage(null)} />
 
   return (
     <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
@@ -94,7 +102,7 @@ export default function ReportsPage() {
         .rpt-card:hover        { box-shadow: 0 6px 28px rgba(28,32,53,0.09); }
       `}</style>
 
-      {/* ── Page header ─────────────────────────────────────────────────────── */}
+      {/* ── Page header ── */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="font-bold mb-1" style={{ fontSize: 22, color: C.navy, letterSpacing: '-0.3px' }}>
@@ -122,36 +130,31 @@ export default function ReportsPage() {
         </div>
       </div>
 
-      {/* ── Report type cards (3-column grid) ───────────────────────────────── */}
+      {/* ── Report type cards (3-column grid) ── */}
       <div className="grid gap-4" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
-        {REPORTS.map(r => {
-          const isActive = activeReport === r.id
-          const Icon     = r.Icon
+        {REPORTS.slice(0, 3).map(r => {
+          const Icon = r.Icon
           return (
             <button
               key={r.id}
               className="rpt-card text-left"
-              onClick={() => setActiveReport(isActive ? null : r.id)}
+              onClick={() => setActivePage(r.id)}
               style={{
                 display: 'flex', alignItems: 'center', gap: 16,
                 padding: '20px 22px',
-                background: isActive ? r.activeBg : '#fff',
-                border: `1px solid ${isActive ? r.activeBorder : C.border}`,
+                background: '#fff',
+                border: `1px solid ${C.border}`,
                 borderRadius: 18,
                 cursor: 'pointer',
-                boxShadow: isActive ? '0 6px 28px rgba(28,32,53,0.09)' : 'none',
+                boxShadow: 'none',
               }}
               onMouseEnter={e => {
-                if (!isActive) {
-                  e.currentTarget.style.borderColor = r.dotBg
-                  e.currentTarget.style.background  = r.activeBg
-                }
+                e.currentTarget.style.borderColor = r.dotBg
+                e.currentTarget.style.background  = r.activeBg
               }}
               onMouseLeave={e => {
-                if (!isActive) {
-                  e.currentTarget.style.borderColor = C.border
-                  e.currentTarget.style.background  = '#fff'
-                }
+                e.currentTarget.style.borderColor = C.border
+                e.currentTarget.style.background  = '#fff'
               }}
             >
               {/* Dot-grid icon badge */}
@@ -167,26 +170,22 @@ export default function ReportsPage() {
                 <Icon size={22} strokeWidth={1.6} style={{ color: r.iconColor }} />
               </div>
 
-              {/* Label + badge + description */}
+              {/* Label + description */}
               <div className="flex-1 min-w-0">
                 <div className="mb-1.5">
                   <span style={{ fontSize: 14, fontWeight: 700, color: C.navy }}>{r.label}</span>
                 </div>
-
                 <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.55, margin: 0 }}>
                   {r.description}
                 </p>
               </div>
 
-              {/* Arrow — rotates to down when active */}
+              {/* Arrow */}
               <div
                 className="flex items-center justify-center rounded-xl flex-shrink-0"
                 style={{ width: 30, height: 30, background: r.iconBg }}
               >
-                {isActive
-                  ? <ChevronDown  size={15} strokeWidth={2.2} style={{ color: r.arrowColor }} />
-                  : <ChevronRight size={15} strokeWidth={2.2} style={{ color: r.arrowColor }} />
-                }
+                <ChevronRight size={15} strokeWidth={2.2} style={{ color: r.arrowColor }} />
               </div>
             </button>
           )

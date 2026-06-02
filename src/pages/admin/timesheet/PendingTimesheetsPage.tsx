@@ -57,6 +57,12 @@ function fmtDate(iso: string) {
   return new Date(iso + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
 }
 
+function urgency(count: number) {
+  if (count >= 4) return { color: '#E84855', bg: 'rgba(232,72,85,0.08)',  border: 'rgba(232,72,85,0.18)'  }
+  if (count >= 2) return { color: '#D97706', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.18)' }
+  return               { color: '#6366F1', bg: 'rgba(99,102,241,0.08)', border: 'rgba(99,102,241,0.18)' }
+}
+
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function PendingTimesheetsPage() {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import {
-  Briefcase, Clock, CalendarDays, Ticket, ClipboardList,
+  Briefcase, Clock, CalendarDays, Ticket, Megaphone,
   ChevronDown, X, Shield, FileText, FolderOpen, ExternalLink,
   ChevronRight,
 } from 'lucide-react'
@@ -27,7 +27,7 @@ const STATS = [
   { label: 'Pending Timesheets', count: 3,  sub: 'submissions due',    Icon: Clock,         color: '#6366F1', bg: 'rgba(99,102,241,0.09)',  border: 'rgba(99,102,241,0.15)'  },
   { label: 'Leave Balance',      count: 12, sub: 'days remaining',     Icon: CalendarDays,  color: '#0EA86A', bg: 'rgba(14,168,106,0.09)',  border: 'rgba(14,168,106,0.15)'  },
   { label: 'Open Tickets',       count: 2,  sub: 'awaiting response',  Icon: Ticket,        color: '#E84855', bg: 'rgba(232,72,85,0.09)',   border: 'rgba(232,72,85,0.15)'   },
-  { label: 'Pending Tasks',      count: 7,  sub: 'action needed',      Icon: ClipboardList, color: '#C49A00', bg: 'rgba(212,168,0,0.10)',   border: 'rgba(212,168,0,0.18)'   },
+  { label: 'New Announcements',  count: 3,  sub: 'unread today',       Icon: Megaphone,     color: '#7C3AED', bg: 'rgba(124,58,237,0.09)',  border: 'rgba(124,58,237,0.15)'  },
 ]
 
 const BIRTHDAYS = [
@@ -238,7 +238,7 @@ export default function DashboardPage({ managerMode = false, onNavigateTeam }: D
 
           {/* Stats */}
           <div className="grid gap-4" style={{ gridTemplateColumns: managerMode ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)' }}>
-            {(managerMode ? STATS.filter(s => s.label !== 'Pending Tasks') : STATS).map(({ label, count, sub, Icon, color, bg, border }) => (
+            {(managerMode ? STATS.filter(s => s.label !== 'New Announcements') : STATS).map(({ label, count, sub, Icon, color, bg, border }) => (
               <div
                 key={label}
                 className="stat-card"

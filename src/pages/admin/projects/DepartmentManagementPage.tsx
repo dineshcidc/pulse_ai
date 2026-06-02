@@ -207,6 +207,7 @@ const STATUS_CFG: Record<EmpStatus, { color: string; bg: string; border: string 
   'Inactive': { color: '#6B7280', bg: 'rgba(107,114,128,0.09)', border: 'rgba(107,114,128,0.18)' },
 }
 
+
 /* ── Count-up hook ── */
 function useCountUp(target: number, duration = 900, delay = 0) {
   const [value, setValue] = useState(0)
@@ -654,6 +655,7 @@ function Field({ label, required, error, children }: {
     </div>
   )
 }
+
 
 /* ── Detail view ── */
 function DeptDetailView({ dept, onBack }: { dept: Department; onBack: () => void }) {
