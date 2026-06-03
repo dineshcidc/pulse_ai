@@ -224,7 +224,7 @@ export default function PendingTimesheetsPage() {
                       <div style={{ fontSize:11, color:C.muted }}>{emp.role}</div>
                     </div>
                     <span style={{ fontSize:10.5, fontWeight:700, color:'#D97706', background:'rgba(245,158,11,0.10)', border:'1px solid rgba(245,158,11,0.20)', borderRadius:5, padding:'2px 7px', flexShrink:0, marginLeft:'auto' }}>
-                      {emp.pendingCount} pending
+                      {emp.projects.reduce((sum, p) => sum + p.pending, 0)} pending
                     </span>
                   </button>
                 ))}
@@ -391,7 +391,6 @@ export default function PendingTimesheetsPage() {
           ) : (
             <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
               {filtered.map((row) => {
-                const hasSent = reminded.has(row.id)
                 return (
                   <div key={row.id} style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:'16px 18px', display:'flex', alignItems:'center', gap:0 }}>
 
