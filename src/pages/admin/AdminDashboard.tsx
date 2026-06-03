@@ -19,6 +19,7 @@ import WorkingHoursPage from './settings/WorkingHoursPage'
 import AdminAnnouncementsPage from './settings/AdminAnnouncementsPage'
 import PendingApprovalsPage from './timesheet/PendingApprovalsPage'
 import AdminTicketsPage from './tickets/AdminTicketsPage'
+import LeavePolicyPage from './leave/LeavePolicyPage'
 
 const PAGE_LABELS: Record<string, string> = {
   'admin-dashboard':      'Dashboard',
@@ -29,7 +30,7 @@ const PAGE_LABELS: Record<string, string> = {
   'all-leave-requests':   'All Leave Requests',
   'leave-calendar':       'Leave Calendar',
   'leave-balance':        'Leave Balance Overview',
-  'all-timesheets':       'All Timesheets',
+  'all-timesheets':       'Timesheet Report',
   'pending-timesheets':   'Pending Timesheets',
   'pending-approvals':    'Pending Approvals',
   'timesheet-policies':   'Timesheet Policies',
@@ -100,6 +101,7 @@ function PageContent({ activeItem, onNavigate }: { activeItem: string; onNavigat
   if (activeItem === 'working-hours')          return <WorkingHoursPage />
   if (activeItem === 'announcements')          return <AdminAnnouncementsPage />
   if (activeItem === 'admin-tickets')          return <AdminTicketsPage />
+  if (activeItem === 'leave-policy')           return <LeavePolicyPage />
   return <ComingSoon id={activeItem} />
 }
 

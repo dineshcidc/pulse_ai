@@ -394,14 +394,6 @@ function LeaveCardView({ card, delay=0 }: { card:LeaveCard; delay?:number }) {
         </div>
       )}
 
-      {/* Footer */}
-      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 20px', background:C.surface, borderTop:`1px solid ${C.border}` }}>
-        <div style={{ display:'flex', alignItems:'center', gap:5 }}>
-          <CalendarDays size={11} style={{color:C.muted}} strokeWidth={1.8} />
-          <span style={{ fontSize:12, fontWeight:600, color:C.muted }}>{card.month}</span>
-        </div>
-        <span style={{ fontSize:11.5, color:'#B0B4C8' }}>{card.dateRange}</span>
-      </div>
     </div>
   )
 }
@@ -439,7 +431,6 @@ export default function LeaveReportPage() {
   function addAll() { setAllSelected(true); setSelectedEmps(ALL_EMPLOYEES); setEmpSearch(''); setShowSuggest(false) }
   function clearAll() { setAllSelected(false); setSelectedEmps([]) }
   function selectProject(proj:Project) { setSelectedProject(proj); setProjectEmps(proj.empIds.map(id=>ALL_EMPLOYEES.find(e=>e.empId===id)!).filter(Boolean)) }
-  function removeProjectEmp(empId:string) { setProjectEmps(p=>p.filter(e=>e.empId!==empId)) }
 
   function handleGenerate() {
     const emps = tab==='employee' ? (allSelected?ALL_EMPLOYEES:selectedEmps) : projectEmps
@@ -472,7 +463,7 @@ export default function LeaveReportPage() {
       </div>
 
       {/* 4 / 8 split */}
-      <div style={{ display:'grid', gridTemplateColumns:'340px 1fr', gap:20, alignItems:'start' }}>
+      <div style={{ display:'grid', gridTemplateColumns:'3fr 9fr', gap:20, alignItems:'start' }}>
 
         {/* ── LEFT PANEL ── */}
         <div style={{ position:'sticky', top:0 }}>
@@ -574,15 +565,10 @@ export default function LeaveReportPage() {
                       <ChevronRight size={13} style={{ position:'absolute', right:11, top:'50%', transform:'translateY(-50%) rotate(90deg)', color:C.muted, pointerEvents:'none' }}/>
                     </div>
                   </div>
-                  {projectEmps.length>0 && (
-                    <div>
-                      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
-                        <label style={{ fontSize:12, fontWeight:600, color:C.muted, textTransform:'uppercase' as const, letterSpacing:'0.06em' }}>Employees ({projectEmps.length})</label>
-                        <button onClick={()=>setProjectEmps([])} style={{ fontSize:11.5, fontWeight:600, color:'#E84855', background:'none', border:'none', cursor:'pointer', padding:0 }}>Clear all</button>
-                      </div>
-                      <div style={{ display:'flex', flexWrap:'wrap' as const, gap:6, maxHeight:130, overflowY:'auto', padding:'2px 0' }}>
-                        {projectEmps.map(emp=><EmpChip key={emp.empId} emp={emp} onRemove={()=>removeProjectEmp(emp.empId)}/>)}
-                      </div>
+                  {selectedProject && projectEmps.length>0 && (
+                    <div style={{ display:'flex', alignItems:'center', gap:7, padding:'9px 13px', background:'rgba(99,102,241,0.06)', border:'1px solid rgba(99,102,241,0.16)', borderRadius:9 }}>
+                      <Users size={13} strokeWidth={2} style={{ color:'#5B5FDE', flexShrink:0 }} />
+                      <span style={{ fontSize:12.5, fontWeight:600, color:'#5B5FDE' }}>{projectEmps.length} employee{projectEmps.length!==1?'s':''} in this project</span>
                     </div>
                   )}
                   <div>

@@ -111,7 +111,6 @@ function buildAdminNav(): NavSection[] {
         {
           id: 'admin-timesheet', label: 'Timesheet Management', Icon: Clock,
           children: [
-            { id: 'all-timesheets',     label: 'All Timesheets'     },
             { id: 'pending-timesheets', label: 'Pending Timesheets' },
             { id: 'pending-approvals',  label: 'Pending Approvals'  },
           ],
@@ -145,6 +144,7 @@ function buildAdminNav(): NavSection[] {
           children: [
             { id: 'attendance-report', label: 'Attendance Report' },
             { id: 'leave-report',      label: 'Leave Report'      },
+            { id: 'all-timesheets',    label: 'Timesheet Report'  },
           ],
         },
       ],
