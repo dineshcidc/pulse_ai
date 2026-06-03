@@ -17,14 +17,14 @@ interface LeaveRecord {
 }
 
 const LEAVE_DATA: LeaveRecord[] = [
-  { id: 'LVR-1024', type: 'Casual Leave',       code: 'CL',  fromDate: '2026-05-25', toDate: '2026-05-27', days: 3, appliedDate: '2026-05-20', status: 'Pending',   approver: 'Raj Kumar',   remarks: 'Personal reasons'           },
-  { id: 'LVR-1018', type: 'Earned Leave',        code: 'EL',  fromDate: '2026-06-02', toDate: '2026-06-05', days: 4, appliedDate: '2026-05-18', status: 'Pending',   approver: 'Raj Kumar',   remarks: 'Family function to attend'  },
-  { id: 'LVR-1012', type: 'Sick Leave',          code: 'SL',  fromDate: '2026-05-10', toDate: '2026-05-11', days: 2, appliedDate: '2026-05-09', status: 'Approved',  approver: 'Priya Mehta', remarks: 'Not feeling well'           },
-  { id: 'LVR-0998', type: 'Earned Leave',        code: 'EL',  fromDate: '2026-04-14', toDate: '2026-04-18', days: 5, appliedDate: '2026-04-10', status: 'Approved',  approver: 'Raj Kumar',   remarks: 'Annual vacation'            },
-  { id: 'LVR-0985', type: 'Casual Leave',        code: 'CL',  fromDate: '2026-04-05', toDate: '2026-04-05', days: 1, appliedDate: '2026-04-04', status: 'Rejected',  approver: 'Priya Mehta', remarks: 'Team sprint period — cannot approve' },
-  { id: 'LVR-0971', type: 'Compensatory Off',    code: 'CO',  fromDate: '2026-03-20', toDate: '2026-03-21', days: 2, appliedDate: '2026-03-18', status: 'Approved',  approver: 'Raj Kumar',   remarks: 'Weekend overtime compensated'},
-  { id: 'LVR-0954', type: 'Casual Leave',        code: 'CL',  fromDate: '2026-03-05', toDate: '2026-03-05', days: 1, appliedDate: '2026-03-04', status: 'Cancelled', approver: '—',           remarks: 'Self cancelled'             },
-  { id: 'LVR-0940', type: 'Sick Leave',          code: 'SL',  fromDate: '2026-02-20', toDate: '2026-02-20', days: 1, appliedDate: '2026-02-20', status: 'Approved',  approver: 'Priya Mehta', remarks: 'Medical consultation'       },
+  { id: 'LVR-1024', type: 'Planned Leave',        code: 'PL',  fromDate: '2026-05-25', toDate: '2026-05-27', days: 3, appliedDate: '2026-05-20', status: 'Pending',   approver: 'Raj Kumar',   remarks: 'Personal reasons'                    },
+  { id: 'LVR-1018', type: 'Floating Holiday',     code: 'FH',  fromDate: '2026-06-02', toDate: '2026-06-05', days: 4, appliedDate: '2026-05-18', status: 'Pending',   approver: 'Raj Kumar',   remarks: 'Family function to attend'           },
+  { id: 'LVR-1012', type: 'Unplanned Leave',      code: 'UPL', fromDate: '2026-05-10', toDate: '2026-05-11', days: 2, appliedDate: '2026-05-09', status: 'Approved',  approver: 'Priya Mehta', remarks: 'Not feeling well'                    },
+  { id: 'LVR-0998', type: 'Planned Leave',        code: 'PL',  fromDate: '2026-04-14', toDate: '2026-04-18', days: 5, appliedDate: '2026-04-10', status: 'Approved',  approver: 'Raj Kumar',   remarks: 'Annual vacation'                     },
+  { id: 'LVR-0985', type: 'Birthday Leave',       code: 'BL',  fromDate: '2026-04-05', toDate: '2026-04-05', days: 1, appliedDate: '2026-04-04', status: 'Rejected',  approver: 'Priya Mehta', remarks: 'Team sprint period — cannot approve' },
+  { id: 'LVR-0971', type: 'Bereavement Holiday',  code: 'BH',  fromDate: '2026-03-20', toDate: '2026-03-21', days: 2, appliedDate: '2026-03-18', status: 'Approved',  approver: 'Raj Kumar',   remarks: 'Family bereavement'                  },
+  { id: 'LVR-0954', type: 'LWP',                  code: 'LWP', fromDate: '2026-03-05', toDate: '2026-03-05', days: 1, appliedDate: '2026-03-04', status: 'Cancelled', approver: '—',           remarks: 'Self cancelled'                      },
+  { id: 'LVR-0940', type: 'Unplanned Leave',      code: 'UPL', fromDate: '2026-02-20', toDate: '2026-02-20', days: 1, appliedDate: '2026-02-20', status: 'Approved',  approver: 'Priya Mehta', remarks: 'Medical consultation'                },
 ]
 
 const STATUS_STYLE: Record<Status, { bg: string; color: string; dot: string }> = {
@@ -35,11 +35,14 @@ const STATUS_STYLE: Record<Status, { bg: string; color: string; dot: string }> =
 }
 
 const CODE_STYLE: Record<string, { bg: string; color: string }> = {
-  CL:  { bg: 'rgba(99,102,241,0.12)',  color: '#5B5FDE' },
-  SL:  { bg: 'rgba(232,72,85,0.12)',   color: '#E84855' },
-  EL:  { bg: 'rgba(14,168,106,0.12)',  color: '#0EA86A' },
-  CO:  { bg: 'rgba(245,158,11,0.12)',  color: '#D97706' },
-  LOP: { bg: 'rgba(139,144,167,0.14)', color: '#6B7280' },
+  BH:  { bg: 'rgba(109,40,217,0.12)',  color: '#6D28D9' },
+  BL:  { bg: 'rgba(219,39,119,0.12)',  color: '#DB2777' },
+  EDL: { bg: 'rgba(8,145,178,0.12)',   color: '#0891B2' },
+  FH:  { bg: 'rgba(234,88,12,0.12)',   color: '#EA580C' },
+  LWP: { bg: 'rgba(220,38,38,0.12)',   color: '#DC2626' },
+  PAT: { bg: 'rgba(37,99,235,0.12)',   color: '#2563EB' },
+  PL:  { bg: 'rgba(5,150,105,0.12)',   color: '#059669' },
+  UPL: { bg: 'rgba(217,119,6,0.12)',   color: '#D97706' },
 }
 
 const STAT_TABS = ['All', 'Pending', 'Approved', 'Rejected', 'Cancelled'] as const

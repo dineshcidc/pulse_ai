@@ -203,9 +203,9 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
           {/* Stats row */}
           <div className="grid grid-cols-3 gap-3 mb-10">
             {[
-              { value: '10K+', label: 'Active Users' },
-              { value: '500+', label: 'Companies' },
-              { value: '99.9%', label: 'Uptime SLA' },
+              { value: '120+', label: 'Active Employees' },
+              { value: '18+',  label: 'Active Projects'  },
+              { value: '6',    label: 'Departments'      },
             ].map((stat) => (
               <div
                 key={stat.value}

@@ -25,10 +25,10 @@ const INIT_TS: TSRow[] = [
   { id: 6, employee: 'Karthik Nair',  face: 'https://i.pravatar.cc/40?img=15', project: 'TechCorp ERP', submitted: 'May 18, 2026', hours: 7.5, status: 'pending' },
 ]
 const INIT_LEAVES: LeaveReq[] = [
-  { id: 1, employee: 'James Wilson', avatar: 'JW', face: 'https://i.pravatar.cc/40?img=12', type: 'Annual Leave', from: 'May 26', to: 'May 28', days: 3, status: 'pending'  },
-  { id: 2, employee: 'Lisa Garcia',  avatar: 'LG', face: 'https://i.pravatar.cc/40?img=44', type: 'Sick Leave',   from: 'May 23', to: 'May 23', days: 1, status: 'pending'  },
-  { id: 3, employee: 'Tom Davis',    avatar: 'TD', face: 'https://i.pravatar.cc/40?img=8',  type: 'Casual Leave', from: 'Jun 2',  to: 'Jun 3',  days: 2, status: 'approved' },
-  { id: 4, employee: 'Anjali Singh', avatar: 'AS', face: 'https://i.pravatar.cc/40?img=31', type: 'Annual Leave', from: 'Jun 5',  to: 'Jun 7',  days: 3, status: 'pending'  },
+  { id: 1, employee: 'James Wilson', avatar: 'JW', face: 'https://i.pravatar.cc/40?img=12', type: 'Planned Leave',      from: 'May 26', to: 'May 28', days: 3, status: 'pending'  },
+  { id: 2, employee: 'Lisa Garcia',  avatar: 'LG', face: 'https://i.pravatar.cc/40?img=44', type: 'Unplanned Leave',    from: 'May 23', to: 'May 23', days: 1, status: 'pending'  },
+  { id: 3, employee: 'Tom Davis',    avatar: 'TD', face: 'https://i.pravatar.cc/40?img=8',  type: 'Floating Holiday',   from: 'Jun 2',  to: 'Jun 3',  days: 2, status: 'approved' },
+  { id: 4, employee: 'Anjali Singh', avatar: 'AS', face: 'https://i.pravatar.cc/40?img=31', type: 'Planned Leave',      from: 'Jun 5',  to: 'Jun 7',  days: 3, status: 'pending'  },
 ]
 const RECENT_UPDATES = [
   { id: 1, text: 'Sarah Johnson submitted weekly timesheet',       time: '2h ago', face: 'https://i.pravatar.cc/40?img=47' },
@@ -39,12 +39,12 @@ const RECENT_UPDATES = [
   { id: 6, text: 'Priya Sharma updated TechCorp ERP task status',  time: '2d ago', face: 'https://i.pravatar.cc/40?img=31' },
 ]
 const UPCOMING_LEAVES = [
-  { name: 'James Wilson', type: 'Annual', from: 'May 26', to: 'May 28', days: 3 },
-  { name: 'Anjali Singh', type: 'Annual', from: 'Jun 5',  to: 'Jun 7',  days: 3 },
-  { name: 'Tom Davis',    type: 'Casual', from: 'Jun 2',  to: 'Jun 3',  days: 2 },
-  { name: 'Karthik Nair', type: 'Sick',   from: 'May 24', to: 'May 24', days: 1 },
-  { name: 'Priya Sharma', type: 'Casual', from: 'Jun 10', to: 'Jun 11', days: 2 },
-  { name: 'David Brown',  type: 'Annual', from: 'Jun 16', to: 'Jun 18', days: 3 },
+  { name: 'James Wilson', type: 'Planned Leave',    from: 'May 26', to: 'May 28', days: 3 },
+  { name: 'Anjali Singh', type: 'Planned Leave',    from: 'Jun 5',  to: 'Jun 7',  days: 3 },
+  { name: 'Tom Davis',    type: 'Floating Holiday', from: 'Jun 2',  to: 'Jun 3',  days: 2 },
+  { name: 'Karthik Nair', type: 'Unplanned Leave',  from: 'May 24', to: 'May 24', days: 1 },
+  { name: 'Priya Sharma', type: 'Birthday Leave',   from: 'Jun 10', to: 'Jun 10', days: 1 },
+  { name: 'David Brown',  type: 'Planned Leave',    from: 'Jun 16', to: 'Jun 18', days: 3 },
 ]
 
 const TS_CFG: Record<TSStatus, { label: string; color: string; bg: string }> = {

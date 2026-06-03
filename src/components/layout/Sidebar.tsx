@@ -13,6 +13,7 @@ import {
   Building2,
   Settings,
   FolderKanban,
+  TicketCheck,
 } from 'lucide-react'
 
 
@@ -90,8 +91,9 @@ function buildAdminNav(): NavSection[] {
         {
           id: 'user-management', label: 'User Management', Icon: UserCog,
           children: [
-            { id: 'all-users',    label: 'All Users'    },
-            { id: 'add-employee', label: 'Add Employee' },
+            { id: 'all-users',    label: 'All Users'              },
+            { id: 'add-employee', label: 'Add Employee'           },
+            { id: 'role-access',  label: 'Role & Access Control'  },
           ],
         },
       ],
@@ -111,6 +113,13 @@ function buildAdminNav(): NavSection[] {
           children: [
             { id: 'all-timesheets',     label: 'All Timesheets'     },
             { id: 'pending-timesheets', label: 'Pending Timesheets' },
+            { id: 'pending-approvals',  label: 'Pending Approvals'  },
+          ],
+        },
+        {
+          id: 'admin-tickets-menu', label: 'Tickets', Icon: TicketCheck,
+          children: [
+            { id: 'admin-tickets', label: 'All Tickets' },
           ],
         },
       ],

@@ -4,7 +4,7 @@ import {
   Users, CalendarDays, TrendingDown, CheckCircle2,
 } from 'lucide-react'
 
-type LeaveType = 'Annual' | 'Sick' | 'Casual' | 'Earned' | 'Compensatory'
+type LeaveType = 'Bereavement Holiday' | 'Birthday Leave' | 'Election Day Leave' | 'Floating Holiday' | 'LWP' | 'Paternity Leave' | 'Planned Leave' | 'Unplanned Leave'
 
 interface LeaveBalance  { allocated: number; consumed: number }
 interface EmployeeBalance {
@@ -14,14 +14,17 @@ interface EmployeeBalance {
   balances: Record<LeaveType, LeaveBalance>
 }
 
-const LEAVE_TYPES: LeaveType[] = ['Annual', 'Sick', 'Casual', 'Earned', 'Compensatory']
+const LEAVE_TYPES: LeaveType[] = ['Bereavement Holiday', 'Birthday Leave', 'Election Day Leave', 'Floating Holiday', 'LWP', 'Paternity Leave', 'Planned Leave', 'Unplanned Leave']
 
 const TYPE_CFG: Record<LeaveType, { color: string; bg: string; border: string; short: string }> = {
-  Annual:       { color: '#4B4ECC', bg: 'rgba(99,102,241,0.08)',  border: 'rgba(99,102,241,0.18)',  short: 'AL' },
-  Sick:         { color: '#E84855', bg: 'rgba(232,72,85,0.08)',   border: 'rgba(232,72,85,0.18)',   short: 'SL' },
-  Casual:       { color: '#D97706', bg: 'rgba(245,158,11,0.09)',  border: 'rgba(245,158,11,0.20)',  short: 'CL' },
-  Earned:       { color: '#0A8A58', bg: 'rgba(14,168,106,0.08)', border: 'rgba(14,168,106,0.18)', short: 'EL' },
-  Compensatory: { color: '#7C3AED', bg: 'rgba(124,58,237,0.08)', border: 'rgba(124,58,237,0.18)', short: 'CO' },
+  'Bereavement Holiday': { color: '#6D28D9', bg: 'rgba(109,40,217,0.08)', border: 'rgba(109,40,217,0.18)', short: 'BH'  },
+  'Birthday Leave':      { color: '#DB2777', bg: 'rgba(219,39,119,0.08)', border: 'rgba(219,39,119,0.18)', short: 'BL'  },
+  'Election Day Leave':  { color: '#0891B2', bg: 'rgba(8,145,178,0.08)',  border: 'rgba(8,145,178,0.18)',  short: 'EDL' },
+  'Floating Holiday':    { color: '#EA580C', bg: 'rgba(234,88,12,0.08)',  border: 'rgba(234,88,12,0.18)',  short: 'FH'  },
+  'LWP':                 { color: '#DC2626', bg: 'rgba(220,38,38,0.08)',  border: 'rgba(220,38,38,0.18)',  short: 'LWP' },
+  'Paternity Leave':     { color: '#2563EB', bg: 'rgba(37,99,235,0.08)',  border: 'rgba(37,99,235,0.18)',  short: 'PAT' },
+  'Planned Leave':       { color: '#059669', bg: 'rgba(5,150,105,0.08)',  border: 'rgba(5,150,105,0.18)',  short: 'PL'  },
+  'Unplanned Leave':     { color: '#D97706', bg: 'rgba(217,119,6,0.08)',  border: 'rgba(217,119,6,0.18)',  short: 'UPL' },
 }
 
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', hover: '#F0F2F8', surface: '#F7F8FC' }
@@ -31,110 +34,140 @@ const DATA: EmployeeBalance[] = [
     id: 1, employee: 'Sarah Johnson', avatar: 47, empId: 'EMP-0047',
     department: 'Engineering', project: 'Pulse.AI v2',
     balances: {
-      Annual:       { allocated: 18, consumed: 6  },
-      Sick:         { allocated: 10, consumed: 2  },
-      Casual:       { allocated: 6,  consumed: 2  },
-      Earned:       { allocated: 5,  consumed: 0  },
-      Compensatory: { allocated: 3,  consumed: 1  },
+      'Bereavement Holiday': { allocated: 3,  consumed: 0 },
+      'Birthday Leave':      { allocated: 1,  consumed: 1 },
+      'Election Day Leave':  { allocated: 1,  consumed: 0 },
+      'Floating Holiday':    { allocated: 3,  consumed: 1 },
+      'LWP':                 { allocated: 0,  consumed: 0 },
+      'Paternity Leave':     { allocated: 15, consumed: 0 },
+      'Planned Leave':       { allocated: 15, consumed: 5 },
+      'Unplanned Leave':     { allocated: 8,  consumed: 2 },
     },
   },
   {
     id: 2, employee: 'Mike Chen', avatar: 33, empId: 'EMP-0033',
     department: 'QA & Testing', project: 'HDFC Portal',
     balances: {
-      Annual:       { allocated: 18, consumed: 12 },
-      Sick:         { allocated: 10, consumed: 5  },
-      Casual:       { allocated: 6,  consumed: 4  },
-      Earned:       { allocated: 5,  consumed: 3  },
-      Compensatory: { allocated: 2,  consumed: 2  },
+      'Bereavement Holiday': { allocated: 3,  consumed: 0 },
+      'Birthday Leave':      { allocated: 1,  consumed: 0 },
+      'Election Day Leave':  { allocated: 1,  consumed: 1 },
+      'Floating Holiday':    { allocated: 3,  consumed: 2 },
+      'LWP':                 { allocated: 0,  consumed: 1 },
+      'Paternity Leave':     { allocated: 15, consumed: 0 },
+      'Planned Leave':       { allocated: 15, consumed: 8 },
+      'Unplanned Leave':     { allocated: 8,  consumed: 4 },
     },
   },
   {
     id: 3, employee: 'Emma Wilson', avatar: 44, empId: 'EMP-0044',
     department: 'Design', project: 'Pulse.AI v2',
     balances: {
-      Annual:       { allocated: 18, consumed: 4  },
-      Sick:         { allocated: 10, consumed: 1  },
-      Casual:       { allocated: 6,  consumed: 1  },
-      Earned:       { allocated: 5,  consumed: 2  },
-      Compensatory: { allocated: 2,  consumed: 0  },
+      'Bereavement Holiday': { allocated: 3,  consumed: 0 },
+      'Birthday Leave':      { allocated: 1,  consumed: 1 },
+      'Election Day Leave':  { allocated: 1,  consumed: 0 },
+      'Floating Holiday':    { allocated: 3,  consumed: 1 },
+      'LWP':                 { allocated: 0,  consumed: 0 },
+      'Paternity Leave':     { allocated: 15, consumed: 0 },
+      'Planned Leave':       { allocated: 15, consumed: 3 },
+      'Unplanned Leave':     { allocated: 8,  consumed: 1 },
     },
   },
   {
     id: 4, employee: 'Arjun Patel', avatar: 52, empId: 'EMP-0052',
     department: 'QA & Testing', project: 'TechCorp ERP',
     balances: {
-      Annual:       { allocated: 18, consumed: 16 },
-      Sick:         { allocated: 10, consumed: 7  },
-      Casual:       { allocated: 6,  consumed: 5  },
-      Earned:       { allocated: 5,  consumed: 4  },
-      Compensatory: { allocated: 2,  consumed: 2  },
+      'Bereavement Holiday': { allocated: 3,  consumed: 1 },
+      'Birthday Leave':      { allocated: 1,  consumed: 1 },
+      'Election Day Leave':  { allocated: 1,  consumed: 1 },
+      'Floating Holiday':    { allocated: 3,  consumed: 3 },
+      'LWP':                 { allocated: 0,  consumed: 2 },
+      'Paternity Leave':     { allocated: 15, consumed: 0 },
+      'Planned Leave':       { allocated: 15, consumed: 12 },
+      'Unplanned Leave':     { allocated: 8,  consumed: 6 },
     },
   },
   {
     id: 5, employee: 'Anjali Singh', avatar: 36, empId: 'EMP-0036',
     department: 'Product', project: 'HDFC Portal',
     balances: {
-      Annual:       { allocated: 18, consumed: 9  },
-      Sick:         { allocated: 10, consumed: 3  },
-      Casual:       { allocated: 6,  consumed: 3  },
-      Earned:       { allocated: 5,  consumed: 5  },
-      Compensatory: { allocated: 2,  consumed: 1  },
+      'Bereavement Holiday': { allocated: 3,  consumed: 0 },
+      'Birthday Leave':      { allocated: 1,  consumed: 1 },
+      'Election Day Leave':  { allocated: 1,  consumed: 0 },
+      'Floating Holiday':    { allocated: 3,  consumed: 2 },
+      'LWP':                 { allocated: 0,  consumed: 0 },
+      'Paternity Leave':     { allocated: 15, consumed: 0 },
+      'Planned Leave':       { allocated: 15, consumed: 7 },
+      'Unplanned Leave':     { allocated: 8,  consumed: 3 },
     },
   },
   {
     id: 6, employee: 'James Wilson', avatar: 60, empId: 'EMP-0060',
     department: 'Engineering', project: 'Pulse.AI v2',
     balances: {
-      Annual:       { allocated: 18, consumed: 17 },
-      Sick:         { allocated: 10, consumed: 9  },
-      Casual:       { allocated: 6,  consumed: 6  },
-      Earned:       { allocated: 5,  consumed: 5  },
-      Compensatory: { allocated: 3,  consumed: 2  },
+      'Bereavement Holiday': { allocated: 3,  consumed: 1 },
+      'Birthday Leave':      { allocated: 1,  consumed: 1 },
+      'Election Day Leave':  { allocated: 1,  consumed: 1 },
+      'Floating Holiday':    { allocated: 3,  consumed: 3 },
+      'LWP':                 { allocated: 0,  consumed: 3 },
+      'Paternity Leave':     { allocated: 15, consumed: 5 },
+      'Planned Leave':       { allocated: 15, consumed: 13 },
+      'Unplanned Leave':     { allocated: 8,  consumed: 7 },
     },
   },
   {
     id: 7, employee: 'Fatima Al-Zahra', avatar: 41, empId: 'EMP-0041',
     department: 'Design', project: 'HDFC Portal',
     balances: {
-      Annual:       { allocated: 18, consumed: 3  },
-      Sick:         { allocated: 10, consumed: 0  },
-      Casual:       { allocated: 6,  consumed: 2  },
-      Earned:       { allocated: 5,  consumed: 1  },
-      Compensatory: { allocated: 2,  consumed: 0  },
+      'Bereavement Holiday': { allocated: 3,  consumed: 0 },
+      'Birthday Leave':      { allocated: 1,  consumed: 0 },
+      'Election Day Leave':  { allocated: 1,  consumed: 0 },
+      'Floating Holiday':    { allocated: 3,  consumed: 1 },
+      'LWP':                 { allocated: 0,  consumed: 0 },
+      'Paternity Leave':     { allocated: 15, consumed: 0 },
+      'Planned Leave':       { allocated: 15, consumed: 2 },
+      'Unplanned Leave':     { allocated: 8,  consumed: 1 },
     },
   },
   {
     id: 8, employee: 'Karthik Nair', avatar: 56, empId: 'EMP-0056',
     department: 'Engineering', project: 'TechCorp ERP',
     balances: {
-      Annual:       { allocated: 18, consumed: 10 },
-      Sick:         { allocated: 10, consumed: 4  },
-      Casual:       { allocated: 6,  consumed: 2  },
-      Earned:       { allocated: 5,  consumed: 2  },
-      Compensatory: { allocated: 3,  consumed: 1  },
+      'Bereavement Holiday': { allocated: 3,  consumed: 0 },
+      'Birthday Leave':      { allocated: 1,  consumed: 1 },
+      'Election Day Leave':  { allocated: 1,  consumed: 1 },
+      'Floating Holiday':    { allocated: 3,  consumed: 2 },
+      'LWP':                 { allocated: 0,  consumed: 0 },
+      'Paternity Leave':     { allocated: 15, consumed: 0 },
+      'Planned Leave':       { allocated: 15, consumed: 8 },
+      'Unplanned Leave':     { allocated: 8,  consumed: 3 },
     },
   },
   {
     id: 9, employee: 'Lisa Garcia', avatar: 25, empId: 'EMP-0025',
     department: 'DevOps', project: 'Pulse.AI v2',
     balances: {
-      Annual:       { allocated: 18, consumed: 5  },
-      Sick:         { allocated: 10, consumed: 1  },
-      Casual:       { allocated: 6,  consumed: 3  },
-      Earned:       { allocated: 5,  consumed: 0  },
-      Compensatory: { allocated: 4,  consumed: 2  },
+      'Bereavement Holiday': { allocated: 3,  consumed: 0 },
+      'Birthday Leave':      { allocated: 1,  consumed: 1 },
+      'Election Day Leave':  { allocated: 1,  consumed: 0 },
+      'Floating Holiday':    { allocated: 3,  consumed: 1 },
+      'LWP':                 { allocated: 0,  consumed: 0 },
+      'Paternity Leave':     { allocated: 15, consumed: 0 },
+      'Planned Leave':       { allocated: 15, consumed: 4 },
+      'Unplanned Leave':     { allocated: 8,  consumed: 1 },
     },
   },
   {
     id: 10, employee: 'Tom Davis', avatar: 20, empId: 'EMP-0020',
     department: 'Engineering', project: 'HDFC Portal',
     balances: {
-      Annual:       { allocated: 18, consumed: 13 },
-      Sick:         { allocated: 10, consumed: 6  },
-      Casual:       { allocated: 6,  consumed: 4  },
-      Earned:       { allocated: 5,  consumed: 3  },
-      Compensatory: { allocated: 3,  consumed: 2  },
+      'Bereavement Holiday': { allocated: 3,  consumed: 0 },
+      'Birthday Leave':      { allocated: 1,  consumed: 1 },
+      'Election Day Leave':  { allocated: 1,  consumed: 1 },
+      'Floating Holiday':    { allocated: 3,  consumed: 2 },
+      'LWP':                 { allocated: 0,  consumed: 1 },
+      'Paternity Leave':     { allocated: 15, consumed: 0 },
+      'Planned Leave':       { allocated: 15, consumed: 10 },
+      'Unplanned Leave':     { allocated: 8,  consumed: 5 },
     },
   },
 ]
@@ -318,7 +351,7 @@ function LeaveBalanceDetailPage({ emp, onBack }: { emp: EmployeeBalance; onBack:
                   color: tc.color, background: tc.bg, border: `1px solid ${tc.border}`,
                   display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                 }}>{tc.short}</span>
-                <span style={{ fontSize: 13.5, fontWeight: 600, color: C.navy }}>{type} Leave</span>
+                <span style={{ fontSize: 13.5, fontWeight: 600, color: C.navy }}>{type}</span>
               </div>
 
               {/* Allocated */}

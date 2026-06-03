@@ -76,7 +76,7 @@ const PENDING_ACTIONS = [
 
 const RECENT_ACTIVITY = [
   { id: 1, Icon: UserPlus,  color: '#0EA86A', bg: 'rgba(14,168,106,0.10)',  title: 'New employee added', desc: 'Kavya Sharma · EMP-249',         time: '2m ago' },
-  { id: 2, Icon: CalendarDays, color: '#6366F1', bg: 'rgba(99,102,241,0.10)', title: 'Leave approved',  desc: 'John Doe · 2 days Annual Leave', time: '1h ago' },
+  { id: 2, Icon: CalendarDays, color: '#6366F1', bg: 'rgba(99,102,241,0.10)', title: 'Leave approved',  desc: 'John Doe · 2 days Planned Leave', time: '1h ago' },
   { id: 3, Icon: Users,     color: '#7C3AED', bg: 'rgba(124,58,237,0.10)',  title: 'Role updated',      desc: 'Priya Patel → Project Manager',  time: '1d ago' },
   { id: 4, Icon: Shield,    color: '#D97706', bg: 'rgba(217,119,6,0.10)',   title: 'Policy updated',    desc: 'IT Security Policy v2.4',         time: '2d ago' },
   { id: 5, Icon: Clock,     color: '#E84855', bg: 'rgba(232,72,85,0.10)',   title: 'Timesheet flagged', desc: 'Rohan Das · Week 20 — 62 hrs',   time: '2d ago' },

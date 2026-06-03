@@ -14,23 +14,27 @@ interface LeaveRecord {
 }
 
 const HISTORY_DATA: LeaveRecord[] = [
-  { id: 'LVR-1012', type: 'Sick Leave',       code: 'SL', fromDate: '2026-05-10', toDate: '2026-05-11', days: 2, approvedDate: '2026-05-09', approvedBy: 'Priya Mehta', remarks: 'Not feeling well'              },
-  { id: 'LVR-0998', type: 'Earned Leave',      code: 'EL', fromDate: '2026-04-14', toDate: '2026-04-18', days: 5, approvedDate: '2026-04-11', approvedBy: 'Raj Kumar',   remarks: 'Annual vacation'             },
-  { id: 'LVR-0971', type: 'Compensatory Off',  code: 'CO', fromDate: '2026-03-20', toDate: '2026-03-21', days: 2, approvedDate: '2026-03-19', approvedBy: 'Raj Kumar',   remarks: 'Weekend overtime compensated' },
-  { id: 'LVR-0940', type: 'Sick Leave',        code: 'SL', fromDate: '2026-02-20', toDate: '2026-02-20', days: 1, approvedDate: '2026-02-20', approvedBy: 'Priya Mehta', remarks: 'Medical consultation'         },
-  { id: 'LVR-0912', type: 'Casual Leave',      code: 'CL', fromDate: '2026-02-05', toDate: '2026-02-06', days: 2, approvedDate: '2026-02-04', approvedBy: 'Raj Kumar',   remarks: 'Personal work'               },
-  { id: 'LVR-0888', type: 'Earned Leave',      code: 'EL', fromDate: '2026-01-20', toDate: '2026-01-24', days: 5, approvedDate: '2026-01-17', approvedBy: 'Priya Mehta', remarks: 'Family trip'                 },
-  { id: 'LVR-0860', type: 'Casual Leave',      code: 'CL', fromDate: '2026-01-09', toDate: '2026-01-09', days: 1, approvedDate: '2026-01-08', approvedBy: 'Raj Kumar',   remarks: 'Personal reasons'            },
-  { id: 'LVR-0835', type: 'Sick Leave',        code: 'SL', fromDate: '2025-12-18', toDate: '2025-12-19', days: 2, approvedDate: '2025-12-18', approvedBy: 'Priya Mehta', remarks: 'Fever and rest'              },
-  { id: 'LVR-0810', type: 'Casual Leave',      code: 'CL', fromDate: '2025-11-24', toDate: '2025-11-24', days: 1, approvedDate: '2025-11-23', approvedBy: 'Raj Kumar',   remarks: 'Personal commitment'        },
-  { id: 'LVR-0784', type: 'Earned Leave',      code: 'EL', fromDate: '2025-10-13', toDate: '2025-10-17', days: 5, approvedDate: '2025-10-10', approvedBy: 'Raj Kumar',   remarks: 'Dussehra holiday extension'  },
+  { id: 'LVR-1012', type: 'Unplanned Leave',     code: 'UPL', fromDate: '2026-05-10', toDate: '2026-05-11', days: 2, approvedDate: '2026-05-09', approvedBy: 'Priya Mehta', remarks: 'Not feeling well'             },
+  { id: 'LVR-0998', type: 'Planned Leave',        code: 'PL',  fromDate: '2026-04-14', toDate: '2026-04-18', days: 5, approvedDate: '2026-04-11', approvedBy: 'Raj Kumar',   remarks: 'Annual vacation'             },
+  { id: 'LVR-0971', type: 'Floating Holiday',     code: 'FH',  fromDate: '2026-03-20', toDate: '2026-03-21', days: 2, approvedDate: '2026-03-19', approvedBy: 'Raj Kumar',   remarks: 'Weekend overtime compensated' },
+  { id: 'LVR-0940', type: 'Unplanned Leave',      code: 'UPL', fromDate: '2026-02-20', toDate: '2026-02-20', days: 1, approvedDate: '2026-02-20', approvedBy: 'Priya Mehta', remarks: 'Medical consultation'         },
+  { id: 'LVR-0912', type: 'Floating Holiday',     code: 'FH',  fromDate: '2026-02-05', toDate: '2026-02-06', days: 2, approvedDate: '2026-02-04', approvedBy: 'Raj Kumar',   remarks: 'Personal work'               },
+  { id: 'LVR-0888', type: 'Planned Leave',        code: 'PL',  fromDate: '2026-01-20', toDate: '2026-01-24', days: 5, approvedDate: '2026-01-17', approvedBy: 'Priya Mehta', remarks: 'Family trip'                 },
+  { id: 'LVR-0860', type: 'Birthday Leave',       code: 'BL',  fromDate: '2026-01-09', toDate: '2026-01-09', days: 1, approvedDate: '2026-01-08', approvedBy: 'Raj Kumar',   remarks: 'Birthday leave'              },
+  { id: 'LVR-0835', type: 'Unplanned Leave',      code: 'UPL', fromDate: '2025-12-18', toDate: '2025-12-19', days: 2, approvedDate: '2025-12-18', approvedBy: 'Priya Mehta', remarks: 'Fever and rest'              },
+  { id: 'LVR-0810', type: 'Election Day Leave',   code: 'EDL', fromDate: '2025-11-24', toDate: '2025-11-24', days: 1, approvedDate: '2025-11-23', approvedBy: 'Raj Kumar',   remarks: 'Election day'                },
+  { id: 'LVR-0784', type: 'Planned Leave',        code: 'PL',  fromDate: '2025-10-13', toDate: '2025-10-17', days: 5, approvedDate: '2025-10-10', approvedBy: 'Raj Kumar',   remarks: 'Holiday extension'           },
 ]
 
 const CODE_STYLE: Record<string, { bg: string; color: string }> = {
-  CL: { bg: 'rgba(99,102,241,0.12)',  color: '#5B5FDE' },
-  SL: { bg: 'rgba(232,72,85,0.12)',   color: '#E84855' },
-  EL: { bg: 'rgba(14,168,106,0.12)',  color: '#0EA86A' },
-  CO: { bg: 'rgba(245,158,11,0.12)',  color: '#D97706' },
+  BH:  { bg: 'rgba(109,40,217,0.12)',  color: '#6D28D9' },
+  BL:  { bg: 'rgba(219,39,119,0.12)',  color: '#DB2777' },
+  EDL: { bg: 'rgba(8,145,178,0.12)',   color: '#0891B2' },
+  FH:  { bg: 'rgba(234,88,12,0.12)',   color: '#EA580C' },
+  LWP: { bg: 'rgba(220,38,38,0.12)',   color: '#DC2626' },
+  PAT: { bg: 'rgba(37,99,235,0.12)',   color: '#2563EB' },
+  PL:  { bg: 'rgba(5,150,105,0.12)',   color: '#059669' },
+  UPL: { bg: 'rgba(217,119,6,0.12)',   color: '#D97706' },
 }
 
 const MONTHS = [
@@ -151,7 +155,7 @@ export default function LeaveHistoryPage() {
           </div>
         </div>
 
-        {/* CL + SL */}
+        {/* PL + UPL */}
         <div
           style={{
             background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14,
@@ -159,22 +163,22 @@ export default function LeaveHistoryPage() {
           }}
         >
           <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>
-            Casual / Sick
+            Planned / Unplanned
           </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
-              <span className="rounded text-xs font-bold px-1.5 py-0.5" style={{ background: CODE_STYLE.CL.bg, color: CODE_STYLE.CL.color }}>CL</span>
-              <span style={{ fontSize: 16, fontWeight: 800, color: C.navy }}>{byCode.CL ?? 0}d</span>
+              <span className="rounded text-xs font-bold px-1.5 py-0.5" style={{ background: CODE_STYLE.PL.bg, color: CODE_STYLE.PL.color }}>PL</span>
+              <span style={{ fontSize: 16, fontWeight: 800, color: C.navy }}>{byCode.PL ?? 0}d</span>
             </div>
             <div style={{ width: 1, height: 20, background: C.border }} />
             <div className="flex items-center gap-1.5">
-              <span className="rounded text-xs font-bold px-1.5 py-0.5" style={{ background: CODE_STYLE.SL.bg, color: CODE_STYLE.SL.color }}>SL</span>
-              <span style={{ fontSize: 16, fontWeight: 800, color: C.navy }}>{byCode.SL ?? 0}d</span>
+              <span className="rounded text-xs font-bold px-1.5 py-0.5" style={{ background: CODE_STYLE.UPL.bg, color: CODE_STYLE.UPL.color }}>UPL</span>
+              <span style={{ fontSize: 16, fontWeight: 800, color: C.navy }}>{byCode.UPL ?? 0}d</span>
             </div>
           </div>
         </div>
 
-        {/* EL + CO */}
+        {/* FH + BL */}
         <div
           style={{
             background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14,
@@ -182,17 +186,17 @@ export default function LeaveHistoryPage() {
           }}
         >
           <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>
-            Earned / Comp Off
+            Floating / Birthday
           </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
-              <span className="rounded text-xs font-bold px-1.5 py-0.5" style={{ background: CODE_STYLE.EL.bg, color: CODE_STYLE.EL.color }}>EL</span>
-              <span style={{ fontSize: 16, fontWeight: 800, color: C.navy }}>{byCode.EL ?? 0}d</span>
+              <span className="rounded text-xs font-bold px-1.5 py-0.5" style={{ background: CODE_STYLE.FH.bg, color: CODE_STYLE.FH.color }}>FH</span>
+              <span style={{ fontSize: 16, fontWeight: 800, color: C.navy }}>{byCode.FH ?? 0}d</span>
             </div>
             <div style={{ width: 1, height: 20, background: C.border }} />
             <div className="flex items-center gap-1.5">
-              <span className="rounded text-xs font-bold px-1.5 py-0.5" style={{ background: CODE_STYLE.CO.bg, color: CODE_STYLE.CO.color }}>CO</span>
-              <span style={{ fontSize: 16, fontWeight: 800, color: C.navy }}>{byCode.CO ?? 0}d</span>
+              <span className="rounded text-xs font-bold px-1.5 py-0.5" style={{ background: CODE_STYLE.BL.bg, color: CODE_STYLE.BL.color }}>BL</span>
+              <span style={{ fontSize: 16, fontWeight: 800, color: C.navy }}>{byCode.BL ?? 0}d</span>
             </div>
           </div>
         </div>

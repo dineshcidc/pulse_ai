@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Search, Bell, Check, Clock, Users, AlertCircle, BellRing, X } from 'lucide-react'
+import { Search, Bell, Check, Clock, Users, AlertCircle, BellRing, X, ClipboardList } from 'lucide-react'
 
 // ─── Design tokens ─────────────────────────────────────────────────────────────
 
@@ -57,6 +57,7 @@ function fmtDate(iso: string) {
   return new Date(iso + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
 }
 
+
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function PendingTimesheetsPage() {
@@ -67,6 +68,7 @@ export default function PendingTimesheetsPage() {
   const [selectedProjects, setSelectedProjects] = useState<Set<string>>(new Set())
   const [reminded,         setReminded]         = useState<Set<number>>(new Set())
   const [toast,            setToast]            = useState<string | null>(null)
+  const [state,            setState]            = useState<'idle'|'loading'|'done'>('idle')
 
   // Suggestions from search input
   const suggestions = searchQuery.trim().length > 0
@@ -77,26 +79,24 @@ export default function PendingTimesheetsPage() {
     : []
 
   function selectEmployee(row: PendingEmployee) {
-    setSelectedEmployee(row)
-    setSearchQuery(row.employee)
-    setShowSuggestions(false)
-    setSelectedProjects(new Set())
+    setSelectedEmployee(row); setSearchQuery(row.employee)
+    setShowSuggestions(false); setSelectedProjects(new Set()); setState('idle')
   }
 
   function clearEmployee() {
-    setSelectedEmployee(null)
-    setSearchQuery('')
-    setSelectedProjects(new Set())
+    setSelectedEmployee(null); setSearchQuery(''); setSelectedProjects(new Set()); setState('idle')
   }
 
   function toggleProject(p: string) {
     setSelectedProjects(prev => {
-      const next = new Set(prev)
-      next.has(p) ? next.delete(p) : next.add(p)
-      return next
+      const next = new Set(prev); next.has(p) ? next.delete(p) : next.add(p); return next
     })
-    setSelectedEmployee(null)
-    setSearchQuery('')
+    setSelectedEmployee(null); setSearchQuery(''); setState('idle')
+  }
+
+  function handleGenerate() {
+    setState('loading')
+    setTimeout(() => setState('done'), 1000)
   }
 
   function sendReminder(row: PendingEmployee) {
@@ -132,6 +132,7 @@ export default function PendingTimesheetsPage() {
     <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
       <style>{`
         @keyframes toastIn { from { opacity:0; transform:translateX(24px) } to { opacity:1; transform:translateX(0) } }
+        @keyframes pt-spin  { to { transform: rotate(360deg) } }
         .pt-sugg:hover { background: #F7F8FC !important; }
       `}</style>
 
@@ -296,7 +297,7 @@ export default function PendingTimesheetsPage() {
           <div style={{ background: C.surface, borderRadius: 10, padding: '12px 14px', border: `1px solid ${C.border}` }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Summary</div>
             {[
-              { label: 'Showing', value: `${filtered.length} employees` },
+              { label: 'Showing',        value: `${filtered.length} employees` },
               { label: 'Pending entries', value: filtered.reduce((s,r) => s + r.pendingCount, 0) },
               { label: 'Reminders sent', value: reminded.size },
             ].map(item => (
@@ -306,12 +307,58 @@ export default function PendingTimesheetsPage() {
               </div>
             ))}
           </div>
+
+          {/* Generate button */}
+          <button
+            onClick={handleGenerate}
+            disabled={state === 'loading'}
+            style={{
+              width: '100%', height: 42, borderRadius: 10, border: 'none',
+              background: state === 'loading' ? '#A0A3B1' : C.navy,
+              color: '#fff', fontSize: 13.5, fontWeight: 700,
+              cursor: state === 'loading' ? 'default' : 'pointer',
+              fontFamily: 'inherit', transition: 'background 0.2s',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            }}
+            onMouseEnter={e => { if (state !== 'loading') e.currentTarget.style.background = '#2A3050' }}
+            onMouseLeave={e => { if (state !== 'loading') e.currentTarget.style.background = C.navy }}
+          >
+            {state === 'loading'
+              ? <><div style={{ width: 16, height: 16, borderRadius: '50%', border: '2.5px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', animation: 'pt-spin 0.75s linear infinite' }} /> Loading…</>
+              : <><ClipboardList size={15} strokeWidth={2} /> View Pending Timesheets</>
+            }
+          </button>
         </div>
 
         {/* ── Right Panel ── */}
         <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, padding: '22px 20px', minHeight: 460 }}>
 
-          {/* Panel header */}
+          {/* Idle */}
+          {state === 'idle' && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 380, gap: 14, textAlign: 'center' }}>
+              <div style={{ width: 56, height: 56, borderRadius: 16, background: C.surface, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <ClipboardList size={24} strokeWidth={1.4} color="#D0D3E4" />
+              </div>
+              <div>
+                <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: C.navy }}>No Report Generated Yet</p>
+                <p style={{ margin: '6px 0 0', fontSize: 13, color: C.muted, maxWidth: 300, lineHeight: 1.65 }}>
+                  Use the filters on the left and click <strong>View Pending Timesheets</strong> to see the results.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Loading */}
+          {state === 'loading' && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 380, gap: 16 }}>
+              <div style={{ width: 38, height: 38, borderRadius: '50%', border: `3px solid ${C.border}`, borderTopColor: C.navy, animation: 'pt-spin 0.75s linear infinite' }} />
+              <p style={{ margin: 0, fontSize: 13.5, color: C.muted, fontWeight: 500 }}>Loading pending timesheets…</p>
+            </div>
+          )}
+
+          {/* Done — panel header + cards */}
+          {state === 'done' && (
+          <>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
             <div>
               <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: C.navy }}>
@@ -325,7 +372,6 @@ export default function PendingTimesheetsPage() {
                 {filtered.length} employee{filtered.length !== 1 ? 's' : ''} · {filtered.reduce((s,r) => s + r.pendingCount, 0)} pending entries
               </p>
             </div>
-            {/* Remind All */}
             {filtered.some(r => !reminded.has(r.id)) && (
               <button
                 onClick={() => {
@@ -342,7 +388,6 @@ export default function PendingTimesheetsPage() {
             )}
           </div>
 
-          {/* Cards list */}
           {filtered.length === 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 300, gap: 12 }}>
               <div style={{ width: 52, height: 52, borderRadius: 14, background: C.surface, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -426,6 +471,8 @@ export default function PendingTimesheetsPage() {
                 )
               })}
             </div>
+          )}
+          </>
           )}
         </div>
       </div>

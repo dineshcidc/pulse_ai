@@ -5,7 +5,7 @@ import {
 } from 'lucide-react'
 
 type LeaveStatus = 'Pending' | 'Approved' | 'Rejected'
-type LeaveType   = 'Annual' | 'Sick' | 'Casual' | 'Earned' | 'Compensatory'
+type LeaveType   = 'Bereavement Holiday' | 'Birthday Leave' | 'Election Day Leave' | 'Floating Holiday' | 'LWP' | 'Paternity Leave' | 'Planned Leave' | 'Unplanned Leave'
 
 interface LeaveRequest {
   id: number
@@ -25,7 +25,7 @@ const DATA: LeaveRequest[] = [
   {
     id: 1, employee: 'Sarah Johnson', avatar: 47, empId: 'EMP-0047', department: 'Engineering',
     reportingManager: 'Rohan Mehta', managerAvatar: 29, project: 'Pulse.AI v2',
-    leaveType: 'Annual', fromDate: '2026-05-26', toDate: '2026-05-28', days: 3,
+    leaveType: 'Planned Leave', fromDate: '2026-05-26', toDate: '2026-05-28', days: 3,
     appliedDate: 'May 20, 2026', status: 'Pending',
     reason: 'Family function — attending my sister\'s wedding ceremony in Chennai.',
     managerRemark: '', reviewedDate: '',
@@ -33,7 +33,7 @@ const DATA: LeaveRequest[] = [
   {
     id: 2, employee: 'Mike Chen', avatar: 33, empId: 'EMP-0033', department: 'QA & Testing',
     reportingManager: 'Priya Sharma', managerAvatar: 10, project: 'HDFC Portal',
-    leaveType: 'Sick', fromDate: '2026-05-20', toDate: '2026-05-21', days: 2,
+    leaveType: 'Unplanned Leave', fromDate: '2026-05-20', toDate: '2026-05-21', days: 2,
     appliedDate: 'May 19, 2026', status: 'Approved',
     reason: 'Fever and mild flu symptoms, doctor advised rest for 2 days.',
     managerRemark: 'Approved. Please share the medical certificate when you return.', reviewedDate: 'May 19, 2026',
@@ -41,7 +41,7 @@ const DATA: LeaveRequest[] = [
   {
     id: 3, employee: 'Emma Wilson', avatar: 44, empId: 'EMP-0044', department: 'Design',
     reportingManager: 'Rohan Mehta', managerAvatar: 29, project: 'Pulse.AI v2',
-    leaveType: 'Casual', fromDate: '2026-05-22', toDate: '2026-05-23', days: 2,
+    leaveType: 'Floating Holiday', fromDate: '2026-05-22', toDate: '2026-05-23', days: 2,
     appliedDate: 'May 18, 2026', status: 'Approved',
     reason: 'Personal errands and home relocation assistance.',
     managerRemark: 'Approved. Ensure the Figma deliverables are handed off before you leave.', reviewedDate: 'May 18, 2026',
@@ -49,7 +49,7 @@ const DATA: LeaveRequest[] = [
   {
     id: 4, employee: 'Arjun Patel', avatar: 52, empId: 'EMP-0052', department: 'QA & Testing',
     reportingManager: 'Priya Sharma', managerAvatar: 10, project: 'TechCorp ERP',
-    leaveType: 'Annual', fromDate: '2026-06-02', toDate: '2026-06-05', days: 4,
+    leaveType: 'Planned Leave', fromDate: '2026-06-02', toDate: '2026-06-05', days: 4,
     appliedDate: 'May 22, 2026', status: 'Pending',
     reason: 'Pre-planned vacation with family. Flight tickets already booked.',
     managerRemark: '', reviewedDate: '',
@@ -57,15 +57,15 @@ const DATA: LeaveRequest[] = [
   {
     id: 5, employee: 'Anjali Singh', avatar: 36, empId: 'EMP-0036', department: 'Product',
     reportingManager: 'Priya Sharma', managerAvatar: 10, project: 'HDFC Portal',
-    leaveType: 'Earned', fromDate: '2026-06-09', toDate: '2026-06-13', days: 5,
+    leaveType: 'Paternity Leave', fromDate: '2026-06-09', toDate: '2026-06-13', days: 5,
     appliedDate: 'May 15, 2026', status: 'Approved',
-    reason: 'Accumulated earned leaves from Q1. Taking a short break.',
+    reason: 'Paternity leave for newborn care.',
     managerRemark: 'Approved. Transition your sprint tasks to Tom before leaving.', reviewedDate: 'May 16, 2026',
   },
   {
     id: 6, employee: 'James Wilson', avatar: 60, empId: 'EMP-0060', department: 'Engineering',
     reportingManager: 'David Brown', managerAvatar: 38, project: 'Pulse.AI v2',
-    leaveType: 'Sick', fromDate: '2026-05-18', toDate: '2026-05-18', days: 1,
+    leaveType: 'Unplanned Leave', fromDate: '2026-05-18', toDate: '2026-05-18', days: 1,
     appliedDate: 'May 18, 2026', status: 'Rejected',
     reason: 'Feeling unwell in the morning.',
     managerRemark: 'Rejected — no prior notice and critical deployment was scheduled for today. Please plan ahead.', reviewedDate: 'May 18, 2026',
@@ -73,31 +73,31 @@ const DATA: LeaveRequest[] = [
   {
     id: 7, employee: 'Fatima Al-Zahra', avatar: 41, empId: 'EMP-0041', department: 'Design',
     reportingManager: 'Rohan Mehta', managerAvatar: 29, project: 'HDFC Portal',
-    leaveType: 'Casual', fromDate: '2026-06-10', toDate: '2026-06-11', days: 2,
+    leaveType: 'Birthday Leave', fromDate: '2026-06-10', toDate: '2026-06-10', days: 1,
     appliedDate: 'May 23, 2026', status: 'Pending',
-    reason: 'Attending a UX design conference in Bangalore.',
+    reason: 'Birthday leave as per company policy.',
     managerRemark: '', reviewedDate: '',
   },
   {
     id: 8, employee: 'Karthik Nair', avatar: 56, empId: 'EMP-0056', department: 'Engineering',
     reportingManager: 'David Brown', managerAvatar: 38, project: 'TechCorp ERP',
-    leaveType: 'Annual', fromDate: '2026-06-16', toDate: '2026-06-20', days: 5,
+    leaveType: 'Planned Leave', fromDate: '2026-06-16', toDate: '2026-06-20', days: 5,
     appliedDate: 'May 10, 2026', status: 'Approved',
-    reason: 'Annual leave — visiting parents in Kerala.',
+    reason: 'Pre-planned leave — visiting parents in Kerala.',
     managerRemark: 'Approved. Early notice appreciated. Ensure sprint tasks are completed.', reviewedDate: 'May 11, 2026',
   },
   {
     id: 9, employee: 'Lisa Garcia', avatar: 25, empId: 'EMP-0025', department: 'DevOps',
     reportingManager: 'David Brown', managerAvatar: 38, project: 'Pulse.AI v2',
-    leaveType: 'Compensatory', fromDate: '2026-05-28', toDate: '2026-05-28', days: 1,
+    leaveType: 'Bereavement Holiday', fromDate: '2026-05-28', toDate: '2026-05-29', days: 2,
     appliedDate: 'May 24, 2026', status: 'Pending',
-    reason: 'Compensatory off against weekend deployment support last week.',
+    reason: 'Bereavement leave due to family loss.',
     managerRemark: '', reviewedDate: '',
   },
   {
     id: 10, employee: 'Tom Davis', avatar: 20, empId: 'EMP-0020', department: 'Engineering',
     reportingManager: 'David Brown', managerAvatar: 38, project: 'HDFC Portal',
-    leaveType: 'Sick', fromDate: '2026-05-15', toDate: '2026-05-15', days: 1,
+    leaveType: 'Unplanned Leave', fromDate: '2026-05-15', toDate: '2026-05-15', days: 1,
     appliedDate: 'May 15, 2026', status: 'Approved',
     reason: 'Sudden migraine — unable to work.',
     managerRemark: 'Approved. Rest well and recover.', reviewedDate: 'May 15, 2026',
@@ -112,11 +112,14 @@ const STATUS_CFG: Record<LeaveStatus, { color: string; bg: string; border: strin
 }
 
 const TYPE_CFG: Record<LeaveType, { color: string; bg: string; border: string; short: string }> = {
-  Annual:       { color: '#4B4ECC', bg: 'rgba(99,102,241,0.08)',  border: 'rgba(99,102,241,0.18)',  short: 'AL' },
-  Sick:         { color: '#E84855', bg: 'rgba(232,72,85,0.08)',   border: 'rgba(232,72,85,0.18)',   short: 'SL' },
-  Casual:       { color: '#D97706', bg: 'rgba(245,158,11,0.09)',  border: 'rgba(245,158,11,0.20)',  short: 'CL' },
-  Earned:       { color: '#0A8A58', bg: 'rgba(14,168,106,0.08)', border: 'rgba(14,168,106,0.18)', short: 'EL' },
-  Compensatory: { color: '#7C3AED', bg: 'rgba(124,58,237,0.08)', border: 'rgba(124,58,237,0.18)', short: 'CO' },
+  'Bereavement Holiday': { color: '#6D28D9', bg: 'rgba(109,40,217,0.08)', border: 'rgba(109,40,217,0.18)', short: 'BH'  },
+  'Birthday Leave':      { color: '#DB2777', bg: 'rgba(219,39,119,0.08)', border: 'rgba(219,39,119,0.18)', short: 'BL'  },
+  'Election Day Leave':  { color: '#0891B2', bg: 'rgba(8,145,178,0.08)',  border: 'rgba(8,145,178,0.18)',  short: 'EDL' },
+  'Floating Holiday':    { color: '#EA580C', bg: 'rgba(234,88,12,0.08)',  border: 'rgba(234,88,12,0.18)',  short: 'FH'  },
+  'LWP':                 { color: '#DC2626', bg: 'rgba(220,38,38,0.08)',  border: 'rgba(220,38,38,0.18)',  short: 'LWP' },
+  'Paternity Leave':     { color: '#2563EB', bg: 'rgba(37,99,235,0.08)',  border: 'rgba(37,99,235,0.18)',  short: 'PAT' },
+  'Planned Leave':       { color: '#059669', bg: 'rgba(5,150,105,0.08)',  border: 'rgba(5,150,105,0.18)',  short: 'PL'  },
+  'Unplanned Leave':     { color: '#D97706', bg: 'rgba(217,119,6,0.08)',  border: 'rgba(217,119,6,0.18)',  short: 'UPL' },
 }
 
 const TABS: { id: LeaveStatus; label: string }[] = [
@@ -127,7 +130,7 @@ const TABS: { id: LeaveStatus; label: string }[] = [
 
 const PROJECTS = ['All Projects',  'Pulse.AI v2', 'HDFC Portal', 'TechCorp ERP']
 const MANAGERS = ['All Managers',  ...Array.from(new Set(DATA.map(d => d.reportingManager)))]
-const TYPES    = ['All Types',     'Annual', 'Sick', 'Casual', 'Earned', 'Compensatory']
+const TYPES    = ['All Types', 'Bereavement Holiday', 'Birthday Leave', 'Election Day Leave', 'Floating Holiday', 'LWP', 'Paternity Leave', 'Planned Leave', 'Unplanned Leave']
 
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', hover: '#F0F2F8', surface: '#F7F8FC' }
 

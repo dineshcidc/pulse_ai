@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { CheckCircle, XCircle, CalendarDays, MessageSquare, X, Search, Calendar, Eye, User, Clock } from 'lucide-react'
 
 type LeaveStatus = 'pending' | 'approved' | 'rejected'
-type LeaveType   = 'Annual' | 'Sick' | 'Casual' | 'WFH' | 'Comp Off'
+type LeaveType   = 'Bereavement Holiday' | 'Birthday Leave' | 'Election Day Leave' | 'Floating Holiday' | 'LWP' | 'Paternity Leave' | 'Planned Leave' | 'Unplanned Leave'
 
 interface LeaveRow {
   id: number
@@ -22,13 +22,13 @@ interface LeaveRow {
 }
 
 const LEAVE_ROWS: LeaveRow[] = [
-  { id: 1, employee: 'Sarah Johnson',  avatar: 47, designation: 'Frontend Dev',   project: 'Pulse.AI v2',  type: 'Annual',   from: 'May 26, 2026', to: 'May 27, 2026', fromISO: '2026-05-26', days: 2, reason: 'Family vacation planned well in advance — annual family reunion that happens once a year. Travel tickets and accommodation are already booked.', status: 'pending',  appliedOn: 'May 18' },
-  { id: 2, employee: 'Mike Chen',      avatar: 33, designation: 'QA Engineer',    project: 'HDFC Portal',  type: 'Sick',     from: 'May 22, 2026', to: 'May 22, 2026', fromISO: '2026-05-22', days: 1, reason: 'Fever and throat infection — visited doctor in the morning, prescribed rest for the day and antibiotics for 5 days.', status: 'pending',  appliedOn: 'May 22' },
-  { id: 3, employee: 'Emma Wilson',    avatar: 44, designation: 'UI/UX Designer', project: 'Pulse.AI v2',  type: 'WFH',      from: 'May 23, 2026', to: 'May 24, 2026', fromISO: '2026-05-23', days: 2, reason: 'Home renovation work requires on-site supervision for two days. Internet and laptop setup will be available for full productivity.', status: 'pending',  appliedOn: 'May 21' },
-  { id: 4, employee: 'David Brown',    avatar: 38, designation: 'Backend Dev',    project: 'TechCorp ERP', type: 'Casual',   from: 'May 29, 2026', to: 'May 29, 2026', fromISO: '2026-05-29', days: 1, reason: 'Personal errand — bank visit and documentation work that requires physical presence during banking hours.', status: 'approved', appliedOn: 'May 19', managerRemarks: 'Approved. Please ensure sprint tasks are completed before this date.' },
-  { id: 5, employee: 'Lisa Garcia',    avatar: 25, designation: 'DevOps Eng',     project: 'Pulse.AI v2',  type: 'Comp Off', from: 'May 25, 2026', to: 'May 25, 2026', fromISO: '2026-05-25', days: 1, reason: 'Compensatory off for weekend deployment support provided on May 17 and May 18 during the production release window.', status: 'approved', appliedOn: 'May 17', managerRemarks: 'Well deserved. Thanks for the weekend support on the release.' },
-  { id: 6, employee: 'Tom Davis',      avatar: 20, designation: 'Full Stack Dev', project: 'HDFC Portal',  type: 'Annual',   from: 'Jun 02, 2026', to: 'Jun 06, 2026', fromISO: '2026-06-02', days: 5, reason: 'Pre-planned annual leave for international travel. Tickets and hotel booked 3 months in advance. All pending work and handover notes will be completed before the leave begins.', status: 'approved', appliedOn: 'May 10', managerRemarks: 'Approved. Please complete handover docs and assign sprint tasks before departure.' },
-  { id: 7, employee: 'Priya Sharma',   avatar: 10, designation: 'BA Analyst',     project: 'TechCorp ERP', type: 'Casual',   from: 'May 28, 2026', to: 'May 28, 2026', fromISO: '2026-05-28', days: 1, reason: 'Leave balance utilisation before the quarter ends.', status: 'rejected', appliedOn: 'May 20', managerRemarks: 'Cannot approve — critical client demo scheduled for May 28. Please reschedule for a non-critical day.' },
+  { id: 1, employee: 'Sarah Johnson',  avatar: 47, designation: 'Frontend Dev',   project: 'Pulse.AI v2',  type: 'Planned Leave',      from: 'May 26, 2026', to: 'May 27, 2026', fromISO: '2026-05-26', days: 2, reason: 'Family vacation planned well in advance — annual family reunion that happens once a year. Travel tickets and accommodation are already booked.', status: 'pending',  appliedOn: 'May 18' },
+  { id: 2, employee: 'Mike Chen',      avatar: 33, designation: 'QA Engineer',    project: 'HDFC Portal',  type: 'Unplanned Leave',    from: 'May 22, 2026', to: 'May 22, 2026', fromISO: '2026-05-22', days: 1, reason: 'Fever and throat infection — visited doctor in the morning, prescribed rest for the day and antibiotics for 5 days.', status: 'pending',  appliedOn: 'May 22' },
+  { id: 3, employee: 'Emma Wilson',    avatar: 44, designation: 'UI/UX Designer', project: 'Pulse.AI v2',  type: 'Floating Holiday',   from: 'May 23, 2026', to: 'May 24, 2026', fromISO: '2026-05-23', days: 2, reason: 'Home renovation work requires on-site supervision for two days. Internet and laptop setup will be available for full productivity.', status: 'pending',  appliedOn: 'May 21' },
+  { id: 4, employee: 'David Brown',    avatar: 38, designation: 'Backend Dev',    project: 'TechCorp ERP', type: 'Floating Holiday',   from: 'May 29, 2026', to: 'May 29, 2026', fromISO: '2026-05-29', days: 1, reason: 'Personal errand — bank visit and documentation work that requires physical presence during banking hours.', status: 'approved', appliedOn: 'May 19', managerRemarks: 'Approved. Please ensure sprint tasks are completed before this date.' },
+  { id: 5, employee: 'Lisa Garcia',    avatar: 25, designation: 'DevOps Eng',     project: 'Pulse.AI v2',  type: 'Bereavement Holiday',from: 'May 25, 2026', to: 'May 25, 2026', fromISO: '2026-05-25', days: 1, reason: 'Bereavement leave due to family loss. Required to attend last rites and family obligations.', status: 'approved', appliedOn: 'May 17', managerRemarks: 'Approved. Our condolences. Take the time you need.' },
+  { id: 6, employee: 'Tom Davis',      avatar: 20, designation: 'Full Stack Dev', project: 'HDFC Portal',  type: 'Planned Leave',      from: 'Jun 02, 2026', to: 'Jun 06, 2026', fromISO: '2026-06-02', days: 5, reason: 'Pre-planned leave for international travel. Tickets and hotel booked 3 months in advance. All pending work and handover notes will be completed before the leave begins.', status: 'approved', appliedOn: 'May 10', managerRemarks: 'Approved. Please complete handover docs and assign sprint tasks before departure.' },
+  { id: 7, employee: 'Priya Sharma',   avatar: 10, designation: 'BA Analyst',     project: 'TechCorp ERP', type: 'Birthday Leave',     from: 'May 28, 2026', to: 'May 28, 2026', fromISO: '2026-05-28', days: 1, reason: 'Birthday leave as per company policy.', status: 'rejected', appliedOn: 'May 20', managerRemarks: 'Cannot approve — critical client demo scheduled for May 28. Please reschedule for a non-critical day.' },
 ]
 
 const STATUS_CFG: Record<LeaveStatus, { label: string; color: string; bg: string; border: string }> = {
@@ -38,11 +38,14 @@ const STATUS_CFG: Record<LeaveStatus, { label: string; color: string; bg: string
 }
 
 const TYPE_COLORS: Record<LeaveType, { color: string; bg: string }> = {
-  'Annual':   { color: '#6366F1', bg: 'rgba(99,102,241,0.10)'   },
-  'Sick':     { color: '#E84855', bg: 'rgba(232,72,85,0.09)'    },
-  'Casual':   { color: '#F5A623', bg: 'rgba(245,166,35,0.10)'   },
-  'WFH':      { color: '#0EA86A', bg: 'rgba(14,168,106,0.10)'   },
-  'Comp Off': { color: '#7C3AED', bg: 'rgba(124,58,237,0.10)'   },
+  'Bereavement Holiday': { color: '#6D28D9', bg: 'rgba(109,40,217,0.10)' },
+  'Birthday Leave':      { color: '#DB2777', bg: 'rgba(219,39,119,0.10)' },
+  'Election Day Leave':  { color: '#0891B2', bg: 'rgba(8,145,178,0.10)'  },
+  'Floating Holiday':    { color: '#EA580C', bg: 'rgba(234,88,12,0.10)'  },
+  'LWP':                 { color: '#DC2626', bg: 'rgba(220,38,38,0.10)'  },
+  'Paternity Leave':     { color: '#2563EB', bg: 'rgba(37,99,235,0.10)'  },
+  'Planned Leave':       { color: '#059669', bg: 'rgba(5,150,105,0.10)'  },
+  'Unplanned Leave':     { color: '#D97706', bg: 'rgba(217,119,6,0.10)'  },
 }
 
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', hover: '#F0F2F8', surface: '#F7F8FC' }

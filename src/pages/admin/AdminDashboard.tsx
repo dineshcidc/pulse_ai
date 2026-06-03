@@ -17,6 +17,8 @@ import LeaveReportPage from './reports/LeaveReportPage'
 import OrgProfilePage from './settings/OrgProfilePage'
 import WorkingHoursPage from './settings/WorkingHoursPage'
 import AdminAnnouncementsPage from './settings/AdminAnnouncementsPage'
+import PendingApprovalsPage from './timesheet/PendingApprovalsPage'
+import AdminTicketsPage from './tickets/AdminTicketsPage'
 
 const PAGE_LABELS: Record<string, string> = {
   'admin-dashboard':      'Dashboard',
@@ -42,6 +44,7 @@ const PAGE_LABELS: Record<string, string> = {
   'working-hours':        'Working Hours & Holidays',
   'email-notifications':  'Email Notifications',
   'announcements':        'Announcements',
+  'admin-tickets':        'Support Tickets',
 }
 
 function ComingSoon({ id }: { id: string }) {
@@ -87,6 +90,7 @@ function PageContent({ activeItem, onNavigate }: { activeItem: string; onNavigat
   if (activeItem === 'leave-balance')        return <LeaveBalancePage />
   if (activeItem === 'all-timesheets')       return <AllTimesheetsPage />
   if (activeItem === 'pending-timesheets')   return <PendingTimesheetsPage />
+  if (activeItem === 'pending-approvals')    return <PendingApprovalsPage />
   if (activeItem === 'project-setup')          return <AdminProjectsPage />
   if (activeItem === 'department-management')  return <DepartmentManagementPage />
   if (activeItem === 'admin-org')              return <AdminOrgStructurePage />
@@ -95,6 +99,7 @@ function PageContent({ activeItem, onNavigate }: { activeItem: string; onNavigat
   if (activeItem === 'org-profile')            return <OrgProfilePage />
   if (activeItem === 'working-hours')          return <WorkingHoursPage />
   if (activeItem === 'announcements')          return <AdminAnnouncementsPage />
+  if (activeItem === 'admin-tickets')          return <AdminTicketsPage />
   return <ComingSoon id={activeItem} />
 }
 

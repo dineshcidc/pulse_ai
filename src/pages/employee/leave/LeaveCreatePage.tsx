@@ -2,13 +2,14 @@ import { useState, useRef } from 'react'
 import { CalendarDays, Copy, Check, Paperclip, X, ChevronDown } from 'lucide-react'
 
 const LEAVE_TYPES = [
-  { value: 'CL',  label: 'Casual Leave',         consumed: 3,  available: 9  },
-  { value: 'SL',  label: 'Sick Leave',            consumed: 2,  available: 10 },
-  { value: 'EL',  label: 'Earned Leave',          consumed: 5,  available: 15 },
-  { value: 'CO',  label: 'Compensatory Off',      consumed: 0,  available: 2  },
-  { value: 'LOP', label: 'Loss of Pay',           consumed: 0,  available: 0  },
-  { value: 'ML',  label: 'Maternity Leave',       consumed: 0,  available: 84 },
-  { value: 'PL',  label: 'Paternity Leave',       consumed: 0,  available: 15 },
+  { value: 'BH',  label: 'Bereavement Holiday',  consumed: 0,  available: 3  },
+  { value: 'BL',  label: 'Birthday Leave',        consumed: 0,  available: 1  },
+  { value: 'EDL', label: 'Election Day Leave',    consumed: 0,  available: 1  },
+  { value: 'FH',  label: 'Floating Holiday',      consumed: 1,  available: 2  },
+  { value: 'LWP', label: 'LWP',                   consumed: 0,  available: 0  },
+  { value: 'PAT', label: 'Paternity Leave',        consumed: 0,  available: 15 },
+  { value: 'PL',  label: 'Planned Leave',          consumed: 5,  available: 10 },
+  { value: 'UPL', label: 'Unplanned Leave',        consumed: 2,  available: 6  },
 ]
 
 const REASON_TEMPLATES = [

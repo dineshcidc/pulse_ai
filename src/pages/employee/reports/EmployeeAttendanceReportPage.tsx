@@ -39,15 +39,15 @@ function pctColor(p: number) {
   return '#E84855'
 }
 function pctBg(p: number) {
+  if (p >= 90) return 'rgba(14,168,106,0.09)'
+  if (p >= 75) return 'rgba(245,158,11,0.09)'
+  return 'rgba(232,72,85,0.09)'
+}
+function pctBorder(p: number) {
+  if (p >= 90) return 'rgba(14,168,106,0.22)'
   if (p >= 75) return 'rgba(245,158,11,0.22)'
   return 'rgba(232,72,85,0.22)'
 }
-function pctBorder(p: number) {
-  if (p >= 90) return 'rgba(14,168,106,0.15)'
-  if (p >= 75) return 'rgba(245,158,11,0.15)'
-  return 'rgba(232,72,85,0.15)'
-}
-
 function getMonthOption(month: number, year: number): MonthOption {
   const name = MONTH_NAMES[month], short = MONTH_SHORT[month], days = MONTH_DAYS[month]
   return { label:`${name} ${year}`, value:`${year}-${String(month+1).padStart(2,'0')}`, working:WORKING_PER_MONTH[month], range:`01 ${short} – ${days} ${short} ${year}` }
