@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import {
-  ArrowLeft, Users, Clock, TrendingUp, Calendar,
+  ArrowLeft, Users, Clock, Calendar,
   Edit2, Trash2, Plus, CheckCircle, XCircle, Mail,
   DollarSign, Briefcase, Code2, Tag, X, Check, ChevronDown,
 } from 'lucide-react'
@@ -100,12 +100,6 @@ const STATUS_CONFIG: Record<Status, { label: string; color: string; bg: string; 
   'active':    { label: 'Active',    color: '#0A8A58', bg: 'rgba(14,168,106,0.10)',  border: 'rgba(14,168,106,0.20)'  },
   'on-hold':   { label: 'On Hold',   color: '#92400E', bg: 'rgba(245,158,11,0.10)',  border: 'rgba(245,158,11,0.20)'  },
   'completed': { label: 'Completed', color: '#3B82F6', bg: 'rgba(59,130,246,0.10)',  border: 'rgba(59,130,246,0.20)'  },
-}
-
-const TECH_STACK: Record<string, string[]> = {
-  p1: ['React 19', 'TypeScript', 'Vite', 'Tailwind CSS', 'Node.js', 'PostgreSQL', 'Redis'],
-  p2: ['Next.js', 'Java Spring Boot', 'Oracle DB', 'AWS'],
-  p3: ['SAP ERP', 'Azure', 'Python', 'PowerBI'],
 }
 
 const PROJECT_CODES: Record<string, string> = {
