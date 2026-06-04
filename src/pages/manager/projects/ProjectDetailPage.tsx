@@ -2,7 +2,7 @@ import { useState } from 'react'
 import {
   ArrowLeft, Users, Clock, TrendingUp, Calendar,
   Edit2, Trash2, Plus, CheckCircle, XCircle, Mail,
-  DollarSign, Briefcase, Code2, Tag,
+  DollarSign, Briefcase, Code2, Tag, X, Check, ChevronDown,
 } from 'lucide-react'
 
 type Status = 'active' | 'on-hold' | 'completed'
@@ -242,9 +242,8 @@ function OverviewCard({ project, st }: { project: Project; st: typeof STATUS_CON
           {/* Right: 3 stat boxes */}
           <div className="flex items-center gap-3" style={{ flexShrink: 0 }}>
             {[
-              { label: 'Members',  value: String(project.members),  icon: Users,      color: '#6366F1', bg: 'rgba(99,102,241,0.08)'  },
-              { label: 'Hours',    value: `${project.hoursLogged}h`, icon: Clock,      color: '#0EA86A', bg: 'rgba(14,168,106,0.08)'  },
-              { label: 'Progress', value: `${project.progress}%`,   icon: TrendingUp, color: project.color, bg: `${project.color}14` },
+              { label: 'Members',  value: String(project.members),  icon: Users,      color: '#6366F1', bg: 'rgba(99,102,241,0.08)' },
+              { label: 'Hours',    value: `${project.hoursLogged}h`, icon: Clock,      color: '#0EA86A', bg: 'rgba(14,168,106,0.08)' },
             ].map(({ label, value, icon: Icon, color, bg }) => (
               <div
                 key={label}
@@ -270,7 +269,6 @@ function OverviewCard({ project, st }: { project: Project; st: typeof STATUS_CON
 ══════════════════════════════════════════════════════ */
 function DetailsTab({ project }: { project: Project }) {
   const st = STATUS_CONFIG[project.status]
-  const techStack = TECH_STACK[project.id] ?? []
   const code = PROJECT_CODES[project.id] ?? 'PRJ-2026-000'
 
   const InfoRow = ({ label, value, icon: Icon }: { label: string; value: React.ReactNode; icon?: React.ElementType }) => (
@@ -324,51 +322,16 @@ function DetailsTab({ project }: { project: Project }) {
           </div>
           <InfoRow label="Start Date"  value={project.startDate} icon={Calendar} />
           <InfoRow label="End Date"    value={project.endDate}   icon={Calendar} />
-          <InfoRow label="Progress"
-            value={
-              <div>
-                <div className="flex items-center gap-2 mb-1.5">
-                  <div style={{ flex: 1, height: 6, borderRadius: 99, background: '#F0F2F8', overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${project.progress}%`, borderRadius: 99, background: project.color }} />
-                  </div>
-                  <span style={{ fontSize: 12.5, fontWeight: 700, color: project.color, flexShrink: 0 }}>{project.progress}%</span>
-                </div>
-              </div>
-            }
-            icon={TrendingUp}
-          />
           <div style={{ paddingBottom: 8 }} />
         </div>
 
-        {/* Tech stack card */}
-        <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, padding: '16px 24px 20px' }}>
-          <div style={{ fontSize: 11.5, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 14 }}>
-            Technology Stack
+        {/* Description — below Timeline in right column */}
+        <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, padding: '16px 24px' }}>
+          <div style={{ fontSize: 11.5, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10 }}>
+            Project Description
           </div>
-          <div className="flex flex-wrap gap-2">
-            {techStack.map(tech => (
-              <span
-                key={tech}
-                style={{
-                  fontSize: 12.5, fontWeight: 600, padding: '5px 12px', borderRadius: 8,
-                  background: '#F0F2F8', color: '#3D4266',
-                  border: '1px solid #E4E6EF',
-                }}
-              >
-                {tech}
-              </span>
-            ))}
-            {techStack.length === 0 && <span style={{ fontSize: 13, color: C.muted }}>Not specified</span>}
-          </div>
+          <p style={{ fontSize: 13, color: '#3D4266', lineHeight: 1.75, margin: 0 }}>{project.description}</p>
         </div>
-      </div>
-
-      {/* Description — full width */}
-      <div style={{ gridColumn: '1 / -1', background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, padding: '16px 24px' }}>
-        <div style={{ fontSize: 11.5, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>
-          Project Description
-        </div>
-        <p style={{ fontSize: 13, color: '#3D4266', lineHeight: 1.6, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{project.description}</p>
       </div>
     </div>
   )
@@ -377,10 +340,15 @@ function DetailsTab({ project }: { project: Project }) {
 /* ════════════════════════════════════════════════════
    Tab 2 — Project Allocation
 ══════════════════════════════════════════════════════ */
+const ALLOC_ROLES = ['Tech Lead', 'Frontend Dev', 'Backend Dev', 'Full Stack Dev', 'QA Engineer', 'UI/UX Designer', 'DevOps Engineer', 'Data Engineer', 'Product Analyst', 'Scrum Master', 'Business Analyst']
+
 function AllocationTab() {
   const [employees, setEmployees]         = useState<AllocatedEmployee[]>(ALLOCATIONS)
   const [deleteTarget, setDeleteTarget]   = useState<AllocatedEmployee | null>(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
+  const [editTarget,   setEditTarget]     = useState<AllocatedEmployee | null>(null)
+  const [editForm,     setEditForm]       = useState({ role: '', allocation: 100, email: '' })
+  const [editSaving,   setEditSaving]     = useState(false)
 
   async function confirmDelete() {
     if (!deleteTarget) return
@@ -389,6 +357,24 @@ function AllocationTab() {
     setEmployees(prev => prev.filter(e => e.id !== deleteTarget.id))
     setDeleteLoading(false)
     setDeleteTarget(null)
+  }
+
+  function openEdit(emp: AllocatedEmployee) {
+    setEditTarget(emp)
+    setEditForm({ role: emp.role, allocation: emp.allocation, email: emp.email })
+  }
+
+  async function confirmEdit() {
+    if (!editTarget) return
+    setEditSaving(true)
+    await new Promise(r => setTimeout(r, 800))
+    setEmployees(prev => prev.map(e =>
+      e.id === editTarget.id
+        ? { ...e, role: editForm.role, allocation: editForm.allocation, email: editForm.email }
+        : e
+    ))
+    setEditSaving(false)
+    setEditTarget(null)
   }
 
   return (
@@ -409,7 +395,7 @@ function AllocationTab() {
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ background: '#F7F8FC' }}>
-              {['Employee', 'Employee Code', 'Role', 'Allocation', 'Start Date', 'End Date', 'Actions'].map(col => (
+              {['Employee', 'Employee Code', 'Role', 'Allocation', 'Actions'].map(col => (
                 <th
                   key={col}
                   style={{
@@ -432,6 +418,7 @@ function AllocationTab() {
                 idx={idx}
                 total={employees.length}
                 onDelete={() => setDeleteTarget(emp)}
+                onEdit={() => openEdit(emp)}
               />
             ))}
           </tbody>
@@ -548,17 +535,133 @@ function AllocationTab() {
           <style>{`@keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }`}</style>
         </div>
       )}
+
+      {/* ── Edit modal ── */}
+      {editTarget && (
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(10,12,28,0.50)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Sans', system-ui, sans-serif" }}
+          onClick={e => { if (e.target === e.currentTarget && !editSaving) setEditTarget(null) }}
+        >
+          <div style={{ background: '#fff', borderRadius: 22, width: 480, boxShadow: '0 28px 72px rgba(10,12,28,0.22)', overflow: 'hidden' }}>
+
+            {/* Modal header */}
+            <div style={{ padding: '24px 28px 20px', borderBottom: '1px solid #F0F2F8' }}>
+              <div className="flex items-center gap-3">
+                <div style={{ width: 40, height: 40, borderRadius: 11, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Edit2 size={17} strokeWidth={1.8} style={{ color: '#5B5FDE' }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: C.navy, letterSpacing: '-0.2px' }}>Edit Team Member</div>
+                  <div style={{ fontSize: 12.5, color: C.muted, marginTop: 1 }}>Update role, allocation and contact details</div>
+                </div>
+                <button onClick={() => setEditTarget(null)} style={{ marginLeft: 'auto', width: 30, height: 30, borderRadius: 8, border: `1px solid ${C.border}`, background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.muted, flexShrink: 0 }}
+                  onMouseEnter={e => { e.currentTarget.style.background = '#F7F8FC' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = '#fff' }}>
+                  <X size={13} strokeWidth={2} />
+                </button>
+              </div>
+            </div>
+
+            {/* Employee identity strip */}
+            <div style={{ margin: '18px 28px 0', padding: '12px 16px', background: '#F7F8FC', border: '1px solid #E8EAF2', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
+              <img src={`https://i.pravatar.cc/150?img=${editTarget.avatar}`} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', border: '2px solid #fff', flexShrink: 0 }} />
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: C.navy }}>{editTarget.name}</div>
+                <div style={{ fontSize: 12, color: C.muted, marginTop: 1 }}>{editTarget.code} · {editTarget.email}</div>
+              </div>
+            </div>
+
+            {/* Form fields */}
+            <div style={{ padding: '20px 28px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+              {/* Role */}
+              <div>
+                <label style={{ fontSize: 11.5, fontWeight: 700, color: '#8B90A7', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 7 }}>Role</label>
+                <div style={{ position: 'relative' }}>
+                  <select value={editForm.role} onChange={e => setEditForm(f => ({ ...f, role: e.target.value }))}
+                    style={{ width: '100%', height: 44, borderRadius: 10, padding: '0 36px 0 14px', fontSize: 13.5, fontWeight: 500, color: C.navy, outline: 'none', border: `1px solid ${C.border}`, background: '#fff', appearance: 'none', cursor: 'pointer', fontFamily: 'inherit', boxSizing: 'border-box', transition: 'border-color 0.15s' }}
+                    onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.10)' }}
+                    onBlur={e => { e.target.style.borderColor = C.border; e.target.style.boxShadow = 'none' }}>
+                    {ALLOC_ROLES.map(r => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                  <ChevronDown size={14} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: C.muted, pointerEvents: 'none' }} />
+                </div>
+              </div>
+
+              {/* Allocation */}
+              <div>
+                <label style={{ fontSize: 11.5, fontWeight: 700, color: '#8B90A7', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 7 }}>Allocation</label>
+                <div className="flex items-center gap-4">
+                  <div style={{ flex: 1, position: 'relative' }}>
+                    <input type="number" min={10} max={100} step={5}
+                      value={editForm.allocation}
+                      onChange={e => setEditForm(f => ({ ...f, allocation: Math.min(100, Math.max(10, Number(e.target.value))) }))}
+                      style={{ width: '100%', height: 44, borderRadius: 10, padding: '0 38px 0 14px', fontSize: 13.5, fontWeight: 600, color: C.navy, outline: 'none', border: `1px solid ${C.border}`, background: '#fff', fontFamily: 'inherit', boxSizing: 'border-box', transition: 'border-color 0.15s' }}
+                      onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.10)' }}
+                      onBlur={e => { e.target.style.borderColor = C.border; e.target.style.boxShadow = 'none' }} />
+                    <span style={{ position: 'absolute', right: 13, top: '50%', transform: 'translateY(-50%)', fontSize: 13, fontWeight: 700, color: C.muted, pointerEvents: 'none' }}>%</span>
+                  </div>
+                  {/* Visual bar */}
+                  <div style={{ flex: 2 }}>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span style={{ fontSize: 11, color: C.muted, fontWeight: 600 }}>10%</span>
+                      <div style={{ flex: 1, height: 6, borderRadius: 99, background: '#F0F2F8', overflow: 'hidden', position: 'relative' }}>
+                        <div style={{ height: '100%', width: `${editForm.allocation}%`, borderRadius: 99, background: editForm.allocation === 100 ? '#0EA86A' : editForm.allocation >= 70 ? '#6366F1' : '#F5A623', transition: 'width 0.2s, background 0.2s' }} />
+                      </div>
+                      <span style={{ fontSize: 11, color: C.muted, fontWeight: 600 }}>100%</span>
+                    </div>
+                    <div style={{ textAlign: 'center', fontSize: 12.5, fontWeight: 700, color: editForm.allocation === 100 ? '#0A8A58' : editForm.allocation >= 70 ? '#5B5FDE' : '#B45309' }}>
+                      {editForm.allocation === 100 ? 'Full-time' : editForm.allocation >= 70 ? 'Mostly allocated' : 'Part-time'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Email */}
+              <div>
+                <label style={{ fontSize: 11.5, fontWeight: 700, color: '#8B90A7', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 7 }}>Email</label>
+                <input type="email" value={editForm.email} onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))}
+                  placeholder="employee@company.com"
+                  style={{ width: '100%', height: 44, borderRadius: 10, padding: '0 14px', fontSize: 13.5, fontWeight: 500, color: C.navy, outline: 'none', border: `1px solid ${C.border}`, background: '#fff', fontFamily: 'inherit', boxSizing: 'border-box', transition: 'border-color 0.15s' }}
+                  onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.10)' }}
+                  onBlur={e => { e.target.style.borderColor = C.border; e.target.style.boxShadow = 'none' }} />
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div style={{ padding: '0 28px 26px', display: 'flex', gap: 10 }}>
+              <button onClick={() => setEditTarget(null)} disabled={editSaving}
+                style={{ flex: 1, height: 44, borderRadius: 12, border: `1px solid ${C.border}`, background: '#fff', color: C.muted, fontSize: 14, fontWeight: 600, cursor: editSaving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}
+                onMouseEnter={e => { if (!editSaving) { e.currentTarget.style.borderColor = '#C8CCE0'; e.currentTarget.style.color = C.navy } }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted }}>
+                Cancel
+              </button>
+              <button onClick={confirmEdit} disabled={editSaving}
+                style={{ flex: 1, height: 44, borderRadius: 12, border: 'none', background: editSaving ? '#818CF8' : 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)', color: '#fff', fontSize: 14, fontWeight: 700, cursor: editSaving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'opacity 0.15s' }}
+                onMouseEnter={e => { if (!editSaving) e.currentTarget.style.opacity = '0.88' }}
+                onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}>
+                {editSaving ? (
+                  <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ animation: 'spin 0.8s linear infinite', flexShrink: 0 }}><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>Saving…</>
+                ) : (
+                  <><Check size={15} strokeWidth={2.5} />Save Changes</>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
 
 function TableRow({
-  emp, idx, total, onDelete,
+  emp, idx, total, onDelete, onEdit,
 }: {
   emp: AllocatedEmployee
   idx: number
   total: number
   onDelete: () => void
+  onEdit: () => void
 }) {
   const [hovered, setHovered] = useState(false)
 
@@ -598,14 +701,8 @@ function TableRow({
         </div>
       </td>
       <td style={{ padding: '14px 20px', borderBottom: idx < total - 1 ? `1px solid #F3F4F8` : 'none' }}>
-        <span style={{ fontSize: 13, color: '#3D4266', fontWeight: 500 }}>{emp.startDate}</span>
-      </td>
-      <td style={{ padding: '14px 20px', borderBottom: idx < total - 1 ? `1px solid #F3F4F8` : 'none' }}>
-        <span style={{ fontSize: 13, color: '#3D4266', fontWeight: 500 }}>{emp.endDate}</span>
-      </td>
-      <td style={{ padding: '14px 20px', borderBottom: idx < total - 1 ? `1px solid #F3F4F8` : 'none' }}>
         <div className="flex items-center gap-1.5">
-          <ActionBtn icon={Edit2} color="#6366F1" bg="rgba(99,102,241,0.09)" title="Edit" />
+          <ActionBtn icon={Edit2} color="#6366F1" bg="rgba(99,102,241,0.09)" title="Edit" onClick={onEdit} />
           <ActionBtn icon={Trash2} color="#E84855" bg="rgba(232,72,85,0.09)" title="Delete" onClick={onDelete} />
         </div>
       </td>

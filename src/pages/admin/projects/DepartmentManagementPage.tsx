@@ -342,16 +342,15 @@ function AddDepartmentPage({ onBack, onSave }: {
         <button
           onClick={onBack}
           style={{
-            display: 'flex', alignItems: 'center', gap: 6,
-            height: 36, padding: '0 14px', borderRadius: 10,
-            border: `1.5px solid ${C.border}`, background: '#fff',
-            fontSize: 13, fontWeight: 600, color: C.muted,
-            cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            width: 32, height: 32, borderRadius: 9,
+            border: `1px solid ${C.border}`, background: '#fff',
+            cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0,
           }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = '#A5B4FC'; e.currentTarget.style.color = C.navy }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted }}
+          onMouseEnter={e => { e.currentTarget.style.background = '#F7F8FC'; e.currentTarget.style.borderColor = '#C8CCE0' }}
+          onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = C.border }}
         >
-          <ArrowLeft size={14} /> Back
+          <ArrowLeft size={14} strokeWidth={2} style={{ color: C.muted }} />
         </button>
         <span style={{ color: '#C8CCDC', fontSize: 14 }}>/</span>
         <span style={{ fontSize: 13.5, color: C.muted, fontWeight: 500 }}>Department Management</span>

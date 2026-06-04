@@ -414,25 +414,6 @@ function ProjectCard({
       {/* Divider */}
       <div style={{ height: 1, background: '#F0F2F8', marginBottom: 18 }} />
 
-      {/* ── Progress bar ── */}
-      <div style={{ marginBottom: 20 }}>
-        <div className="flex items-center justify-between" style={{ marginBottom: 8 }}>
-          <span style={{ fontSize: 12, fontWeight: 600, color: '#8B90A7' }}>Progress</span>
-          <span style={{ fontSize: 12.5, fontWeight: 700, color: project.color }}>{project.progress}%</span>
-        </div>
-        <div style={{ height: 7, borderRadius: 99, background: '#F0F2F8', overflow: 'hidden' }}>
-          <div
-            style={{
-              height: '100%',
-              width: `${project.progress}%`,
-              borderRadius: 99,
-              background: `linear-gradient(90deg, ${project.color}, ${project.color}bb)`,
-              transition: 'width 0.6s ease',
-            }}
-          />
-        </div>
-      </div>
-
       {/* ── Footer action ── */}
       <button
         onClick={onView}

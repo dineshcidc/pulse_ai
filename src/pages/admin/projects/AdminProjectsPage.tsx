@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Search, Clock, TrendingUp, Users, CheckCircle2, Calendar, ArrowRight, Building2 } from 'lucide-react'
+import { Search, Clock, TrendingUp, Users, CheckCircle2, Calendar, ArrowRight, Building2, Plus } from 'lucide-react'
 import ProjectDetailPage from '../../manager/projects/ProjectDetailPage'
+import AddProjectPage from './AddProjectPage'
 
 type Status = 'active' | 'on-hold' | 'completed'
 
@@ -392,21 +393,6 @@ function ProjectCard({
 
       <div style={{ height: 1, background: '#F0F2F8', marginBottom: 18 }} />
 
-      {/* Progress bar */}
-      <div style={{ marginBottom: 20 }}>
-        <div className="flex items-center justify-between" style={{ marginBottom: 8 }}>
-          <span style={{ fontSize: 12, fontWeight: 600, color: '#8B90A7' }}>Progress</span>
-          <span style={{ fontSize: 12.5, fontWeight: 700, color: project.color }}>{project.progress}%</span>
-        </div>
-        <div style={{ height: 7, borderRadius: 99, background: '#F0F2F8', overflow: 'hidden' }}>
-          <div style={{
-            height: '100%', width: `${project.progress}%`, borderRadius: 99,
-            background: `linear-gradient(90deg, ${project.color}, ${project.color}bb)`,
-            transition: 'width 0.6s ease',
-          }} />
-        </div>
-      </div>
-
       {/* Footer */}
       <button
         onClick={onView}
@@ -431,12 +417,22 @@ export default function AdminProjectsPage() {
   const [filter, setFilter] = useState<'all' | Status>('all')
   const [search, setSearch] = useState('')
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
+  const [addingProject, setAddingProject] = useState(false)
 
   if (selectedProject) {
     return (
       <ProjectDetailPage
         project={selectedProject}
         onBack={() => setSelectedProject(null)}
+      />
+    )
+  }
+
+  if (addingProject) {
+    return (
+      <AddProjectPage
+        onBack={() => setAddingProject(false)}
+        onSave={() => setAddingProject(false)}
       />
     )
   }
@@ -480,6 +476,20 @@ export default function AdminProjectsPage() {
             Organisation-wide view of all projects — track progress, teams, and delivery across every department
           </p>
         </div>
+        <button
+          onClick={() => setAddingProject(true)}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            height: 34, padding: '0 14px', borderRadius: 9, border: 'none',
+            background: C.navy, fontSize: 12.5, fontWeight: 600, color: '#fff',
+            cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0,
+            transition: 'background 0.15s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = '#2A3050' }}
+          onMouseLeave={e => { e.currentTarget.style.background = C.navy }}
+        >
+          <Plus size={13} strokeWidth={2.2} /> Add Project
+        </button>
       </div>
 
       {/* Stat cards */}

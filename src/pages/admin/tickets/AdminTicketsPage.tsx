@@ -247,6 +247,7 @@ export default function AdminTicketsPage() {
   const catCount = (id: string) =>
     id === 'All' ? tickets.length : tickets.filter(t => t.category === id).length
 
+
   const baseFiltered = tickets.filter(t => {
     const matchCat    = activeCategory === 'All' || t.category === activeCategory
     const q           = searchQuery.toLowerCase()
