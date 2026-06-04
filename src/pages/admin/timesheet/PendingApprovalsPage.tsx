@@ -188,6 +188,8 @@ export default function PendingApprovalsPage() {
   const [state,            setState]            = useState<'loading'|'done'>('loading')
   const [reminded,         setReminded]         = useState<Set<number>>(new Set())
   const [toast,            setToast]            = useState<string|null>(null)
+  const [fromDate,         setFromDate]         = useState('')
+  const [toDate,           setToDate]           = useState('')
   const searchRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -306,7 +308,7 @@ export default function PendingApprovalsPage() {
         <div style={{ display:'flex', alignItems:'center', gap:12 }}>
 
           {/* Manager search */}
-          <div ref={searchRef} style={{ flex:'1 1 280px', minWidth:200, position:'relative' }}>
+          <div ref={searchRef} style={{ flex:'1 1 200px', minWidth:160, position:'relative' }}>
             <Search size={14} style={{ position:'absolute', left:13, top:'50%', transform:'translateY(-50%)', color:C.muted, pointerEvents:'none' }} />
             <input
               value={searchQuery}
@@ -367,26 +369,20 @@ export default function PendingApprovalsPage() {
             <ChevronDown size={13} style={{ position:'absolute', right:10, top:'50%', transform:'translateY(-50%)', color:C.muted, pointerEvents:'none' }} />
           </div>
 
-          {/* Current date */}
-          <div style={{ display:'flex', alignItems:'center', gap:7, padding:'0 14px', height:44, background:C.surface, border:'1px solid #ECEEF6', borderRadius:11, flexShrink:0 }}>
-            <CalendarDays size={14} color={C.muted} strokeWidth={2} />
-            <span style={{ fontSize:13, fontWeight:600, color:C.navy, whiteSpace:'nowrap' }}>
-              {new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' })}
-            </span>
+          {/* From / To date range */}
+          <div style={{ display:'flex', alignItems:'center', gap:8, flexShrink:0 }}>
+            <span style={{ fontSize:12.5, fontWeight:600, color:C.muted, whiteSpace:'nowrap' }}>From</span>
+            <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)}
+              style={{ height:44, padding:'0 12px', border:'1px solid #ECEEF6', borderRadius:11, fontSize:13, color: fromDate ? C.navy : C.muted, background:C.surface, outline:'none', cursor:'pointer', fontFamily:'inherit', transition:'border-color 0.15s', width:150 }}
+              onFocus={e => { e.target.style.borderColor = '#B0B5CC' }}
+              onBlur={e => { e.target.style.borderColor = '#ECEEF6' }} />
+            <span style={{ fontSize:12.5, fontWeight:600, color:C.muted, whiteSpace:'nowrap' }}>To</span>
+            <input type="date" value={toDate} onChange={e => setToDate(e.target.value)}
+              style={{ height:44, padding:'0 12px', border:'1px solid #ECEEF6', borderRadius:11, fontSize:13, color: toDate ? C.navy : C.muted, background:C.surface, outline:'none', cursor:'pointer', fontFamily:'inherit', transition:'border-color 0.15s', width:150 }}
+              onFocus={e => { e.target.style.borderColor = '#B0B5CC' }}
+              onBlur={e => { e.target.style.borderColor = '#ECEEF6' }} />
           </div>
 
-          {/* Generate button */}
-          <button
-            onClick={handleGenerate}
-            disabled={state === 'loading' || !canGenerate}
-            style={{ marginLeft:'auto', height:44, padding:'0 28px', borderRadius:11, border:'none', background: !canGenerate ? '#E8EAF2' : state === 'loading' ? '#A0A3B1' : C.navy, color: !canGenerate ? '#9099B5' : '#fff', fontSize:13.5, fontWeight:700, cursor: !canGenerate || state === 'loading' ? 'not-allowed' : 'pointer', fontFamily:'inherit', transition:'background 0.2s, color 0.2s', display:'flex', alignItems:'center', gap:8, whiteSpace:'nowrap', flexShrink:0 }}
-            onMouseEnter={e => { if (canGenerate && state !== 'loading') e.currentTarget.style.background = '#2A3050' }}
-            onMouseLeave={e => { e.currentTarget.style.background = !canGenerate ? '#E8EAF2' : state === 'loading' ? '#A0A3B1' : C.navy }}>
-            {state === 'loading'
-              ? <><div style={{ width:15, height:15, borderRadius:'50%', border:'2.5px solid rgba(255,255,255,0.3)', borderTopColor:'#fff', animation:'pa-spin 0.75s linear infinite' }} /> Loading…</>
-              : <><ClipboardList size={15} strokeWidth={2} /> Generate</>
-            }
-          </button>
         </div>
       </div>
 

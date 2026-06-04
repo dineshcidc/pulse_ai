@@ -14,12 +14,13 @@ import DepartmentManagementPage from './projects/DepartmentManagementPage'
 import AdminOrgStructurePage from './AdminOrgStructurePage'
 import AttendanceReportPage from './reports/AttendanceReportPage'
 import LeaveReportPage from './reports/LeaveReportPage'
-import OrgProfilePage from './settings/OrgProfilePage'
+import OrgProfileWrapperPage from './settings/OrgProfileWrapperPage'
 import WorkingHoursPage from './settings/WorkingHoursPage'
 import AdminAnnouncementsPage from './settings/AdminAnnouncementsPage'
 import PendingApprovalsPage from './timesheet/PendingApprovalsPage'
 import AdminTicketsPage from './tickets/AdminTicketsPage'
 import LeavePolicyPage from './leave/LeavePolicyPage'
+import DesignationPage from './users/DesignationPage'
 
 const PAGE_LABELS: Record<string, string> = {
   'admin-dashboard':      'Dashboard',
@@ -46,6 +47,7 @@ const PAGE_LABELS: Record<string, string> = {
   'email-notifications':  'Email Notifications',
   'announcements':        'Announcements',
   'admin-tickets':        'Support Tickets',
+  'designation':          'Designation Management',
 }
 
 function ComingSoon({ id }: { id: string }) {
@@ -97,11 +99,12 @@ function PageContent({ activeItem, onNavigate }: { activeItem: string; onNavigat
   if (activeItem === 'admin-org')              return <AdminOrgStructurePage />
   if (activeItem === 'attendance-report')      return <AttendanceReportPage />
   if (activeItem === 'leave-report')           return <LeaveReportPage />
-  if (activeItem === 'org-profile')            return <OrgProfilePage />
+  if (activeItem === 'org-profile')            return <OrgProfileWrapperPage />
   if (activeItem === 'working-hours')          return <WorkingHoursPage />
   if (activeItem === 'announcements')          return <AdminAnnouncementsPage />
   if (activeItem === 'admin-tickets')          return <AdminTicketsPage />
   if (activeItem === 'leave-policy')           return <LeavePolicyPage />
+  if (activeItem === 'designation')            return <DesignationPage />
   return <ComingSoon id={activeItem} />
 }
 

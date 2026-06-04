@@ -102,6 +102,7 @@ const STATUS_CONFIG: Record<Status, { label: string; color: string; bg: string; 
   'completed': { label: 'Completed', color: '#3B82F6', bg: 'rgba(59,130,246,0.10)',  border: 'rgba(59,130,246,0.20)'  },
 }
 
+
 const PROJECT_CODES: Record<string, string> = {
   p1: 'PRJ-2026-001',
   p2: 'PRJ-2026-002',
@@ -987,29 +988,27 @@ export default function ProjectDetailPage({
 
   return (
     <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
-      {/* ── Page header ── */}
-      <div className="flex items-center gap-4 mb-6">
+      {/* ── Breadcrumb ── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
         <button
           onClick={onBack}
-          className="flex items-center gap-2 rounded-xl border cursor-pointer font-semibold"
-          style={{
-            height: 38, padding: '0 14px', fontSize: 13,
-            background: '#fff', border: `1px solid ${C.border}`, color: C.muted,
-            fontFamily: 'inherit', flexShrink: 0,
-            transition: 'all 0.15s',
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.borderColor = '#C8CCE0'
-            e.currentTarget.style.color = C.navy
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.borderColor = C.border
-            e.currentTarget.style.color = C.muted
-          }}
+          style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: 9, border: `1px solid ${C.border}`, background: '#fff', cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0 }}
+          onMouseEnter={e => { e.currentTarget.style.background = '#F7F8FC'; e.currentTarget.style.borderColor = '#C8CCE0' }}
+          onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = C.border }}
         >
-          <ArrowLeft size={14} />
-          Back to Projects
+          <ArrowLeft size={14} strokeWidth={2} style={{ color: C.muted }} />
         </button>
+        <span style={{ color: '#C8CCDC', fontSize: 14 }}>/</span>
+        <button
+          onClick={onBack}
+          style={{ fontSize: 13.5, color: C.muted, fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit', transition: 'color 0.14s' }}
+          onMouseEnter={e => { e.currentTarget.style.color = C.navy }}
+          onMouseLeave={e => { e.currentTarget.style.color = C.muted }}
+        >
+          Projects
+        </button>
+        <span style={{ color: '#C8CCDC', fontSize: 14 }}>/</span>
+        <span style={{ fontSize: 13.5, fontWeight: 700, color: C.navy }}>{project.name}</span>
       </div>
 
       {/* ── Overview card ── */}

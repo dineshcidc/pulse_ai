@@ -130,7 +130,6 @@ const TABS: { id: LeaveStatus; label: string }[] = [
 
 const PROJECTS = ['All Projects',  'Pulse.AI v2', 'HDFC Portal', 'TechCorp ERP']
 const MANAGERS = ['All Managers',  ...Array.from(new Set(DATA.map(d => d.reportingManager)))]
-const TYPES    = ['All Types', 'Bereavement Holiday', 'Birthday Leave', 'Election Day Leave', 'Floating Holiday', 'LWP', 'Paternity Leave', 'Planned Leave', 'Unplanned Leave']
 
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', hover: '#F0F2F8', surface: '#F7F8FC' }
 
@@ -299,7 +298,6 @@ export default function AllLeaveRequestsPage() {
   const [search,    setSearch]    = useState('')
   const [project,   setProject]   = useState('All Projects')
   const [manager,   setManager]   = useState('All Managers')
-  const [leaveType, setLeaveType] = useState('All Types')
   const [fromDate,  setFromDate]  = useState('')
   const [sFocus,    setSFocus]    = useState(false)
   const [viewItem,  setViewItem]  = useState<LeaveRequest | null>(null)
@@ -310,9 +308,8 @@ export default function AllLeaveRequestsPage() {
     const mt = r.status === tab
     const mp = project   === 'All Projects' || r.project          === project
     const mg = manager   === 'All Managers' || r.reportingManager === manager
-    const ml = leaveType === 'All Types'    || r.leaveType        === leaveType
     const mf = !fromDate || r.fromDate >= fromDate
-    return ms && mt && mp && mg && ml && mf
+    return ms && mt && mp && mg && mf
   })
 
   const counts: Record<LeaveStatus, number> = {
@@ -321,11 +318,11 @@ export default function AllLeaveRequestsPage() {
     Rejected: DATA.filter(r => r.status === 'Rejected').length,
   }
 
-  const anyFilter = !!(search || project !== 'All Projects' || manager !== 'All Managers' || leaveType !== 'All Types' || fromDate)
+  const anyFilter = !!(search || project !== 'All Projects' || manager !== 'All Managers' || fromDate)
 
   function clearAll() {
     setSearch(''); setProject('All Projects')
-    setManager('All Managers'); setLeaveType('All Types'); setFromDate('')
+    setManager('All Managers'); setFromDate('')
   }
 
   return (
@@ -379,7 +376,7 @@ export default function AllLeaveRequestsPage() {
       <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, padding: '13px 16px', marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
           {/* Search */}
-          <div style={{ position: 'relative', flex: '1 1 180px', minWidth: 180 }}>
+          <div style={{ position: 'relative', flex: 1 }}>
             <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: C.muted, pointerEvents: 'none' }} />
             <input value={search} onChange={e => setSearch(e.target.value)}
               onFocus={() => setSFocus(true)} onBlur={() => setSFocus(false)}
@@ -395,7 +392,6 @@ export default function AllLeaveRequestsPage() {
 
           <Dropdown value={project}   options={PROJECTS} onChange={setProject}   minW={138} />
           <Dropdown value={manager}   options={MANAGERS} onChange={setManager}   minW={152} />
-          <Dropdown value={leaveType} options={TYPES}    onChange={setLeaveType} minW={128} />
           <DateInput value={fromDate} onChange={setFromDate} placeholder="Leave date" />
 
           {anyFilter && (
@@ -428,8 +424,6 @@ export default function AllLeaveRequestsPage() {
                 borderRadius: 16, overflow: 'hidden',
                 display: 'flex',
               }}>
-                {/* Status accent bar */}
-                <div style={{ width: 2, background: sc.border, flexShrink: 0, borderRadius: '2px 0 0 2px' }} />
 
                 <div style={{ flex: 1, padding: '16px 20px', display: 'flex', alignItems: 'center', minWidth: 0 }}>
 

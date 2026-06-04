@@ -644,11 +644,11 @@ export default function RoleAccessPage() {
               <button onClick={confirmChange} disabled={!selectedNew || saving}
                 style={{
                   flex: 2, height: 42, borderRadius: 10, fontSize: 13.5, fontWeight: 700, border: 'none',
-                  background: !selectedNew ? C.hover : saving ? '#4B4F6E' : C.navy,
+                  background: !selectedNew ? C.hover : saving ? '#818CF8' : 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)',
                   color: !selectedNew ? C.muted : '#fff',
                   cursor: !selectedNew || saving ? 'not-allowed' : 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                  transition: 'background 0.2s',
+                  transition: 'opacity 0.15s',
                 }}>
                 {saving ? (
                   <>

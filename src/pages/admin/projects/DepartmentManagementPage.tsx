@@ -2,7 +2,7 @@ import { useState, useEffect, Fragment } from 'react'
 import {
   Search, Code2, Layers, Palette, ShieldCheck, Server,
   Package, Smartphone, HeartPulse, UserCog, Landmark,
-  Users, Briefcase, AlertCircle, ArrowLeft, Eye,
+  Users, Briefcase, AlertCircle, ArrowLeft, Eye, Edit2, X, ChevronDown,
   TrendingUp, Clock, CheckCircle2, Plus, Database, Globe, BarChart3,
 } from 'lucide-react'
 
@@ -22,6 +22,7 @@ interface Department {
   head: { name: string; title: string; avatar: number }
   employeeCount: number; targetHeadcount: number
   activeProjects: number; openPositions: number
+  designationTag: string
   employees: DeptEmployee[]
   projects: { name: string; status: 'active' | 'on-hold' | 'completed'; progress: number; color: string }[]
 }
@@ -34,6 +35,7 @@ const INITIAL_DEPARTMENTS: Department[] = [
     color: '#6366F1', Icon: Code2,
     head: { name: 'Rohan Mehta', title: 'VP Engineering', avatar: 29 },
     employeeCount: 18, targetHeadcount: 22, activeProjects: 3, openPositions: 4,
+    designationTag: 'Engineering',
     employees: [
       { name: 'Sarah Johnson',  avatar: 47, empId: 'EMP-0047', role: 'Senior Engineer',      status: 'Active',   joined: 'Jan 2023' },
       { name: 'Tom Davis',      avatar: 20, empId: 'EMP-0020', role: 'Backend Engineer',      status: 'Active',   joined: 'Sep 2022' },
@@ -54,6 +56,7 @@ const INITIAL_DEPARTMENTS: Department[] = [
     color: '#0EA86A', Icon: Layers,
     head: { name: 'Priya Sharma', title: 'Head of Product', avatar: 10 },
     employeeCount: 9, targetHeadcount: 10, activeProjects: 2, openPositions: 1,
+    designationTag: 'Product',
     employees: [
       { name: 'Priya Sharma', avatar: 10, empId: 'EMP-0010', role: 'Head of Product',    status: 'Active',   joined: 'Apr 2021' },
       { name: 'Anjali Singh', avatar: 36, empId: 'EMP-0036', role: 'Product Analyst',    status: 'Active',   joined: 'Aug 2023' },
@@ -71,6 +74,7 @@ const INITIAL_DEPARTMENTS: Department[] = [
     color: '#EC4899', Icon: Palette,
     head: { name: 'Fatima Al-Zahra', title: 'Design Lead', avatar: 41 },
     employeeCount: 7, targetHeadcount: 8, activeProjects: 2, openPositions: 1,
+    designationTag: 'Design',
     employees: [
       { name: 'Fatima Al-Zahra', avatar: 41, empId: 'EMP-0041', role: 'Design Lead',     status: 'Active',   joined: 'Feb 2024' },
       { name: 'Emma Wilson',     avatar: 44, empId: 'EMP-0044', role: 'UI/UX Designer',  status: 'On Leave', joined: 'Feb 2023' },
@@ -88,6 +92,7 @@ const INITIAL_DEPARTMENTS: Department[] = [
     color: '#06B6D4', Icon: ShieldCheck,
     head: { name: 'Mike Chen', title: 'QA Manager', avatar: 33 },
     employeeCount: 6, targetHeadcount: 8, activeProjects: 3, openPositions: 2,
+    designationTag: 'Quality Assurance',
     employees: [
       { name: 'Mike Chen',    avatar: 33, empId: 'EMP-0033', role: 'QA Manager',          status: 'Active',   joined: 'Mar 2023' },
       { name: 'Arjun Patel',  avatar: 52, empId: 'EMP-0052', role: 'QA Engineer',         status: 'On Leave', joined: 'May 2023' },
@@ -106,6 +111,7 @@ const INITIAL_DEPARTMENTS: Department[] = [
     color: '#3B82F6', Icon: Server,
     head: { name: 'Lisa Garcia', title: 'DevOps Lead', avatar: 25 },
     employeeCount: 8, targetHeadcount: 10, activeProjects: 2, openPositions: 2,
+    designationTag: 'Infrastructure',
     employees: [
       { name: 'Lisa Garcia',  avatar: 25, empId: 'EMP-0025', role: 'DevOps Lead',      status: 'Active', joined: 'Jul 2022' },
       { name: 'Nikhil Verma', avatar: 37, empId: 'EMP-0037', role: 'SRE Engineer',     status: 'Active', joined: 'Sep 2022' },
@@ -123,6 +129,7 @@ const INITIAL_DEPARTMENTS: Department[] = [
     color: '#F5A623', Icon: Package,
     head: { name: 'David Brown', title: 'Delivery Manager', avatar: 38 },
     employeeCount: 10, targetHeadcount: 12, activeProjects: 3, openPositions: 2,
+    designationTag: 'Operations',
     employees: [
       { name: 'David Brown', avatar: 38, empId: 'EMP-0038', role: 'Delivery Manager',    status: 'Active',   joined: 'Nov 2021' },
       { name: 'Pooja Menon', avatar: 31, empId: 'EMP-0031', role: 'Project Coordinator', status: 'Active',   joined: 'Mar 2023' },
@@ -141,6 +148,7 @@ const INITIAL_DEPARTMENTS: Department[] = [
     color: '#8B5CF6', Icon: Smartphone,
     head: { name: 'Sneha Iyer', title: 'Mobile Lead', avatar: 48 },
     employeeCount: 7, targetHeadcount: 9, activeProjects: 1, openPositions: 2,
+    designationTag: 'Mobile',
     employees: [
       { name: 'Sneha Iyer',    avatar: 48, empId: 'EMP-0048', role: 'Mobile Lead',       status: 'Active', joined: 'Feb 2022' },
       { name: 'Rahul Khanna',  avatar: 3,  empId: 'EMP-0003', role: 'iOS Developer',     status: 'Active', joined: 'May 2023' },
@@ -157,6 +165,7 @@ const INITIAL_DEPARTMENTS: Department[] = [
     color: '#F59E0B', Icon: UserCog,
     head: { name: 'Kavitha Reddy', title: 'HR Manager', avatar: 21 },
     employeeCount: 6, targetHeadcount: 6, activeProjects: 0, openPositions: 0,
+    designationTag: 'Human Resources',
     employees: [
       { name: 'Kavitha Reddy', avatar: 21, empId: 'EMP-0021', role: 'HR Manager',          status: 'Active', joined: 'Mar 2020' },
       { name: 'Bhavana Iyer',  avatar: 32, empId: 'EMP-0032', role: 'Talent Acquisition',  status: 'Active', joined: 'Jul 2022' },
@@ -171,6 +180,7 @@ const INITIAL_DEPARTMENTS: Department[] = [
     color: '#EF4444', Icon: Landmark,
     head: { name: 'Nina Volkov', title: 'Finance Head', avatar: 18 },
     employeeCount: 7, targetHeadcount: 7, activeProjects: 0, openPositions: 0,
+    designationTag: 'Finance',
     employees: [
       { name: 'Nina Volkov',   avatar: 18, empId: 'EMP-0018', role: 'Finance Head',       status: 'Active', joined: 'Jan 2020' },
       { name: 'Dinesh Kumar',  avatar: 26, empId: 'EMP-0026', role: 'Senior Accountant',  status: 'Active', joined: 'Apr 2021' },
@@ -207,6 +217,27 @@ const STATUS_CFG: Record<EmpStatus, { color: string; bg: string; border: string 
   'Inactive': { color: '#6B7280', bg: 'rgba(107,114,128,0.09)', border: 'rgba(107,114,128,0.18)' },
 }
 
+
+/* ── Org members for head search ── */
+const ORG_MEMBERS = [
+  { name: 'Rohan Mehta',     title: 'VP Engineering',     avatar: 29 },
+  { name: 'Priya Sharma',    title: 'Head of Product',    avatar: 10 },
+  { name: 'Fatima Al-Zahra', title: 'Design Lead',        avatar: 41 },
+  { name: 'Mike Chen',       title: 'QA Manager',         avatar: 33 },
+  { name: 'Lisa Garcia',     title: 'DevOps Lead',        avatar: 25 },
+  { name: 'David Brown',     title: 'Delivery Manager',   avatar: 38 },
+  { name: 'Sneha Iyer',      title: 'Mobile Lead',        avatar: 48 },
+  { name: 'Kavitha Reddy',   title: 'HR Manager',         avatar: 21 },
+  { name: 'Nina Volkov',     title: 'Finance Head',       avatar: 18 },
+  { name: 'Arjun Sharma',    title: 'Technical Lead',     avatar: 47 },
+  { name: 'Sarah Johnson',   title: 'Senior Engineer',    avatar: 44 },
+  { name: 'Anjali Singh',    title: 'Product Analyst',    avatar: 36 },
+  { name: 'Karthik Nair',    title: 'Full Stack Developer', avatar: 56 },
+  { name: 'Vikram Bose',     title: 'Data Engineer',      avatar: 10 },
+  { name: 'Priya Mehta',     title: 'HR Business Partner',avatar: 21 },
+  { name: 'Arjun Menon',     title: 'IT Support Lead',    avatar: 15 },
+  { name: 'Sunita Rao',      title: 'Finance Manager',    avatar: 20 },
+]
 
 /* ── Count-up hook ── */
 function useCountUp(target: number, duration = 900, delay = 0) {
@@ -266,26 +297,34 @@ function StatCard({ label, subtext, value, icon: Icon, color, bg, border, delay 
 interface AddForm {
   name: string; description: string; color: string; iconKey: string
   headName: string; headTitle: string; headAvatar: number; targetHeadcount: string
+  designationTag: string
 }
 
 const EMPTY_FORM: AddForm = {
   name: '', description: '', color: '#6366F1', iconKey: 'code2',
   headName: '', headTitle: '', headAvatar: 47, targetHeadcount: '',
+  designationTag: '',
 }
 
 function AddDepartmentPage({ onBack, onSave }: {
   onBack: () => void
   onSave: (d: Department) => void
 }) {
-  const [form, setForm] = useState<AddForm>(EMPTY_FORM)
-  const [errors, setErrors] = useState<Partial<Record<keyof AddForm, string>>>({})
+  const [form, setForm]         = useState<AddForm>(EMPTY_FORM)
+  const [errors, setErrors]     = useState<Partial<Record<keyof AddForm, string>>>({})
+  const [headSearch, setHeadSearch] = useState('')
+  const [headOpen,   setHeadOpen]   = useState(false)
+
+  const headSuggestions = ORG_MEMBERS.filter(m =>
+    m.name.toLowerCase().includes(headSearch.toLowerCase()) ||
+    m.title.toLowerCase().includes(headSearch.toLowerCase())
+  )
 
   function validate() {
     const e: Partial<Record<keyof AddForm, string>> = {}
     if (!form.name.trim())         e.name         = 'Department name is required'
     if (!form.description.trim())  e.description  = 'Description is required'
-    if (!form.headName.trim())     e.headName     = 'Head name is required'
-    if (!form.headTitle.trim())    e.headTitle    = 'Head title is required'
+    if (!form.headName.trim())     e.headName     = 'Please select a department head'
     if (!form.targetHeadcount || isNaN(Number(form.targetHeadcount)) || Number(form.targetHeadcount) < 1)
       e.targetHeadcount = 'Enter a valid headcount'
     setErrors(e)
@@ -306,6 +345,7 @@ function AddDepartmentPage({ onBack, onSave }: {
       targetHeadcount: Number(form.targetHeadcount),
       activeProjects: 0,
       openPositions: Number(form.targetHeadcount),
+      designationTag: form.designationTag,
       employees: [],
       projects: [],
     }
@@ -417,6 +457,41 @@ function AddDepartmentPage({ onBack, onSave }: {
                 />
               </Field>
 
+{/* Designation Tag */}
+              <div>
+                <label style={{ fontSize: 12.5, fontWeight: 600, color: C.navy, display: 'block', marginBottom: 6 }}>
+                  Designation Tag Name
+                </label>
+                <p style={{ fontSize: 11.5, color: C.muted, margin: '0 0 10px' }}>A single tag that classifies this department's primary function.</p>
+                {form.designationTag ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', padding: '5px 14px', borderRadius: 99, background: `${form.color}14`, border: `1px solid ${form.color}30`, fontSize: 13, fontWeight: 700, color: form.color }}>
+                      {form.designationTag}
+                    </span>
+                    <span style={{ fontSize: 11.5, color: C.muted }}>Preview</span>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 6, marginBottom: 10 }}>
+                    <span style={{ fontSize: 11, color: '#B0B4C8', fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '0.05em', alignSelf: 'center', marginRight: 2 }}>e.g.</span>
+                    {['Engineering', 'Product', 'Design', 'Operations', 'Finance'].map(ex => (
+                      <span key={ex} onClick={() => setForm(f => ({ ...f, designationTag: ex }))}
+                        style={{ padding: '3px 10px', borderRadius: 99, background: '#F0F2F8', border: '1px solid #E4E6EF', fontSize: 12, fontWeight: 500, color: C.muted, cursor: 'pointer' }}
+                        onMouseEnter={e => { e.currentTarget.style.background = `${form.color}12`; e.currentTarget.style.color = form.color }}
+                        onMouseLeave={e => { e.currentTarget.style.background = '#F0F2F8'; e.currentTarget.style.color = C.muted }}>
+                        {ex}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                <input
+                  value={form.designationTag}
+                  onChange={e => setForm(f => ({ ...f, designationTag: e.target.value }))}
+                  placeholder="e.g. Engineering"
+                  style={{ ...iStyle(false, form.designationTag), height: 40 }}
+                  {...fi(form.color, false)}
+                />
+              </div>
+
 {/* Icon */}
               <div>
                 <label style={{ fontSize: 12.5, fontWeight: 600, color: C.navy, display: 'block', marginBottom: 10 }}>
@@ -464,26 +539,69 @@ function AddDepartmentPage({ onBack, onSave }: {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-              <Field label="Full Name" required error={errors.headName}>
-                <input
-                  value={form.headName}
-                  onChange={e => setForm(f => ({ ...f, headName: e.target.value }))}
-                  placeholder="e.g. Alex Johnson"
-                  style={iStyle(!!errors.headName, form.headName)}
-                  {...fi(form.color, !!errors.headName)}
-                />
-              </Field>
-              <Field label="Job Title" required error={errors.headTitle}>
-                <input
-                  value={form.headTitle}
-                  onChange={e => setForm(f => ({ ...f, headTitle: e.target.value }))}
-                  placeholder="e.g. Head of Data Science"
-                  style={iStyle(!!errors.headTitle, form.headTitle)}
-                  {...fi(form.color, !!errors.headTitle)}
-                />
-              </Field>
-            </div>
+            {errors.headName && (
+              <p style={{ margin: '0 0 10px', fontSize: 12.5, color: '#E84855', fontWeight: 500 }}>{errors.headName}</p>
+            )}
+
+            {/* Selected member chip */}
+            {form.headName ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderRadius: 12, border: `1px solid ${form.color}30`, background: `${form.color}06` }}>
+                <img src={`https://i.pravatar.cc/150?img=${form.headAvatar}`} alt=""
+                  style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: `2px solid ${form.color}30` }} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13.5, fontWeight: 700, color: C.navy }}>{form.headName}</div>
+                  <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>{form.headTitle}</div>
+                </div>
+                <button onClick={() => setForm(f => ({ ...f, headName: '', headTitle: '', headAvatar: 47 }))}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: C.muted, lineHeight: 0 }}
+                  onMouseEnter={e => { e.currentTarget.style.color = '#E84855' }}
+                  onMouseLeave={e => { e.currentTarget.style.color = C.muted }}>
+                  <X size={14} strokeWidth={2} />
+                </button>
+              </div>
+            ) : (
+              /* Search input with dropdown */
+              <div style={{ position: 'relative' }}>
+                {headOpen && <div style={{ position: 'fixed', inset: 0, zIndex: 49 }} onClick={() => setHeadOpen(false)} />}
+                <div style={{ position: 'relative', zIndex: 50 }}>
+                  <input
+                    value={headSearch}
+                    onChange={e => { setHeadSearch(e.target.value); setHeadOpen(true) }}
+                    onFocus={() => setHeadOpen(true)}
+                    placeholder="Search member by name or role…"
+                    style={{ ...iStyle(!!errors.headName, headSearch), paddingLeft: 38 }}
+                    {...fi(form.color, !!errors.headName)}
+                  />
+                  <UserCog size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: C.muted, pointerEvents: 'none' }} />
+                </div>
+                {headOpen && headSuggestions.length > 0 && (
+                  <div style={{ position: 'absolute', top: 'calc(100% + 5px)', left: 0, right: 0, background: '#fff', border: `1px solid ${C.border}`, borderRadius: 13, boxShadow: '0 8px 28px rgba(28,32,53,0.12)', zIndex: 200, overflow: 'hidden', maxHeight: 240, overflowY: 'auto' }}>
+                    {headSuggestions.map(m => (
+                      <button key={m.name}
+                        onMouseDown={() => {
+                          setForm(f => ({ ...f, headName: m.name, headTitle: m.title, headAvatar: m.avatar }))
+                          setHeadSearch(''); setHeadOpen(false)
+                        }}
+                        style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 14px', border: 'none', background: 'transparent', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.12s' }}
+                        onMouseEnter={e => { e.currentTarget.style.background = C.surface }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}>
+                        <img src={`https://i.pravatar.cc/150?img=${m.avatar}`} alt=""
+                          style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: `1.5px solid ${C.border}` }} />
+                        <div>
+                          <div style={{ fontSize: 13.5, fontWeight: 600, color: C.navy }}>{m.name}</div>
+                          <div style={{ fontSize: 11.5, color: C.muted, marginTop: 1 }}>{m.title}</div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {headOpen && headSearch && headSuggestions.length === 0 && (
+                  <div style={{ position: 'absolute', top: 'calc(100% + 5px)', left: 0, right: 0, background: '#fff', border: `1px solid ${C.border}`, borderRadius: 13, padding: '14px', textAlign: 'center', zIndex: 200 }}>
+                    <span style={{ fontSize: 13, color: C.muted }}>No members found for "{headSearch}"</span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Section: Settings */}
@@ -534,12 +652,12 @@ function AddDepartmentPage({ onBack, onSave }: {
               onClick={handleSave}
               style={{
                 height: 42, padding: '0 28px', borderRadius: 11, border: 'none',
-                background: C.navy, fontSize: 14, fontWeight: 600, color: '#fff',
-                cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.15s',
+                background: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)', fontSize: 14, fontWeight: 700, color: '#fff',
+                cursor: 'pointer', fontFamily: 'inherit', transition: 'opacity 0.15s',
                 display: 'flex', alignItems: 'center', gap: 7,
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#2A3050' }}
-              onMouseLeave={e => { e.currentTarget.style.background = C.navy }}
+              onMouseEnter={e => { e.currentTarget.style.opacity = '0.88' }}
+              onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
             >
               <Plus size={15} strokeWidth={2.2} /> Create Department
             </button>
@@ -667,15 +785,11 @@ function DeptDetailView({ dept, onBack }: { dept: Department; onBack: () => void
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 22 }}>
         <button
           onClick={onBack}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 14px',
-            borderRadius: 9, border: `1px solid ${C.border}`, background: '#fff',
-            fontSize: 13, fontWeight: 600, color: C.muted, cursor: 'pointer', fontFamily: 'inherit',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = '#C8CCE0'; e.currentTarget.style.color = C.navy }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted }}
+          style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: 9, border: `1px solid ${C.border}`, background: '#fff', cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0 }}
+          onMouseEnter={e => { e.currentTarget.style.background = '#F7F8FC'; e.currentTarget.style.borderColor = '#C8CCE0' }}
+          onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = C.border }}
         >
-          <ArrowLeft size={14} /> Back
+          <ArrowLeft size={14} strokeWidth={2} style={{ color: C.muted }} />
         </button>
         <span style={{ fontSize: 13, color: '#B0B4C8' }}>/</span>
         <span style={{ fontSize: 13, fontWeight: 600, color: C.muted }}>Department Management</span>
@@ -818,9 +932,9 @@ function DeptDetailView({ dept, onBack }: { dept: Department; onBack: () => void
 }
 
 /* ── Table row ── */
-const COLS = '52px 1.6fr 1.2fr 110px 110px 52px'
+const COLS = '44px 1fr 1fr 1fr 100px 100px 80px'
 
-function DeptRow({ dept, onView }: { dept: Department; onView: () => void }) {
+function DeptRow({ dept, onView, onEdit }: { dept: Department; onView: () => void; onEdit: () => void }) {
   const [hovered, setHovered] = useState(false)
   const { Icon } = dept
 
@@ -853,6 +967,17 @@ function DeptRow({ dept, onView }: { dept: Department; onView: () => void }) {
         <p style={{ fontSize: 12, color: C.muted, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {dept.description}
         </p>
+      </div>
+
+      {/* Designation Tag */}
+      <div>
+        {dept.designationTag ? (
+          <span style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 12px', borderRadius: 99, background: `${dept.color}12`, border: `1px solid ${dept.color}28`, fontSize: 12, fontWeight: 700, color: dept.color, whiteSpace: 'nowrap' as const }}>
+            {dept.designationTag}
+          </span>
+        ) : (
+          <span style={{ fontSize: 12, color: C.muted, fontStyle: 'italic' }}>—</span>
+        )}
       </div>
 
       {/* Head */}
@@ -896,18 +1021,17 @@ function DeptRow({ dept, onView }: { dept: Department; onView: () => void }) {
         )}
       </div>
 
-      {/* Action */}
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <button
-          onClick={onView}
-          style={{
-            width: 32, height: 32, borderRadius: 8, border: `1px solid ${hovered ? dept.color + '40' : C.border}`,
-            background: hovered ? `${dept.color}0E` : '#fff',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0,
-          }}
-        >
-          <Eye size={15} style={{ color: hovered ? dept.color : C.muted }} strokeWidth={1.8} />
+      {/* Actions */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
+        <button onClick={onEdit}
+          style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${C.border}`, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0 }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.08)'; e.currentTarget.style.borderColor = 'rgba(99,102,241,0.30)' }}
+          onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = C.border }}>
+          <Edit2 size={13} style={{ color: '#6366F1' }} strokeWidth={1.8} />
+        </button>
+        <button onClick={onView}
+          style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${hovered ? dept.color + '40' : C.border}`, background: hovered ? `${dept.color}0E` : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0 }}>
+          <Eye size={13} style={{ color: hovered ? dept.color : C.muted }} strokeWidth={1.8} />
         </button>
       </div>
     </div>
@@ -917,9 +1041,14 @@ function DeptRow({ dept, onView }: { dept: Department; onView: () => void }) {
 /* ── Main page ── */
 export default function DepartmentManagementPage() {
   const [depts, setDepts]           = useState<Department[]>(INITIAL_DEPARTMENTS)
-  const [search, setSearch]         = useState('')
+  const [search,     setSearch]     = useState('')
+  const [desgFilter, setDesgFilter] = useState('All')
   const [selectedDept, setSelectedDept] = useState<Department | null>(null)
   const [showAdd, setShowAdd]       = useState(false)
+  const [editDept,  setEditDept]    = useState<Department | null>(null)
+  const [editName,  setEditName]    = useState('')
+  const [editTag,   setEditTag]     = useState('')
+  const [editSaving, setEditSaving] = useState(false)
 
   if (selectedDept) {
     return <DeptDetailView dept={selectedDept} onBack={() => setSelectedDept(null)} />
@@ -937,11 +1066,15 @@ export default function DepartmentManagementPage() {
     )
   }
 
-  const filtered = depts.filter(d =>
-    d.name.toLowerCase().includes(search.toLowerCase()) ||
-    d.description.toLowerCase().includes(search.toLowerCase()) ||
-    d.head.name.toLowerCase().includes(search.toLowerCase())
-  )
+  const desgOptions = ['All', ...Array.from(new Set(depts.map(d => d.designationTag).filter(Boolean)))]
+
+  const filtered = depts.filter(d => {
+    const matchSearch = d.name.toLowerCase().includes(search.toLowerCase()) ||
+      d.description.toLowerCase().includes(search.toLowerCase()) ||
+      d.head.name.toLowerCase().includes(search.toLowerCase())
+    const matchDesg = desgFilter === 'All' || d.designationTag === desgFilter
+    return matchSearch && matchDesg
+  })
 
   const totalEmployees = depts.reduce((a, d) => a + d.employeeCount, 0)
   const totalOpen      = depts.reduce((a, d) => a + d.openPositions, 0)
@@ -1006,6 +1139,16 @@ export default function DepartmentManagementPage() {
               onBlur={e => { e.target.style.borderColor = C.border; e.target.style.background = C.hover }}
             />
           </div>
+          <div style={{ position: 'relative', flexShrink: 0 }}>
+            <select value={desgFilter} onChange={e => setDesgFilter(e.target.value)}
+              style={{ height: 34, paddingLeft: 10, paddingRight: 28, border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 13, color: C.navy, background: C.hover, outline: 'none', cursor: 'pointer', fontFamily: 'inherit', appearance: 'none', transition: 'border-color 0.15s', minWidth: 160 }}
+              onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.background = '#fff' }}
+              onBlur={e => { e.target.style.borderColor = C.border; e.target.style.background = C.hover }}>
+              {desgOptions.map(d => <option key={d} value={d}>{d === 'All' ? 'All Designations' : d}</option>)}
+            </select>
+            <ChevronDown size={12} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: C.muted, pointerEvents: 'none' }} />
+          </div>
+
           <span style={{ marginLeft: 'auto', fontSize: 12.5, fontWeight: 600, color: C.muted }}>
             {filtered.length} department{filtered.length !== 1 ? 's' : ''}
           </span>
@@ -1017,11 +1160,11 @@ export default function DepartmentManagementPage() {
           padding: '10px 20px', background: C.surface, borderBottom: `1px solid ${C.border}`,
         }}>
           <div />
-          {['Department', 'Department Head', 'Employees', 'Open Roles', 'Action'].map((h, i) => (
+          {['Department', 'Designation Tags', 'Department Head', 'Employees', 'Open Roles', 'Action'].map((h, i) => (
             <div key={h + i} style={{
               fontSize: 11, fontWeight: 700, color: C.muted,
               textTransform: 'uppercase' as const, letterSpacing: '0.06em',
-              textAlign: i >= 2 ? 'center' as const : 'left' as const,
+              textAlign: i >= 3 ? 'center' as const : 'left' as const,
             }}>
               {h}
             </div>
@@ -1037,10 +1180,88 @@ export default function DepartmentManagementPage() {
           </div>
         ) : filtered.map((dept, idx) => (
           <div key={dept.id} style={{ borderBottom: idx === filtered.length - 1 ? 'none' : undefined }}>
-            <DeptRow dept={dept} onView={() => setSelectedDept(dept)} />
+            <DeptRow dept={dept} onView={() => setSelectedDept(dept)} onEdit={() => { setEditDept(dept); setEditName(dept.name); setEditTag(dept.designationTag) }} />
           </div>
         ))}
       </div>
+
+      {/* ── Edit Department Modal ── */}
+      {editDept && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(10,12,28,0.50)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Sans', system-ui, sans-serif" }}
+          onClick={e => { if (e.target === e.currentTarget && !editSaving) setEditDept(null) }}>
+          <div style={{ background: '#fff', borderRadius: 22, width: 480, boxShadow: '0 28px 72px rgba(10,12,28,0.22)', overflow: 'hidden' }}>
+            <div style={{ padding: '22px 28px 18px', borderBottom: '1px solid #F0F2F8', display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 40, height: 40, borderRadius: 11, background: `${editDept.color}14`, border: `1px solid ${editDept.color}28`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <editDept.Icon size={18} style={{ color: editDept.color }} strokeWidth={1.8} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 16, fontWeight: 800, color: C.navy, letterSpacing: '-0.2px' }}>Edit Department</div>
+                <div style={{ fontSize: 12.5, color: C.muted, marginTop: 1 }}>Update department name and designation tag</div>
+              </div>
+              <button onClick={() => setEditDept(null)}
+                style={{ width: 30, height: 30, borderRadius: 8, border: `1px solid ${C.border}`, background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.muted }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#F7F8FC' }}
+                onMouseLeave={e => { e.currentTarget.style.background = '#fff' }}>
+                <X size={13} strokeWidth={2} />
+              </button>
+            </div>
+
+            <div style={{ padding: '22px 28px', display: 'flex', flexDirection: 'column', gap: 18 }}>
+              <div>
+                <label style={{ fontSize: 11.5, fontWeight: 700, color: C.muted, textTransform: 'uppercase' as const, letterSpacing: '0.06em', display: 'block', marginBottom: 7 }}>
+                  Department Name <span style={{ color: '#E84855' }}>*</span>
+                </label>
+                <input value={editName} onChange={e => setEditName(e.target.value)}
+                  placeholder="e.g. Engineering"
+                  style={{ width: '100%', height: 44, borderRadius: 10, padding: '0 14px', fontSize: 13.5, fontWeight: 500, color: C.navy, outline: 'none', border: `1px solid ${C.border}`, background: '#fff', fontFamily: 'inherit', boxSizing: 'border-box', transition: 'border-color 0.15s, box-shadow 0.15s' }}
+                  onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.10)' }}
+                  onBlur={e => { e.target.style.borderColor = C.border; e.target.style.boxShadow = 'none' }} />
+              </div>
+              <div>
+                <label style={{ fontSize: 11.5, fontWeight: 700, color: C.muted, textTransform: 'uppercase' as const, letterSpacing: '0.06em', display: 'block', marginBottom: 7 }}>
+                  Designation Tag Name
+                </label>
+                {editTag && (
+                  <div style={{ marginBottom: 8 }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 14px', borderRadius: 99, background: `${editDept.color}12`, border: `1px solid ${editDept.color}28`, fontSize: 13, fontWeight: 700, color: editDept.color }}>
+                      {editTag}
+                    </span>
+                  </div>
+                )}
+                <input value={editTag} onChange={e => setEditTag(e.target.value)}
+                  placeholder="e.g. Engineering"
+                  style={{ width: '100%', height: 44, borderRadius: 10, padding: '0 14px', fontSize: 13.5, fontWeight: 500, color: C.navy, outline: 'none', border: `1px solid ${C.border}`, background: '#fff', fontFamily: 'inherit', boxSizing: 'border-box', transition: 'border-color 0.15s, box-shadow 0.15s' }}
+                  onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.10)' }}
+                  onBlur={e => { e.target.style.borderColor = C.border; e.target.style.boxShadow = 'none' }} />
+              </div>
+            </div>
+
+            <div style={{ padding: '0 28px 26px', display: 'flex', gap: 10 }}>
+              <button onClick={() => setEditDept(null)} disabled={editSaving}
+                style={{ flex: 1, height: 44, borderRadius: 12, border: `1px solid ${C.border}`, background: '#fff', color: C.muted, fontSize: 14, fontWeight: 600, cursor: editSaving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}
+                onMouseEnter={e => { if (!editSaving) { e.currentTarget.style.borderColor = '#C8CCE0'; e.currentTarget.style.color = C.navy } }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted }}>
+                Cancel
+              </button>
+              <button disabled={editSaving || !editName.trim()}
+                onClick={async () => {
+                  if (!editName.trim()) return
+                  setEditSaving(true)
+                  await new Promise(r => setTimeout(r, 700))
+                  setDepts(prev => prev.map(d => d.id === editDept.id ? { ...d, name: editName.trim(), designationTag: editTag.trim() } : d))
+                  setEditSaving(false); setEditDept(null)
+                }}
+                style={{ flex: 1, height: 44, borderRadius: 12, border: 'none', background: (!editName.trim() || editSaving) ? '#818CF8' : 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)', color: '#fff', fontSize: 14, fontWeight: 700, cursor: (!editName.trim() || editSaving) ? 'not-allowed' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'opacity 0.15s' }}
+                onMouseEnter={e => { if (editName.trim() && !editSaving) e.currentTarget.style.opacity = '0.88' }}
+                onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}>
+                {editSaving
+                  ? <><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ animation: 'spin 0.8s linear infinite' }}><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>Saving…</>
+                  : <><CheckCircle2 size={15} strokeWidth={2.5} />Save Changes</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   )

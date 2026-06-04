@@ -526,9 +526,9 @@ export default function AdminAnnouncementsPage() {
           <p className="text-sm" style={{ color: C.muted }}>Create and broadcast announcements to your entire organization, teams, or individuals</p>
         </div>
         <button onClick={() => setView('compose')}
-          style={{ height: 40, padding: '0 18px', borderRadius: 11, border: 'none', background: '#6366F1', color: '#fff', fontSize: 13.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 7, transition: 'background 0.15s', flexShrink: 0 }}
-          onMouseEnter={e => { e.currentTarget.style.background = '#4F52C8' }}
-          onMouseLeave={e => { e.currentTarget.style.background = '#6366F1' }}>
+          style={{ height: 40, padding: '0 18px', borderRadius: 11, border: 'none', background: C.navy, color: '#fff', fontSize: 13.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 7, transition: 'background 0.15s', flexShrink: 0 }}
+          onMouseEnter={e => { e.currentTarget.style.background = '#2A3050' }}
+          onMouseLeave={e => { e.currentTarget.style.background = C.navy }}>
           <Plus size={16} strokeWidth={2.5} /> New Announcement
         </button>
       </div>

@@ -366,17 +366,20 @@ export default function AdminTicketsPage() {
             </p>
           </div>
 
-          {/* Filter bar — above table */}
-          <div className="flex items-center gap-3" style={{ marginBottom: 12 }}>
+          {/* Filter bar — white card */}
+          <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, padding: '14px 20px', marginBottom: 12 }}>
+          <div className="flex items-center gap-3">
 
-            {/* Search */}
-            <div style={{ position: 'relative', width: 320, flexShrink: 0 }}>
+            {/* Search — full width */}
+            <div style={{ position: 'relative', flex: 1 }}>
               <Search size={15} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: '#A0A5BC', pointerEvents: 'none' }} />
               <input
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Search tickets…"
-                style={{ width: '100%', height: 46, borderRadius: 11, padding: '0 36px 0 40px', fontSize: 13.5, fontWeight: 500, color: C.navy, outline: 'none', border: 'none', background: '#fff', fontFamily: "'DM Sans', system-ui, sans-serif", boxSizing: 'border-box' }}
+                style={{ width: '100%', height: 44, borderRadius: 11, padding: '0 36px 0 40px', fontSize: 13.5, fontWeight: 500, color: C.navy, outline: 'none', border: '1px solid #ECEEF6', background: '#F7F8FC', fontFamily: "'DM Sans', system-ui, sans-serif", boxSizing: 'border-box', transition: 'border-color 0.15s' }}
+                onFocus={e => { e.target.style.borderColor = '#B0B5CC' }}
+                onBlur={e => { e.target.style.borderColor = '#ECEEF6' }}
               />
               {searchQuery && (
                 <button onClick={() => setSearchQuery('')}
@@ -397,9 +400,9 @@ export default function AdminTicketsPage() {
                 return (
                   <button
                     onClick={() => setCatDropOpen(v => !v)}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: 9, height: 46, padding: '0 14px 0 12px', borderRadius: 11, border: 'none', background: catDropOpen ? '#F4F5F8' : '#fff', cursor: 'pointer', fontFamily: "'DM Sans', system-ui, sans-serif", transition: 'background 0.14s', outline: 'none', minWidth: 210 }}
-                    onMouseEnter={e => { if (!catDropOpen) e.currentTarget.style.background = '#F7F8FC' }}
-                    onMouseLeave={e => { if (!catDropOpen) e.currentTarget.style.background = '#fff' }}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 9, height: 46, padding: '0 14px 0 12px', borderRadius: 11, border: 'none', background: catDropOpen ? '#ECEEF5' : '#F7F8FC', cursor: 'pointer', fontFamily: "'DM Sans', system-ui, sans-serif", transition: 'background 0.14s', outline: 'none', minWidth: 210 }}
+                    onMouseEnter={e => { if (!catDropOpen) e.currentTarget.style.background = '#ECEEF5' }}
+                    onMouseLeave={e => { if (!catDropOpen) e.currentTarget.style.background = '#F7F8FC' }}
                   >
                     <div style={{ width: 28, height: 28, borderRadius: 8, background: ac.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <AcIcon size={13} strokeWidth={2.2} style={{ color: ac.color }} />
@@ -437,6 +440,7 @@ export default function AdminTicketsPage() {
               )}
             </div>
 
+          </div>
           </div>
 
           {/* Full-width tickets table */}

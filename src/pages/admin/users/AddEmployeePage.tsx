@@ -388,29 +388,18 @@ export default function AddEmployeePage() {
         <div style={{ width: 232, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
 
           {/* Photo upload */}
-          <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, padding: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-            <div style={{ position: 'relative' }}>
-              <div style={{ width: 86, height: 86, borderRadius: '50%', background: C.hover, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `2px dashed ${C.border}` }}>
-                <User size={30} color={C.muted} />
-              </div>
-              <button style={{ position: 'absolute', bottom: 1, right: 1, width: 26, height: 26, borderRadius: '50%', background: C.navy, border: '2.5px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                <Camera size={11} color="#fff" />
-              </button>
+          <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, padding: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+            <div
+              style={{ width: 86, height: 86, borderRadius: '50%', background: 'rgba(99,102,241,0.08)', border: `2px dashed rgba(99,102,241,0.30)`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'background 0.15s, border-color 0.15s' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.14)'; e.currentTarget.style.borderColor = 'rgba(99,102,241,0.55)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.08)'; e.currentTarget.style.borderColor = 'rgba(99,102,241,0.30)' }}
+            >
+              <Camera size={26} strokeWidth={1.6} style={{ color: '#6366F1' }} />
             </div>
             <div style={{ textAlign: 'center' }}>
               <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: C.navy }}>Profile Photo</p>
               <p style={{ margin: '3px 0 0', fontSize: 11.5, color: C.muted }}>JPG or PNG · max 2 MB</p>
             </div>
-            <button style={{ width: '100%', height: 32, borderRadius: 8, fontSize: 12.5, fontWeight: 600, border: `1px solid ${C.border}`, background: C.hover, color: C.navy, cursor: 'pointer' }}>
-              Upload Photo
-            </button>
-          </div>
-
-          {/* Employee ID */}
-          <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, padding: '14px 18px' }}>
-            <p style={{ margin: '0 0 4px', fontSize: 10.5, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Employee ID</p>
-            <p style={{ margin: 0, fontSize: 17, fontWeight: 700, color: C.indigo, fontVariantNumeric: 'tabular-nums' }}>{empId}</p>
-            <p style={{ margin: '4px 0 0', fontSize: 11.5, color: C.muted }}>Auto-assigned on creation</p>
           </div>
 
           {/* Tab Progress */}
@@ -464,37 +453,6 @@ export default function AddEmployeePage() {
         {/* ════ RIGHT CONTENT ════ */}
         <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 0 }}>
 
-          {/* ── Tab bar ── */}
-          <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, padding: '6px', marginBottom: 16, display: 'flex', gap: 4 }}>
-            {([
-              { id: 1, label: 'Employee Personal Information', icon: <User size={14} />, accent: C.indigo, done: tab1Done },
-              { id: 2, label: 'Company Information',           icon: <Building2 size={14} />, accent: C.indigo, done: tab2Done },
-            ] as const).map(t => {
-              const active = activeTab === t.id
-              return (
-                <button
-                  key={t.id}
-                  onClick={() => setActiveTab(t.id as 1 | 2)}
-                  style={{
-                    flex: 1, height: 44, borderRadius: 12,
-                    border: active ? `1.5px solid ${t.accent}40` : '1.5px solid transparent',
-                    background: active ? `${t.accent}0d` : 'transparent',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                    cursor: 'pointer', transition: 'all 0.15s',
-                    fontFamily: "'DM Sans', system-ui, sans-serif",
-                  }}
-                >
-                  <span style={{ color: active ? t.accent : C.muted }}>{t.icon}</span>
-                  <span style={{ fontSize: 13.5, fontWeight: 700, color: active ? t.accent : C.muted }}>{t.label}</span>
-                  {t.done && (
-                    <span style={{ width: 18, height: 18, borderRadius: '50%', background: C.green, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <Check size={10} color="#fff" strokeWidth={2.5} />
-                    </span>
-                  )}
-                </button>
-              )
-            })}
-          </div>
 
           {/* ══════════════════════════════════════════════
               TAB 1 — Employee Personal Information

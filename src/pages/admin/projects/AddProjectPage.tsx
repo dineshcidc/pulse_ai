@@ -772,7 +772,7 @@ export default function AddProjectPage({ onBack, onSave }: { onBack: () => void;
                 </button>
               ) : (
                 <button onClick={handleSubmit} disabled={submitting}
-                  style={{ height: 42, padding: '0 24px', borderRadius: 10, border: 'none', background: submitting ? '#818CF8' : 'linear-gradient(135deg, #0EA86A 0%, #0D9488 100%)', color: '#fff', fontSize: 13.5, fontWeight: 700, cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 7, transition: 'opacity 0.15s', outline: 'none' }}
+                  style={{ height: 42, padding: '0 24px', borderRadius: 10, border: 'none', background: submitting ? '#818CF8' : 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)', color: '#fff', fontSize: 13.5, fontWeight: 700, cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 7, transition: 'opacity 0.15s', outline: 'none' }}
                   onMouseEnter={e => { if (!submitting) e.currentTarget.style.opacity = '0.88' }}
                   onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}>
                   {submitting ? (

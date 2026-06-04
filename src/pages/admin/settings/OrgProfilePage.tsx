@@ -1,7 +1,7 @@
 import {
   Building2, MapPin, Phone, Globe,
   Shield, Briefcase,
-  Clock, Edit3, CheckCircle2,
+  Clock, Edit3, CheckCircle2, Mail,
 } from 'lucide-react'
 
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', bg: '#F0F2F8', surface: '#F7F8FC' }
@@ -30,12 +30,33 @@ const CONTACT = [
   { label: 'LinkedIn',         value: 'linkedin.com/company/concertidc' },
 ]
 
-const ADDRESS = [
-  { label: 'Registered Office', value: '#45, 2nd Floor, Prestige Tech Park, Kadubeesanahalli, Outer Ring Road, Bangalore – 560103, Karnataka' },
-  { label: 'City',              value: 'Bangalore'               },
-  { label: 'State',             value: 'Karnataka'               },
-  { label: 'Country',           value: 'India'                   },
-  { label: 'PIN Code',          value: '560103'                  },
+const OFFICES = [
+  {
+    type:    'Registered Office',
+    badge:   { label: 'Primary', color: '#0A8A58', bg: 'rgba(14,168,106,0.09)', border: 'rgba(14,168,106,0.20)' },
+    name:    'Concert IDC — Head Office',
+    street:  '#45, 2nd Floor, Prestige Tech Park, Kadubeesanahalli, Outer Ring Road',
+    city:    'Bangalore',
+    state:   'Karnataka',
+    country: 'India',
+    pin:     '560 103',
+    phone:   '+91 80 4567 8900',
+    email:   'contact@concertidc.com',
+    color:   '#6366F1',
+  },
+  {
+    type:    'Branch Office',
+    badge:   { label: 'Branch', color: '#5B5FDE', bg: 'rgba(99,102,241,0.09)', border: 'rgba(99,102,241,0.20)' },
+    name:    'Concert IDC — Mumbai Branch',
+    street:  '301, WeWork, Bandra Kurla Complex, BKC Road',
+    city:    'Mumbai',
+    state:   'Maharashtra',
+    country: 'India',
+    pin:     '400 051',
+    phone:   '+91 22 6789 1234',
+    email:   'mumbai@concertidc.com',
+    color:   '#F59E0B',
+  },
 ]
 
 const REGISTRATION = [
@@ -187,10 +208,80 @@ export default function OrgProfilePage() {
           {REGISTRATION.map((r, i) => <InfoRow key={r.label} label={r.label} value={r.value} mono={r.mono} last={i === REGISTRATION.length - 1} />)}
         </SectionCard>
 
-        {/* Company Address */}
-        <SectionCard title="Registered Address" icon={MapPin} accent="#F59E0B" accentBg="rgba(245,158,11,0.09)">
-          {ADDRESS.map((r, i) => <InfoRow key={r.label} label={r.label} value={r.value} last={i === ADDRESS.length - 1} />)}
-        </SectionCard>
+        {/* Office Locations — full width */}
+        <div style={{ gridColumn: '1 / -1', background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden' }}>
+          {/* Card header */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 22px', borderBottom: `1px solid ${C.border}` }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 9, background: 'rgba(245,158,11,0.09)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <MapPin size={15} style={{ color: '#D97706' }} strokeWidth={1.8} />
+              </div>
+              <span style={{ fontSize: 14, fontWeight: 700, color: C.navy }}>Office Locations</span>
+            </div>
+            <span style={{ fontSize: 12, fontWeight: 600, color: C.muted, background: C.surface, border: `1px solid ${C.border}`, borderRadius: 99, padding: '3px 10px' }}>
+              {OFFICES.length} offices
+            </span>
+          </div>
+
+          {/* Address cards grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 18, padding: '20px 22px' }}>
+            {OFFICES.map(office => (
+              <div key={office.name} style={{ borderRadius: 14, border: `1px solid ${C.border}`, overflow: 'hidden', background: C.surface }}>
+                {/* Card top accent */}
+                <div style={{ height: 3, background: `linear-gradient(90deg, ${office.color}, ${office.color}88)` }} />
+
+                <div style={{ padding: '18px 20px' }}>
+                  {/* Header row */}
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: 14 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{ width: 38, height: 38, borderRadius: 10, background: `${office.color}12`, border: `1px solid ${office.color}28`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Building2 size={17} style={{ color: office.color }} strokeWidth={1.8} />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 13.5, fontWeight: 800, color: C.navy, lineHeight: 1.3 }}>{office.name}</div>
+                        <div style={{ fontSize: 11.5, color: C.muted, marginTop: 2 }}>{office.type}</div>
+                      </div>
+                    </div>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 9px', borderRadius: 99, fontSize: 11, fontWeight: 700, background: office.badge.bg, color: office.badge.color, border: `1px solid ${office.badge.border}`, flexShrink: 0 }}>
+                      <span style={{ width: 5, height: 5, borderRadius: '50%', background: office.badge.color, display: 'inline-block' }} />
+                      {office.badge.label}
+                    </span>
+                  </div>
+
+                  {/* Address block */}
+                  <div style={{ display: 'flex', gap: 10, marginBottom: 14, padding: '12px 14px', background: '#fff', borderRadius: 10, border: `1px solid ${C.border}` }}>
+                    <MapPin size={14} style={{ color: C.muted, flexShrink: 0, marginTop: 2 }} strokeWidth={1.8} />
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 500, color: '#3D4266', lineHeight: 1.65 }}>
+                        {office.street}
+                      </div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: C.navy, marginTop: 3 }}>
+                        {office.city}, {office.state} – {office.pin}
+                      </div>
+                      <div style={{ fontSize: 12, color: C.muted, marginTop: 1 }}>{office.country}</div>
+                    </div>
+                  </div>
+
+                  {/* Contact strip */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{ width: 26, height: 26, borderRadius: 7, background: `${office.color}10`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Phone size={11} style={{ color: office.color }} strokeWidth={2} />
+                      </div>
+                      <span style={{ fontSize: 12.5, fontWeight: 500, color: '#3D4266' }}>{office.phone}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{ width: 26, height: 26, borderRadius: 7, background: `${office.color}10`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Mail size={11} style={{ color: office.color }} strokeWidth={2} />
+                      </div>
+                      <span style={{ fontSize: 12.5, fontWeight: 500, color: '#3D4266' }}>{office.email}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
 
         {/* Platform Configuration */}
         <SectionCard title="Platform Configuration" icon={Clock} accent="#E84855" accentBg="rgba(232,72,85,0.09)">

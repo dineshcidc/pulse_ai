@@ -289,7 +289,7 @@ export default function TeamLeaveRequestsPage() {
       {/* Filter bar */}
       <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, padding: '14px 16px', marginBottom: 16 }}>
         <div className="flex items-center gap-3 flex-wrap">
-          <div style={{ position: 'relative', flexShrink: 0, width: 260 }}>
+          <div style={{ position: 'relative', flexShrink: 0, width: 340 }}>
             <Search size={14} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: C.muted, pointerEvents: 'none' }} />
             <input
               value={search}

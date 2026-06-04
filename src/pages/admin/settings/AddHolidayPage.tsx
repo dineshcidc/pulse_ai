@@ -327,12 +327,12 @@ export default function AddHolidayPage({ onBack, onSave }: {
             </button>
             <button onClick={handleSave} style={{
               height: 42, padding: '0 28px', borderRadius: 11, border: 'none',
-              background: C.navy, fontSize: 14, fontWeight: 700, color: '#fff',
-              cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.15s',
+              background: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)', fontSize: 14, fontWeight: 700, color: '#fff',
+              cursor: 'pointer', fontFamily: 'inherit', transition: 'opacity 0.15s',
               display: 'flex', alignItems: 'center', gap: 8,
             }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#2A3050' }}
-              onMouseLeave={e => { e.currentTarget.style.background = C.navy }}
+              onMouseEnter={e => { e.currentTarget.style.opacity = '0.88' }}
+              onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
             >
               <CalendarDays size={15} strokeWidth={2} /> Add to Calendar
             </button>

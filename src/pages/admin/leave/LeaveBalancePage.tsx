@@ -539,8 +539,6 @@ export default function LeaveBalancePage() {
                 style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden', display: 'flex' }}
                 onClick={() => setSelectedEmp(emp)}
               >
-                {/* Health accent bar */}
-                <div style={{ width: 3, background: accentColor, flexShrink: 0, borderRadius: '3px 0 0 3px' }} />
 
                 <div style={{ flex: 1, padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
 
