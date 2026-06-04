@@ -142,7 +142,6 @@ const STATUS_CFG: Record<TSStatus, { label: string; color: string; bg: string; b
 }
 
 const PROJECT_OPTIONS = ['All Projects', 'Pulse.AI v2', 'HDFC Portal', 'TechCorp ERP']
-const MEMBER_OPTIONS  = ['All Members', ...ROWS.map(r => r.employee)]
 const STATUS_TABS: { id: TSStatus; label: string }[] = [
   { id: 'pending',  label: 'Pending'  },
   { id: 'approved', label: 'Approved' },
@@ -499,7 +498,6 @@ function ReturnModal({ row, onClose, onConfirm }: {
 export default function TeamTimesheetsPage() {
   const [statusFilter,  setStatusFilter]  = useState<TSStatus>('pending')
   const [projectFilter, setProjectFilter] = useState('All Projects')
-  const [memberFilter,  setMemberFilter]  = useState('All Members')
   const [search,        setSearch]        = useState('')
   const [dateFilter,    setDateFilter]    = useState('')
   const [rows,          setRows]          = useState(ROWS)
@@ -529,16 +527,15 @@ export default function TeamTimesheetsPage() {
     const matchSearch  = !q || r.employee.toLowerCase().includes(q) || r.project.toLowerCase().includes(q)
     const matchStatus  = r.status === statusFilter
     const matchProject = projectFilter === 'All Projects' || r.project === projectFilter
-    const matchMember  = memberFilter  === 'All Members'  || r.employee === memberFilter
     const matchDate    = !dateFilter   || r.date === dateFilter
-    return matchSearch && matchStatus && matchProject && matchMember && matchDate
+    return matchSearch && matchStatus && matchProject && matchDate
   })
 
   const pendingCount    = rows.filter(r => r.status === 'pending').length
   const approvedCount   = rows.filter(r => r.status === 'approved').length
   const rejectedCount   = rows.filter(r => r.status === 'rejected').length
   const selectedPending = selected.filter(id => rows.find(r => r.id === id)?.status === 'pending')
-  const hasActiveFilter = search || dateFilter || projectFilter !== 'All Projects' || memberFilter !== 'All Members'
+  const hasActiveFilter = search || dateFilter || projectFilter !== 'All Projects'
 
   // Grid columns: checkbox | employee | project | date | hours | status | action
   const COLS = '36px 1.8fr 1.7fr 1fr 0.65fr 1fr 1fr'
@@ -621,7 +618,6 @@ export default function TeamTimesheetsPage() {
           </div>
 
           <Dropdown value={projectFilter} options={PROJECT_OPTIONS} onChange={setProjectFilter} />
-          <Dropdown value={memberFilter}  options={MEMBER_OPTIONS}  onChange={setMemberFilter} width={160} />
 
           <div style={{ position: 'relative', flexShrink: 0 }}>
             <Calendar size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: C.muted, pointerEvents: 'none', zIndex: 1 }} />
@@ -635,7 +631,7 @@ export default function TeamTimesheetsPage() {
 
           {hasActiveFilter && (
             <button
-              onClick={() => { setSearch(''); setProjectFilter('All Projects'); setMemberFilter('All Members'); setDateFilter('') }}
+              onClick={() => { setSearch(''); setProjectFilter('All Projects'); setDateFilter('') }}
               style={{ height: 38, padding: '0 12px', borderRadius: 9, border: `1px solid ${C.border}`, background: '#fff', fontSize: 12.5, color: C.muted, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s', flexShrink: 0 }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = '#C8CCE0'; e.currentTarget.style.color = C.navy }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted }}

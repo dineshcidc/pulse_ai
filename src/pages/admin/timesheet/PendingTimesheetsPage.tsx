@@ -224,7 +224,7 @@ export default function PendingTimesheetsPage() {
                       <div style={{ fontSize:11, color:C.muted }}>{emp.role}</div>
                     </div>
                     <span style={{ fontSize:10.5, fontWeight:700, color:'#D97706', background:'rgba(245,158,11,0.10)', border:'1px solid rgba(245,158,11,0.20)', borderRadius:5, padding:'2px 7px', flexShrink:0, marginLeft:'auto' }}>
-                      {emp.projects.reduce((sum, p) => sum + p.pending, 0)} pending
+                      {emp.projects.reduce((s, p) => s + p.pending, 0)} pending
                     </span>
                   </button>
                 ))}

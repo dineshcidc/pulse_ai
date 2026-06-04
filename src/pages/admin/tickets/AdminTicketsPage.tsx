@@ -228,6 +228,7 @@ export default function AdminTicketsPage() {
   const [searchQuery,    setSearchQuery]    = useState('')
   const [statusFilter,   setStatusFilter]   = useState<TStatus | 'All'>('All')
   const [selectedTicket, setSelectedTicket] = useState<AdminTicketRecord | null>(null)
+  const [catDropOpen,    setCatDropOpen]    = useState(false)
 
   // ── Detail state ──
   const [tickets,          setTickets]          = useState<AdminTicketRecord[]>(TICKETS)
@@ -357,235 +358,202 @@ export default function AdminTicketsPage() {
       {view === 'list' && (
         <>
           {/* Page header */}
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 style={{ fontSize: 22, fontWeight: 800, color: C.navy, letterSpacing: '-0.3px', marginBottom: 4 }}>
-                Support Tickets
-              </h1>
-              <p style={{ fontSize: 13.5, color: C.muted }}>
-                Manage and respond to all employee &amp; HR support tickets
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <div style={{ textAlign: 'center', padding: '10px 18px', borderRadius: 12, background: 'rgba(232,72,85,0.07)', border: '1px solid rgba(232,72,85,0.18)' }}>
-                <div style={{ fontSize: 20, fontWeight: 800, color: '#E84855' }}>{openCount}</div>
-                <div style={{ fontSize: 11, fontWeight: 600, color: '#E84855', marginTop: 1 }}>Open</div>
-              </div>
-              <div style={{ textAlign: 'center', padding: '10px 18px', borderRadius: 12, background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.18)' }}>
-                <div style={{ fontSize: 20, fontWeight: 800, color: '#7C3AED' }}>{tickets.filter(t => t.status === 'Pending').length}</div>
-                <div style={{ fontSize: 11, fontWeight: 600, color: '#7C3AED', marginTop: 1 }}>Pending</div>
-              </div>
-              <div style={{ textAlign: 'center', padding: '10px 18px', borderRadius: 12, background: 'rgba(14,168,106,0.07)', border: '1px solid rgba(14,168,106,0.18)' }}>
-                <div style={{ fontSize: 20, fontWeight: 800, color: '#0A7040' }}>{tickets.filter(t => t.status === 'Resolved' || t.status === 'Closed').length}</div>
-                <div style={{ fontSize: 11, fontWeight: 600, color: '#0A7040', marginTop: 1 }}>Resolved</div>
-              </div>
-            </div>
+          <div style={{ marginBottom: 20 }}>
+            <h1 style={{ fontSize: 22, fontWeight: 800, color: C.navy, letterSpacing: '-0.3px', marginBottom: 4 }}>
+              Support Tickets
+            </h1>
+            <p style={{ fontSize: 13.5, color: C.muted }}>
+              Manage and respond to all employee &amp; HR support tickets
+            </p>
           </div>
 
-          {/* Two-column layout */}
-          <div className="grid gap-5" style={{ gridTemplateColumns: '220px 1fr', alignItems: 'start' }}>
+          {/* Filter bar — above table */}
+          <div className="flex items-center gap-3" style={{ marginBottom: 12 }}>
 
-            {/* LEFT — Category sidebar */}
-            <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden' }}>
-              <div style={{ padding: '14px 14px 10px' }}>
-                <div className="relative">
-                  <Search size={14} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: '#B0B4C8', pointerEvents: 'none' }} />
-                  <input
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
-                    placeholder="Search tickets…"
-                    style={{
-                      width: '100%', height: 38, borderRadius: 10, padding: '0 30px 0 32px',
-                      fontSize: 13, fontWeight: 500, color: C.navy, outline: 'none',
-                      border: `1px solid ${searchQuery ? '#6366F1' : C.border}`,
-                      background: searchQuery ? '#F5F6FF' : '#F7F8FC',
-                      fontFamily: "'DM Sans', system-ui, sans-serif", boxSizing: 'border-box',
-                    }}
-                  />
-                  {searchQuery && (
-                    <button onClick={() => setSearchQuery('')}
-                      style={{ position: 'absolute', right: 9, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: C.muted, lineHeight: 0 }}>
-                      <X size={12} />
-                    </button>
-                  )}
+            {/* Search */}
+            <div style={{ position: 'relative', width: 320, flexShrink: 0 }}>
+              <Search size={15} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: '#A0A5BC', pointerEvents: 'none' }} />
+              <input
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Search tickets…"
+                style={{ width: '100%', height: 46, borderRadius: 11, padding: '0 36px 0 40px', fontSize: 13.5, fontWeight: 500, color: C.navy, outline: 'none', border: 'none', background: '#fff', fontFamily: "'DM Sans', system-ui, sans-serif", boxSizing: 'border-box' }}
+              />
+              {searchQuery && (
+                <button onClick={() => setSearchQuery('')}
+                  style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: C.muted, lineHeight: 0 }}>
+                  <X size={13} />
+                </button>
+              )}
+            </div>
+
+            {/* Category dropdown */}
+            {catDropOpen && (
+              <div style={{ position: 'fixed', inset: 0, zIndex: 99 }} onClick={() => setCatDropOpen(false)} />
+            )}
+            <div style={{ position: 'relative', zIndex: 100 }}>
+              {(() => {
+                const ac = CATEGORIES.find(c => c.id === activeCategory) ?? CATEGORIES[0]
+                const AcIcon = ac.Icon
+                return (
+                  <button
+                    onClick={() => setCatDropOpen(v => !v)}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 9, height: 46, padding: '0 14px 0 12px', borderRadius: 11, border: 'none', background: catDropOpen ? '#F4F5F8' : '#fff', cursor: 'pointer', fontFamily: "'DM Sans', system-ui, sans-serif", transition: 'background 0.14s', outline: 'none', minWidth: 210 }}
+                    onMouseEnter={e => { if (!catDropOpen) e.currentTarget.style.background = '#F7F8FC' }}
+                    onMouseLeave={e => { if (!catDropOpen) e.currentTarget.style.background = '#fff' }}
+                  >
+                    <div style={{ width: 28, height: 28, borderRadius: 8, background: ac.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <AcIcon size={13} strokeWidth={2.2} style={{ color: ac.color }} />
+                    </div>
+                    <span style={{ flex: 1, fontSize: 13.5, fontWeight: 600, color: C.navy, textAlign: 'left', whiteSpace: 'nowrap' }}>{ac.label}</span>
+                    <span style={{ padding: '2px 8px', borderRadius: 99, background: '#F0F2F8', fontSize: 11, fontWeight: 700, color: C.muted, flexShrink: 0 }}>{catCount(ac.id)}</span>
+                    <ChevronDown size={13} strokeWidth={2.3} style={{ color: C.muted, flexShrink: 0, transition: 'transform 0.18s', transform: catDropOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+                  </button>
+                )
+              })()}
+              {catDropOpen && (
+                <div style={{ position: 'absolute', top: 'calc(100% + 7px)', left: 0, minWidth: 238, background: '#fff', border: `1px solid ${C.border}`, borderRadius: 15, boxShadow: '0 10px 36px rgba(28,32,53,0.13)', zIndex: 200, padding: '7px' }}>
+                  {CATEGORIES.map(cat => {
+                    const CatIcon  = cat.Icon
+                    const isActive = activeCategory === cat.id
+                    const count    = catCount(cat.id)
+                    return (
+                      <button key={cat.id}
+                        onClick={() => { setActiveCategory(cat.id); setCatDropOpen(false) }}
+                        style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 10px', borderRadius: 9, border: 'none', background: isActive ? cat.bg : 'transparent', cursor: 'pointer', textAlign: 'left', transition: 'background 0.12s', outline: 'none', fontFamily: "'DM Sans', system-ui, sans-serif" }}
+                        onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#F5F6FA' }}
+                        onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
+                      >
+                        <div style={{ width: 30, height: 30, borderRadius: 8, background: isActive ? cat.bg : '#F0F2F8', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <CatIcon size={13} strokeWidth={isActive ? 2.3 : 1.8} style={{ color: isActive ? cat.color : '#8B90A7' }} />
+                        </div>
+                        <span style={{ flex: 1, fontSize: 13, fontWeight: isActive ? 700 : 500, color: isActive ? cat.color : '#5A6080' }}>{cat.label}</span>
+                        {count > 0 && (
+                          <span style={{ padding: '2px 8px', borderRadius: 99, background: isActive ? cat.color + '22' : '#F0F2F8', fontSize: 11, fontWeight: 700, color: isActive ? cat.color : '#8B90A7', flexShrink: 0 }}>{count}</span>
+                        )}
+                      </button>
+                    )
+                  })}
                 </div>
-              </div>
+              )}
+            </div>
 
-              <div style={{ padding: '4px 18px 8px' }}>
-                <span style={{ fontSize: 10.5, fontWeight: 700, color: '#B0B4C8', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                  Categories
+          </div>
+
+          {/* Full-width tickets table */}
+          <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden' }}>
+
+            {/* Table header: title left, status pills right */}
+            <div className="flex items-center justify-between"
+              style={{ padding: '13px 20px', borderBottom: `1px solid ${C.border}`, background: '#FAFBFE' }}>
+              <div className="flex items-center gap-2.5">
+                <span style={{ fontSize: 13.5, fontWeight: 700, color: C.navy }}>
+                  {activeCategory === 'All' ? 'All Tickets' : activeCategory}
                 </span>
+                <span style={{ padding: '2px 9px', borderRadius: 99, background: '#F0F2F8', fontSize: 11.5, fontWeight: 700, color: C.muted }}>{filtered.length}</span>
               </div>
-
-              <div style={{ padding: '0 8px 14px', display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {CATEGORIES.map(cat => {
-                  const CatIcon     = cat.Icon
-                  const isActiveCat = activeCategory === cat.id
-                  const count       = catCount(cat.id)
+              <div className="flex items-center gap-1.5">
+                {(['All', 'Open', 'Pending', 'Resolved', 'Closed'] as const).map(s => {
+                  const isAllBtn = s === 'All'
+                  const isActive = statusFilter === s
+                  const ss       = isAllBtn ? null : STATUS_STYLE[s as TStatus]
+                  const cnt      = isAllBtn ? baseFiltered.length : baseFiltered.filter(t => t.status === s).length
+                  if (!isAllBtn && cnt === 0) return null
                   return (
-                    <button
-                      key={cat.id}
-                      onClick={() => setActiveCategory(cat.id)}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: 10,
-                        padding: '9px 10px', borderRadius: 10, border: 'none',
-                        background: isActiveCat ? cat.bg : 'transparent',
-                        cursor: 'pointer', textAlign: 'left', width: '100%',
-                        transition: 'background 0.13s',
-                      }}
-                      onMouseEnter={e => { if (!isActiveCat) e.currentTarget.style.background = '#F0F2F8' }}
-                      onMouseLeave={e => { if (!isActiveCat) e.currentTarget.style.background = 'transparent' }}
-                    >
-                      <div style={{ width: 30, height: 30, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: isActiveCat ? cat.bg : '#F0F2F8' }}>
-                        <CatIcon size={14} strokeWidth={isActiveCat ? 2.3 : 1.8} style={{ color: isActiveCat ? cat.color : '#8B90A7' }} />
-                      </div>
-                      <span style={{ flex: 1, fontSize: 13, fontWeight: isActiveCat ? 700 : 500, color: isActiveCat ? cat.color : '#5A6080' }}>
-                        {cat.label}
-                      </span>
-                      {count > 0 && (
-                        <span style={{
-                          minWidth: 20, height: 20, padding: '0 6px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          borderRadius: 99, fontSize: 10.5, fontWeight: 700, flexShrink: 0,
-                          background: isActiveCat ? cat.bg : '#F0F2F8',
-                          color: isActiveCat ? cat.color : '#8B90A7',
-                        }}>
-                          {count}
-                        </span>
-                      )}
+                    <button key={s} onClick={() => setStatusFilter(s as TStatus | 'All')}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 9px', borderRadius: 99, border: 'none', cursor: 'pointer', background: isActive ? (ss ? ss.bg : 'rgba(28,32,53,0.08)') : '#F0F2F8', color: isActive ? (ss ? ss.color : C.navy) : C.muted, fontSize: 11, fontWeight: isActive ? 700 : 600, outline: 'none', fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+                      {ss && <span style={{ width: 5, height: 5, borderRadius: '50%', background: isActive ? ss.dot : '#B0B4C8', display: 'inline-block', flexShrink: 0 }} />}
+                      {s}
+                      <span style={{ fontSize: 10, fontWeight: 700, padding: '0 4px', borderRadius: 99, marginLeft: 1, background: isActive ? (ss ? `${ss.dot}28` : 'rgba(28,32,53,0.1)') : 'rgba(0,0,0,0.06)', color: isActive ? (ss ? ss.color : C.navy) : '#9CA3AF' }}>{cnt}</span>
                     </button>
                   )
                 })}
               </div>
             </div>
 
-            {/* RIGHT — Tickets table */}
-            <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden' }}>
+            {/* Column headers */}
+            <div className="grid" style={{ gridTemplateColumns: COL, padding: '12px 20px', background: '#F7F8FC', borderBottom: `1px solid ${C.border}` }}>
+              {['Ticket ID', 'Employee', 'Category', 'Created', 'Priority', 'Status', 'Assigned To', 'Updated', 'View'].map(h => (
+                <span key={h} style={{ fontSize: 10.5, fontWeight: 700, color: '#B0B4C8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                  {h}
+                </span>
+              ))}
+            </div>
 
-              {/* Title bar */}
-              <div className="flex items-center justify-between"
-                style={{ padding: '13px 20px', borderBottom: `1px solid ${C.border}`, background: '#FAFBFE' }}>
-                <div className="flex items-center gap-2.5">
-                  <span style={{ fontSize: 13.5, fontWeight: 700, color: C.navy }}>
-                    {activeCategory === 'All' ? 'All Tickets' : activeCategory}
-                  </span>
-                  <span style={{ padding: '2px 9px', borderRadius: 99, background: '#F0F2F8', fontSize: 11.5, fontWeight: 700, color: C.muted }}>
-                    {filtered.length}
-                  </span>
+            {/* Rows */}
+            {filtered.length === 0 ? (
+              <div className="flex flex-col items-center justify-center" style={{ padding: '60px 20px' }}>
+                <div style={{ width: 54, height: 54, borderRadius: 16, background: '#F0F2F8', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                  <Ticket size={22} strokeWidth={1.5} style={{ color: '#B0B4C8' }} />
                 </div>
-                <div className="flex items-center gap-1.5">
-                  {(['All', 'Open', 'Pending', 'Resolved', 'Closed'] as const).map(s => {
-                    const isAllBtn = s === 'All'
-                    const isActive = statusFilter === s
-                    const ss       = isAllBtn ? null : STATUS_STYLE[s as TStatus]
-                    const cnt      = isAllBtn ? baseFiltered.length : baseFiltered.filter(t => t.status === s).length
-                    if (!isAllBtn && cnt === 0) return null
-                    return (
-                      <button key={s} onClick={() => setStatusFilter(s as TStatus | 'All')}
-                        style={{
-                          display: 'inline-flex', alignItems: 'center', gap: 4,
-                          padding: '4px 9px', borderRadius: 99, border: 'none', cursor: 'pointer',
-                          background: isActive ? (ss ? ss.bg : 'rgba(28,32,53,0.08)') : '#F0F2F8',
-                          color: isActive ? (ss ? ss.color : C.navy) : C.muted,
-                          fontSize: 11, fontWeight: isActive ? 700 : 600, outline: 'none',
-                          fontFamily: "'DM Sans', system-ui, sans-serif",
-                        }}>
-                        {ss && <span style={{ width: 5, height: 5, borderRadius: '50%', background: isActive ? ss.dot : '#B0B4C8', display: 'inline-block', flexShrink: 0 }} />}
-                        {s}
-                        <span style={{
-                          fontSize: 10, fontWeight: 700, padding: '0 4px', borderRadius: 99, marginLeft: 1,
-                          background: isActive ? (ss ? `${ss.dot}28` : 'rgba(28,32,53,0.1)') : 'rgba(0,0,0,0.06)',
-                          color: isActive ? (ss ? ss.color : C.navy) : '#9CA3AF',
-                        }}>{cnt}</span>
-                      </button>
-                    )
-                  })}
-                </div>
+                <p style={{ fontSize: 14, fontWeight: 600, color: C.navy, marginBottom: 5 }}>No tickets found</p>
+                <p style={{ fontSize: 13, color: C.muted }}>Try adjusting your search or category filter</p>
               </div>
-
-              {/* Column headers */}
-              <div className="grid" style={{ gridTemplateColumns: COL, padding: '12px 20px', background: '#F7F8FC', borderBottom: `1px solid ${C.border}` }}>
-                {['Ticket ID', 'Employee', 'Category', 'Created', 'Priority', 'Status', 'Assigned To', 'Updated', 'View'].map(h => (
-                  <span key={h} style={{ fontSize: 10.5, fontWeight: 700, color: '#B0B4C8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                    {h}
-                  </span>
-                ))}
-              </div>
-
-              {/* Rows */}
-              {filtered.length === 0 ? (
-                <div className="flex flex-col items-center justify-center" style={{ padding: '60px 20px' }}>
-                  <div style={{ width: 54, height: 54, borderRadius: 16, background: '#F0F2F8', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-                    <Ticket size={22} strokeWidth={1.5} style={{ color: '#B0B4C8' }} />
-                  </div>
-                  <p style={{ fontSize: 14, fontWeight: 600, color: C.navy, marginBottom: 5 }}>No tickets found</p>
-                  <p style={{ fontSize: 13, color: C.muted }}>Try adjusting your search or category filter</p>
-                </div>
-              ) : (
-                filtered.map((t, idx) => {
-                  const ss     = STATUS_STYLE[t.status]
-                  const ps     = PRIORITY_STYLE[t.priority]
-                  const cb     = CAT_BADGE[t.category] ?? { bg: '#F0F2F8', color: C.muted }
-                  const isLast = idx === filtered.length - 1
-                  return (
-                    <div key={t.id} className="atkt-row grid items-center"
-                      style={{ gridTemplateColumns: COL, padding: '14px 20px', borderBottom: isLast ? 'none' : `1px solid #F0F2F8`, background: '#fff', transition: 'background 0.12s' }}>
-                      <div>
-                        <div style={{ fontSize: 12.5, fontWeight: 700, color: C.navy, fontVariantNumeric: 'tabular-nums' }}>{t.id}</div>
-                        {t.comments.length > 0 && (
-                          <div className="flex items-center gap-1 mt-0.5">
-                            <MessageSquare size={10} style={{ color: '#B0B4C8' }} />
-                            <span style={{ fontSize: 10.5, color: C.muted }}>{t.comments.length}</span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 min-w-0">
-                        <EmployeeAvatar name={t.employee} size={28} />
-                        <div className="min-w-0">
-                          <div className="truncate" style={{ fontSize: 12.5, fontWeight: 600, color: C.navy }}>{t.employee}</div>
-                          <div style={{ fontSize: 11, color: C.muted, marginTop: 1 }}>
-                            {(() => { const dc = DEPT_COLOR[t.department] ?? { bg: '#F0F2F8', color: C.muted }; return <span style={{ fontSize: 10.5, fontWeight: 600, color: dc.color, background: dc.bg, padding: '1px 6px', borderRadius: 4 }}>{t.department}</span> })()}
-                          </div>
+            ) : (
+              filtered.map((t, idx) => {
+                const ss     = STATUS_STYLE[t.status]
+                const ps     = PRIORITY_STYLE[t.priority]
+                const cb     = CAT_BADGE[t.category] ?? { bg: '#F0F2F8', color: C.muted }
+                const isLast = idx === filtered.length - 1
+                return (
+                  <div key={t.id} className="atkt-row grid items-center"
+                    style={{ gridTemplateColumns: COL, padding: '14px 20px', borderBottom: isLast ? 'none' : `1px solid #F0F2F8`, background: '#fff', transition: 'background 0.12s' }}>
+                    <div>
+                      <div style={{ fontSize: 12.5, fontWeight: 700, color: C.navy, fontVariantNumeric: 'tabular-nums' }}>{t.id}</div>
+                      {t.comments.length > 0 && (
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <MessageSquare size={10} style={{ color: '#B0B4C8' }} />
+                          <span style={{ fontSize: 10.5, color: C.muted }}>{t.comments.length}</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <EmployeeAvatar name={t.employee} size={28} />
+                      <div className="min-w-0">
+                        <div className="truncate" style={{ fontSize: 12.5, fontWeight: 600, color: C.navy }}>{t.employee}</div>
+                        <div style={{ fontSize: 11, color: C.muted, marginTop: 1 }}>
+                          {(() => { const dc = DEPT_COLOR[t.department] ?? { bg: '#F0F2F8', color: C.muted }; return <span style={{ fontSize: 10.5, fontWeight: 600, color: dc.color, background: dc.bg, padding: '1px 6px', borderRadius: 4 }}>{t.department}</span> })()}
                         </div>
                       </div>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 9px', borderRadius: 8, background: cb.bg, color: cb.color, fontSize: 11.5, fontWeight: 600, width: 'fit-content', whiteSpace: 'nowrap' }}>
-                        {t.category}
-                      </span>
-                      <span style={{ fontSize: 12, color: '#5A6080', fontWeight: 500 }}>{fmtDate(t.createdDate)}</span>
-                      <span className="inline-flex items-center gap-1.5 rounded-full"
-                        style={{ padding: '4px 10px', background: ps.bg, color: ps.color, fontSize: 11.5, fontWeight: 600, width: 'fit-content', whiteSpace: 'nowrap', border: `1px solid ${ps.border}` }}>
-                        <span style={{ width: 5, height: 5, borderRadius: '50%', background: ps.dot, display: 'inline-block', flexShrink: 0 }} />
-                        {t.priority}
-                      </span>
-                      <span className="inline-flex items-center gap-1.5 rounded-full"
-                        style={{ padding: '4px 10px', background: ss.bg, color: ss.color, fontSize: 11.5, fontWeight: 600, width: 'fit-content', whiteSpace: 'nowrap', border: `1px solid ${ss.dot}40` }}>
-                        <span style={{ width: 5, height: 5, borderRadius: '50%', background: ss.dot, display: 'inline-block', flexShrink: 0 }} />
-                        {t.status}
-                      </span>
-                      <span className="truncate" style={{ fontSize: 12.5, color: '#5A6080', fontWeight: 500 }}>{t.assignedTo}</span>
-                      <span style={{ fontSize: 12, color: '#5A6080', fontWeight: 500 }}>{fmtDate(t.lastUpdated)}</span>
-                      <button
-                        onClick={() => openDetail(t)}
-                        title="Manage ticket"
-                        style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid #E8EAF2', background: '#fff', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.14s' }}
-                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.08)'; e.currentTarget.style.borderColor = 'rgba(99,102,241,0.30)' }}
-                        onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = '#E8EAF2' }}
-                      >
-                        <Eye size={14} strokeWidth={1.8} style={{ color: '#5B5FDE' }} />
-                      </button>
                     </div>
-                  )
-                })
-              )}
+                    <span style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 9px', borderRadius: 8, background: cb.bg, color: cb.color, fontSize: 11.5, fontWeight: 600, width: 'fit-content', whiteSpace: 'nowrap' }}>
+                      {t.category}
+                    </span>
+                    <span style={{ fontSize: 12, color: '#5A6080', fontWeight: 500 }}>{fmtDate(t.createdDate)}</span>
+                    <span className="inline-flex items-center gap-1.5 rounded-full"
+                      style={{ padding: '4px 10px', background: ps.bg, color: ps.color, fontSize: 11.5, fontWeight: 600, width: 'fit-content', whiteSpace: 'nowrap', border: `1px solid ${ps.border}` }}>
+                      <span style={{ width: 5, height: 5, borderRadius: '50%', background: ps.dot, display: 'inline-block', flexShrink: 0 }} />
+                      {t.priority}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 rounded-full"
+                      style={{ padding: '4px 10px', background: ss.bg, color: ss.color, fontSize: 11.5, fontWeight: 600, width: 'fit-content', whiteSpace: 'nowrap', border: `1px solid ${ss.dot}40` }}>
+                      <span style={{ width: 5, height: 5, borderRadius: '50%', background: ss.dot, display: 'inline-block', flexShrink: 0 }} />
+                      {t.status}
+                    </span>
+                    <span className="truncate" style={{ fontSize: 12.5, color: '#5A6080', fontWeight: 500 }}>{t.assignedTo}</span>
+                    <span style={{ fontSize: 12, color: '#5A6080', fontWeight: 500 }}>{fmtDate(t.lastUpdated)}</span>
+                    <button
+                      onClick={() => openDetail(t)}
+                      title="Manage ticket"
+                      style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid #E8EAF2', background: '#fff', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.14s' }}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.08)'; e.currentTarget.style.borderColor = 'rgba(99,102,241,0.30)' }}
+                      onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = '#E8EAF2' }}
+                    >
+                      <Eye size={14} strokeWidth={1.8} style={{ color: '#5B5FDE' }} />
+                    </button>
+                  </div>
+                )
+              })
+            )}
 
-              {/* Footer */}
-              {filtered.length > 0 && (
-                <div style={{ padding: '11px 20px', borderTop: `1px solid ${C.border}`, background: '#FAFBFE' }}>
-                  <span style={{ fontSize: 12, color: C.muted, fontWeight: 500 }}>
-                    Showing <strong style={{ color: C.navy }}>{filtered.length}</strong> of <strong style={{ color: C.navy }}>{tickets.length}</strong> tickets
-                  </span>
-                </div>
-              )}
-            </div>
+            {/* Footer */}
+            {filtered.length > 0 && (
+              <div style={{ padding: '11px 20px', borderTop: `1px solid ${C.border}`, background: '#FAFBFE' }}>
+                <span style={{ fontSize: 12, color: C.muted, fontWeight: 500 }}>
+                  Showing <strong style={{ color: C.navy }}>{filtered.length}</strong> of <strong style={{ color: C.navy }}>{tickets.length}</strong> tickets
+                </span>
+              </div>
+            )}
           </div>
         </>
       )}

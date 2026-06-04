@@ -181,6 +181,7 @@ export default function TicketsPage() {
   const [searchQuery,    setSearchQuery]    = useState('')
   const [statusFilter,   setStatusFilter]   = useState<TStatus | 'All'>('All')
   const [viewTicket,     setViewTicket]     = useState<TicketRecord | null>(null)
+  const [catDropOpen,    setCatDropOpen]    = useState(false)
 
   // ── Ticket-view state ──
   const [localComments,  setLocalComments]  = useState<TicketComment[]>([])
@@ -432,60 +433,83 @@ export default function TicketsPage() {
       {/* ══════════════════════════════════════════════════════════════════════ */}
       {/* ── TICKET STATUS panel ───────────────────────────────────────────── */}
       {activeCard === 'ticket-status' && (
-        <div className="grid gap-5" style={{ gridTemplateColumns: '2fr 10fr', alignItems: 'start' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 
-          {/* LEFT — Category sidebar */}
-          <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden' }}>
-            <div style={{ padding: '14px 14px 10px' }}>
-              <div className="relative">
-                <Search size={14} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: '#B0B4C8', pointerEvents: 'none' }} />
-                <input
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  placeholder="Search tickets…"
-                  style={{ ...inputBase, height: 38, border: `1px solid ${searchQuery ? '#6366F1' : C.border}`, background: searchQuery ? '#F5F6FF' : '#F7F8FC', padding: '0 32px 0 32px', fontSize: 13 }}
-                />
-                {searchQuery && (
-                  <button onClick={() => setSearchQuery('')}
-                    style={{ position: 'absolute', right: 9, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: C.muted, lineHeight: 0 }}>
-                    <X size={12} />
-                  </button>
-                )}
-              </div>
+          {/* TOP — Search + Category selector bar */}
+          <div className="flex items-center gap-3">
+
+            {/* Search — wider, taller, light grey bg */}
+            <div className="relative flex-shrink-0" style={{ width: 340 }}>
+              <Search size={15} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: '#A0A5BC', pointerEvents: 'none' }} />
+              <input
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Search by ticket ID, subject, category…"
+                style={{ ...inputBase, height: 46, border: 'none', background: '#fff', padding: '0 38px 0 40px', fontSize: 13.5, borderRadius: 11, boxShadow: 'none' }}
+              />
+              {searchQuery && (
+                <button onClick={() => setSearchQuery('')}
+                  style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: C.muted, lineHeight: 0 }}>
+                  <X size={13} />
+                </button>
+              )}
             </div>
-            <div style={{ padding: '4px 18px 8px' }}>
-              <span style={{ fontSize: 10.5, fontWeight: 700, color: '#B0B4C8', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Categories</span>
-            </div>
-            <div style={{ padding: '0 8px 12px', display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {CATEGORIES.map(cat => {
-                const CatIcon     = cat.Icon
-                const isActiveCat = activeCategory === cat.id
-                const count       = catCount(cat.id)
+
+            {/* Category — custom selection dropdown */}
+            {catDropOpen && (
+              <div style={{ position: 'fixed', inset: 0, zIndex: 99 }} onClick={() => setCatDropOpen(false)} />
+            )}
+            <div style={{ position: 'relative', zIndex: 100 }}>
+              {(() => {
+                const ac = CATEGORIES.find(c => c.id === activeCategory) ?? CATEGORIES[0]
+                const AcIcon = ac.Icon
                 return (
-                  <button key={cat.id} onClick={() => setActiveCategory(cat.id)}
-                    style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', borderRadius: 10, border: 'none', background: isActiveCat ? cat.bg : 'transparent', cursor: 'pointer', textAlign: 'left', width: '100%', transition: 'background 0.13s' }}
-                    onMouseEnter={e => { if (!isActiveCat) e.currentTarget.style.background = '#F0F2F8' }}
-                    onMouseLeave={e => { if (!isActiveCat) e.currentTarget.style.background = 'transparent' }}
+                  <button
+                    onClick={() => setCatDropOpen(v => !v)}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 9, height: 46, padding: '0 14px 0 12px', borderRadius: 11, border: 'none', background: catDropOpen ? '#F4F5F8' : '#fff', cursor: 'pointer', fontFamily: "'DM Sans', system-ui, sans-serif", transition: 'background 0.14s', outline: 'none', minWidth: 210 }}
+                    onMouseEnter={e => { if (!catDropOpen) e.currentTarget.style.background = '#F7F8FC' }}
+                    onMouseLeave={e => { if (!catDropOpen) e.currentTarget.style.background = '#fff' }}
                   >
-                    <div className="flex items-center justify-center rounded-lg flex-shrink-0"
-                      style={{ width: 30, height: 30, background: isActiveCat ? cat.bg : '#F0F2F8', transition: 'background 0.13s' }}>
-                      <CatIcon size={14} strokeWidth={isActiveCat ? 2.3 : 1.8} style={{ color: isActiveCat ? cat.color : '#8B90A7', transition: 'color 0.13s' }} />
+                    <div style={{ width: 28, height: 28, borderRadius: 8, background: ac.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <AcIcon size={13} strokeWidth={2.2} style={{ color: ac.color }} />
                     </div>
-                    <span style={{ flex: 1, fontSize: 13, fontWeight: isActiveCat ? 700 : 500, color: isActiveCat ? cat.color : '#5A6080', transition: 'color 0.13s' }}>
-                      {cat.label}
-                    </span>
-                    {count > 0 && (
-                      <span style={{ minWidth: 20, height: 20, padding: '0 6px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 99, background: isActiveCat ? cat.bg : '#F0F2F8', fontSize: 10.5, fontWeight: 700, color: isActiveCat ? cat.color : '#8B90A7', flexShrink: 0, transition: 'background 0.13s, color 0.13s' }}>
-                        {count}
-                      </span>
-                    )}
+                    <span style={{ flex: 1, fontSize: 13.5, fontWeight: 600, color: C.navy, textAlign: 'left', whiteSpace: 'nowrap' }}>{ac.label}</span>
+                    <span style={{ padding: '2px 8px', borderRadius: 99, background: '#F0F2F8', fontSize: 11, fontWeight: 700, color: C.muted, flexShrink: 0 }}>{catCount(ac.id)}</span>
+                    <ChevronDown size={13} strokeWidth={2.3} style={{ color: C.muted, flexShrink: 0, transition: 'transform 0.18s', transform: catDropOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
                   </button>
                 )
-              })}
+              })()}
+
+              {catDropOpen && (
+                <div style={{ position: 'absolute', top: 'calc(100% + 7px)', left: 0, minWidth: 238, background: '#fff', border: `1px solid ${C.border}`, borderRadius: 15, boxShadow: '0 10px 36px rgba(28,32,53,0.13)', zIndex: 200, padding: '7px' }}>
+                  {CATEGORIES.map(cat => {
+                    const CatIcon  = cat.Icon
+                    const isActive = activeCategory === cat.id
+                    const count    = catCount(cat.id)
+                    return (
+                      <button key={cat.id}
+                        onClick={() => { setActiveCategory(cat.id); setCatDropOpen(false) }}
+                        style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 10px', borderRadius: 9, border: 'none', background: isActive ? cat.bg : 'transparent', cursor: 'pointer', textAlign: 'left', transition: 'background 0.12s', outline: 'none', fontFamily: "'DM Sans', system-ui, sans-serif" }}
+                        onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#F5F6FA' }}
+                        onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
+                      >
+                        <div style={{ width: 30, height: 30, borderRadius: 8, background: isActive ? cat.bg : '#F0F2F8', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <CatIcon size={13} strokeWidth={isActive ? 2.3 : 1.8} style={{ color: isActive ? cat.color : '#8B90A7' }} />
+                        </div>
+                        <span style={{ flex: 1, fontSize: 13, fontWeight: isActive ? 700 : 500, color: isActive ? cat.color : '#5A6080' }}>{cat.label}</span>
+                        {count > 0 && (
+                          <span style={{ padding: '2px 8px', borderRadius: 99, background: isActive ? cat.color + '22' : '#F0F2F8', fontSize: 11, fontWeight: 700, color: isActive ? cat.color : '#8B90A7', flexShrink: 0 }}>{count}</span>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
             </div>
+
           </div>
 
-          {/* RIGHT — Tickets table */}
+          {/* FULL-WIDTH — Tickets table */}
           <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden' }}>
             <div className="flex items-center justify-between"
               style={{ padding: '13px 20px', borderBottom: `1px solid ${C.border}`, background: '#FAFBFE' }}>

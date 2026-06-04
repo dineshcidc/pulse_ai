@@ -33,7 +33,6 @@ const MY_PROJECTS_ITEM: NavItem = {
   neutralDots: true,
   children: [
     { id: 'project-list',           label: 'Project List'           },
-    { id: 'team-dashboard',         label: 'Team Dashboard'         },
     { id: 'team-timesheets',        label: 'Team Timesheets'        },
     { id: 'team-leave',             label: 'Team Leave Requests'    },
     { id: 'project-announcements',  label: 'Project Announcements'  },
@@ -115,12 +114,7 @@ function buildAdminNav(): NavSection[] {
             { id: 'pending-approvals',  label: 'Pending Approvals'  },
           ],
         },
-        {
-          id: 'admin-tickets-menu', label: 'Tickets', Icon: TicketCheck,
-          children: [
-            { id: 'admin-tickets', label: 'All Tickets' },
-          ],
-        },
+        { id: 'admin-tickets', label: 'Tickets', Icon: TicketCheck },
       ],
     },
     {

@@ -7,7 +7,7 @@ import {
 } from 'lucide-react'
 
 /* ── Types ── */
-type AudienceType = 'all' | 'project' | 'individual'
+type AudienceType = 'project' | 'individual'
 type Priority     = 'Normal' | 'Important' | 'Urgent'
 type AnnStatus    = 'sent' | 'scheduled' | 'draft'
 
@@ -20,11 +20,11 @@ interface Announcement {
 
 /* ── Mock data ── */
 const ANNOUNCEMENTS: Announcement[] = [
-  { id: 1, title: 'Q2 Sprint Planning — Mandatory Attendance', subject: 'Sprint Planning Session for All Project Teams', message: 'This is to inform all team members that the Q2 Sprint Planning session is scheduled for May 28, 2026. Attendance is mandatory for all project managers and lead developers. Please block your calendars and ensure all open tickets are updated before the session begins.', audience: 'all', audienceLabel: 'All Employees', priority: 'Important', status: 'sent', timeLabel: 'May 22, 2026 · 9:30 AM', recipients: 24, attachments: [{ name: 'Sprint_Plan_Q2.pdf', type: 'pdf', size: '1.2 MB' }] },
+  { id: 1, title: 'Q2 Sprint Planning — Mandatory Attendance', subject: 'Sprint Planning Session for All Project Teams', message: 'This is to inform all team members that the Q2 Sprint Planning session is scheduled for May 28, 2026. Attendance is mandatory for all project managers and lead developers. Please block your calendars and ensure all open tickets are updated before the session begins.', audience: 'project', audienceLabel: 'Project Team', priority: 'Important', status: 'sent', timeLabel: 'May 22, 2026 · 9:30 AM', recipients: 24, attachments: [{ name: 'Sprint_Plan_Q2.pdf', type: 'pdf', size: '1.2 MB' }] },
   { id: 2, title: 'Pulse.AI v2 — Production Deployment Notice', subject: 'Scheduled Downtime on May 25, 2026', message: 'The Pulse.AI v2 platform will undergo a scheduled maintenance window on May 25 between 11 PM and 2 AM IST. All team members working on this project should ensure their code is pushed and PRs reviewed before this window.', audience: 'project', audienceLabel: 'Pulse.AI v2 Team', priority: 'Urgent', status: 'sent', timeLabel: 'May 21, 2026 · 4:00 PM', recipients: 8, attachments: [] },
-  { id: 3, title: 'New Leave Policy Update — Effective June 1', subject: 'Updated HR Leave Policy FY 2026-27', message: 'Please review the updated leave policy document attached below. Key changes include revised carry-forward limits and new WFH guidelines. Questions can be directed to the HR team via the Tickets module.', audience: 'all', audienceLabel: 'All Employees', priority: 'Normal', status: 'scheduled', timeLabel: 'Scheduled: May 30, 2026 · 10:00 AM', recipients: 24, attachments: [{ name: 'Leave_Policy_FY2627.pdf', type: 'pdf', size: '890 KB' }, { name: 'Policy_Summary.docx', type: 'doc', size: '220 KB' }] },
+  { id: 3, title: 'New Leave Policy Update — Effective June 1', subject: 'Updated HR Leave Policy FY 2026-27', message: 'Please review the updated leave policy document attached below. Key changes include revised carry-forward limits and new WFH guidelines. Questions can be directed to the HR team via the Tickets module.', audience: 'project', audienceLabel: 'Project Team', priority: 'Normal', status: 'scheduled', timeLabel: 'Scheduled: May 30, 2026 · 10:00 AM', recipients: 24, attachments: [{ name: 'Leave_Policy_FY2627.pdf', type: 'pdf', size: '890 KB' }, { name: 'Policy_Summary.docx', type: 'doc', size: '220 KB' }] },
   { id: 4, title: 'HDFC Portal — Milestone 3 Review Meeting', subject: 'Client Call Preparation', message: 'The client review call for HDFC Portal Milestone 3 is on May 27. All QA and frontend members are requested to prepare the demo environment and test scenarios in advance.', audience: 'project', audienceLabel: 'HDFC Portal Team', priority: 'Important', status: 'draft', timeLabel: 'Draft saved: May 20, 2026', recipients: 0, attachments: [{ name: 'Demo_Checklist.pdf', type: 'pdf', size: '340 KB' }] },
-  { id: 5, title: 'Welcome — May 2026 New Joiners', subject: 'Onboarding Announcement', message: 'We are delighted to welcome three new members joining Concert IDC this month. Please extend a warm welcome and assist in their onboarding as needed.', audience: 'all', audienceLabel: 'All Employees', priority: 'Normal', status: 'sent', timeLabel: 'May 19, 2026 · 11:00 AM', recipients: 24, attachments: [] },
+  { id: 5, title: 'Welcome — May 2026 New Joiners', subject: 'Onboarding Announcement', message: 'We are delighted to welcome three new members joining Concert IDC this month. Please extend a warm welcome and assist in their onboarding as needed.', audience: 'project', audienceLabel: 'Project Team', priority: 'Normal', status: 'sent', timeLabel: 'May 19, 2026 · 11:00 AM', recipients: 24, attachments: [] },
 ]
 
 const PROJECTS  = ['Pulse.AI v2', 'HDFC Portal', 'TechCorp ERP']
@@ -57,7 +57,7 @@ function ComposePage({ onBack, onPublish }: { onBack: () => void; onPublish: (a:
   const [title, setTitle]         = useState('')
   const [subject, setSubject]     = useState('')
   const [message, setMessage]     = useState('')
-  const [audience, setAudience]   = useState<AudienceType>('all')
+  const [audience, setAudience]   = useState<AudienceType>('project')
   const [project, setProject]     = useState(PROJECTS[0])
   const [empSearch, setEmpSearch] = useState('')
   const [selEmps, setSelEmps]     = useState<string[]>([])
@@ -72,7 +72,6 @@ function ComposePage({ onBack, onPublish }: { onBack: () => void; onPublish: (a:
   const canSend = title.trim().length > 0
 
   const audienceLabel =
-    audience === 'all'     ? 'All Employees' :
     audience === 'project' ? `${project} Team` :
     selEmps.length > 0     ? selEmps.slice(0,2).join(', ') + (selEmps.length > 2 ? ` +${selEmps.length-2}` : '') :
     'No members selected'
@@ -101,7 +100,7 @@ function ComposePage({ onBack, onPublish }: { onBack: () => void; onPublish: (a:
         : scheduled && schedAt
         ? `Scheduled: ${new Date(schedAt).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'})}`
         : `${new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})} · ${new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}`,
-      recipients: asDraft ? 0 : audience === 'all' ? 24 : audience === 'project' ? 8 : selEmps.length,
+      recipients: asDraft ? 0 : audience === 'project' ? 8 : selEmps.length,
       attachments: files.map(f => ({ name: f.name, type: f.ftype, size: f.size })),
     })
     setSending(false)
@@ -248,10 +247,9 @@ function ComposePage({ onBack, onPublish }: { onBack: () => void; onPublish: (a:
           {/* Send To */}
           <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 20px' }}>
             {sectionLabel('Send To')}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: audience !== 'all' ? 14 : 0 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 }}>
               {([
-                { id: 'all',        label: 'All Employees',    icon: Users },
-                { id: 'project',    label: 'Project Team',     icon: Megaphone },
+                { id: 'project',    label: 'Project Team',      icon: Megaphone },
                 { id: 'individual', label: 'Individual Members', icon: User },
               ] as { id: AudienceType; label: string; icon: React.ElementType }[]).map(({ id, label, icon: Icon }) => (
                 <button
@@ -618,7 +616,7 @@ export default function ProjectAnnouncementsPage() {
                   <p style={{ fontSize: 12.5, color: '#5A6080', margin: '0 0 10px', lineHeight: 1.6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ann.message}</p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: C.muted }}>
-                      {ann.audience === 'all' ? <Users size={12} strokeWidth={1.8} /> : ann.audience === 'project' ? <Megaphone size={12} strokeWidth={1.8} /> : <User size={12} strokeWidth={1.8} />}
+                      {ann.audience === 'project' ? <Megaphone size={12} strokeWidth={1.8} /> : <User size={12} strokeWidth={1.8} />}
                       <span style={{ fontWeight: 600, color: '#3D4266' }}>{ann.audienceLabel}</span>
                     </span>
                     <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: C.muted }}><Clock size={11} strokeWidth={1.8} />{ann.timeLabel}</span>
