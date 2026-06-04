@@ -567,10 +567,17 @@ function AddDepartmentPage({ onBack, onSave }: {
                   <input
                     value={headSearch}
                     onChange={e => { setHeadSearch(e.target.value); setHeadOpen(true) }}
-                    onFocus={() => setHeadOpen(true)}
+                    onFocus={e => {
+                      setHeadOpen(true)
+                      e.target.style.borderColor = !!errors.headName ? '#E84855' : form.color
+                      e.target.style.background = '#fff'
+                    }}
+                    onBlur={e => {
+                      e.target.style.borderColor = !!errors.headName ? '#E84855' : C.border
+                      e.target.style.background = e.target.value ? '#F0F4FF' : '#fff'
+                    }}
                     placeholder="Search member by name or role…"
                     style={{ ...iStyle(!!errors.headName, headSearch), paddingLeft: 38 }}
-                    {...fi(form.color, !!errors.headName)}
                   />
                   <UserCog size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: C.muted, pointerEvents: 'none' }} />
                 </div>

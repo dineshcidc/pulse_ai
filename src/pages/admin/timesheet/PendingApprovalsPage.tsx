@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Search, Clock, Users, AlertCircle, FolderOpen, X, ChevronDown, ChevronUp, CalendarDays, ClipboardList, BellRing } from 'lucide-react'
+import { Search, Clock, Users, AlertCircle, FolderOpen, X, ChevronDown, ChevronUp, CalendarDays, BellRing } from 'lucide-react'
 
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', surface: '#F7F8FC' }
 
@@ -232,10 +232,6 @@ export default function PendingApprovalsPage() {
     setSelectedManagers([])
     setSearchQuery('')
   }
-  function handleGenerate() {
-    setState('loading')
-    setTimeout(() => setState('done'), 1000)
-  }
   function sendReminder(m: ProjectManager) {
     if (reminded.has(m.id)) return
     setReminded(prev => new Set(prev).add(m.id))
@@ -251,7 +247,6 @@ export default function PendingApprovalsPage() {
   })
 
   const hasFilter    = allSelected || selectedManagers.length > 0
-  const canGenerate  = hasFilter
 
   const managersWithPending = MANAGERS.filter(m => m.projects.length > 0).length
   const projectsAffected    = new Set(MANAGERS.flatMap(m => m.projects.map(p => p.project))).size

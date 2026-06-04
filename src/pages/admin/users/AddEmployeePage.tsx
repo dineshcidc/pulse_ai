@@ -2,7 +2,7 @@ import { useState, useRef } from 'react'
 import {
   User, Briefcase, Shield, Phone, Camera, ChevronDown, Check, Plus,
   Trash2, MapPin, CreditCard, GraduationCap, Users, AlertCircle,
-  Building2, BookOpen, FileSpreadsheet, UploadCloud, X,
+  BookOpen, FileSpreadsheet, UploadCloud, X,
 } from 'lucide-react'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
