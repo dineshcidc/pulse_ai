@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Search, Clock, Users, AlertCircle, BellRing, X, ChevronDown, CalendarDays } from 'lucide-react'
+import { Search, Clock, Users, AlertCircle, BellRing, X, ClipboardList, ChevronDown } from 'lucide-react'
 
 // ─── Design tokens ──────────────────────────────────────────────────────────────
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', hover: '#F0F2F8', surface: '#F7F8FC' }
@@ -129,6 +129,8 @@ export default function PendingTimesheetsPage() {
     { label: 'Employees Pending',  value: DATA.length,      color: '#6366F1', Icon: Users       },
     { label: 'Projects Affected',  value: projectsAffected, color: '#0A8A58', Icon: AlertCircle },
   ]
+
+  const hasEmpFilter = allSelected || selectedEmps.length > 0
 
   return (
     <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>

@@ -181,12 +181,6 @@ function totals(balances: Record<LeaveType, LeaveBalance>) {
   return { allocated, consumed, remaining: allocated - consumed }
 }
 
-function healthOf(pct: number) {
-  if (pct < 50) return { bar: '#16A34A' }
-  if (pct < 80) return { bar: '#F59E0B' }
-  return          { bar: '#E84855' }
-}
-
 function statusOf(allocated: number, consumed: number) {
   if (consumed === 0)   return { label: 'Not Used',   color: '#4B4ECC', bg: 'rgba(99,102,241,0.08)',  border: 'rgba(99,102,241,0.15)'  }
   const rem = allocated - consumed
