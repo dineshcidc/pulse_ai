@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Search, Clock, Users, AlertCircle, BellRing, X, ClipboardList, ChevronDown } from 'lucide-react'
+import { Search, Clock, Users, AlertCircle, BellRing, X, ChevronDown, Clipboard } from 'lucide-react'
 
 // ─── Design tokens ──────────────────────────────────────────────────────────────
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', hover: '#F0F2F8', surface: '#F7F8FC' }
@@ -293,7 +293,7 @@ export default function PendingTimesheetsPage() {
       {state === 'idle' && (
         <div style={{ background:'#fff', border:`1px solid ${C.border}`, borderRadius:16, padding:'60px 48px', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:14, textAlign:'center', animation:'ptFadeIn 0.22s ease-out' }}>
           <div style={{ width:56, height:56, borderRadius:16, background:C.surface, border:`1px solid ${C.border}`, display:'flex', alignItems:'center', justifyContent:'center' }}>
-            <ClipboardList size={24} strokeWidth={1.4} color="#D0D3E4" />
+            <Clipboard size={24} strokeWidth={1.4} color="#D0D3E4" />
           </div>
           <div>
             <p style={{ margin:0, fontSize:15, fontWeight:700, color:C.navy }}>No Report Generated Yet</p>

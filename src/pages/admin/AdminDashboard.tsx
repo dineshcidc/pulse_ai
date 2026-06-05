@@ -14,10 +14,12 @@ import DepartmentManagementPage from './projects/DepartmentManagementPage'
 import AdminOrgStructurePage from './AdminOrgStructurePage'
 import AttendanceReportPage from './reports/AttendanceReportPage'
 import LeaveReportPage from './reports/LeaveReportPage'
+import AuditTrailPage from './reports/AuditTrailPage'
 import OrgProfileWrapperPage from './settings/OrgProfileWrapperPage'
 import WorkingHoursPage from './settings/WorkingHoursPage'
 import AdminAnnouncementsPage from './settings/AdminAnnouncementsPage'
 import PendingApprovalsPage from './timesheet/PendingApprovalsPage'
+import TimesheetPoliciesPage from './timesheet/TimesheetPoliciesPage'
 import AdminTicketsPage from './tickets/AdminTicketsPage'
 import LeavePolicyPage from './leave/LeavePolicyPage'
 import DesignationPage from './users/DesignationPage'
@@ -94,11 +96,13 @@ function PageContent({ activeItem, onNavigate }: { activeItem: string; onNavigat
   if (activeItem === 'all-timesheets')       return <AllTimesheetsPage />
   if (activeItem === 'pending-timesheets')   return <PendingTimesheetsPage />
   if (activeItem === 'pending-approvals')    return <PendingApprovalsPage />
+  if (activeItem === 'timesheet-policies')   return <TimesheetPoliciesPage />
   if (activeItem === 'project-setup')          return <AdminProjectsPage />
   if (activeItem === 'department-management')  return <DepartmentManagementPage />
   if (activeItem === 'admin-org')              return <AdminOrgStructurePage />
   if (activeItem === 'attendance-report')      return <AttendanceReportPage />
-  if (activeItem === 'leave-report')           return <LeaveReportPage />
+  if (activeItem === 'leave-report')            return <LeaveReportPage />
+  if (activeItem === 'audit-trail')             return <AuditTrailPage />
   if (activeItem === 'org-profile')            return <OrgProfileWrapperPage />
   if (activeItem === 'working-hours')          return <WorkingHoursPage />
   if (activeItem === 'announcements')          return <AdminAnnouncementsPage />

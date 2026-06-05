@@ -2,14 +2,11 @@ import { useState } from 'react'
 import {
   CalendarDays, Users, Shield, ChevronDown, ChevronUp,
   Save, RotateCcw, Check, Info, AlertCircle, TrendingUp,
-  Layers, Settings2,
+  Layers, Settings2, Plus, X,
 } from 'lucide-react'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
-type LeaveTypeName =
-  | 'Planned Leave' | 'Unplanned Leave' | 'Bereavement Holiday'
-  | 'Birthday Leave' | 'Floating Holiday' | 'Election Day Leave'
-  | 'Paternity Leave' | 'LWP'
+type LeaveTypeName = string
 
 type YearEndRule = 'lapse' | 'encashment'
 type PolicyTab   = 'types' | 'entitlements' | 'general'
@@ -76,6 +73,18 @@ const DEFAULT_GENERAL: GeneralPolicy = {
   minAdvanceDays: 1, maxConsecutiveDays: 10, halfDayEnabled: true, backdatedDays: 2,
 }
 
+const COLOR_PALETTE = [
+  '#6366F1', '#2563EB', '#0891B2', '#0D9488',
+  '#059669', '#D97706', '#EA580C', '#DC2626',
+  '#DB2777', '#7C3AED', '#6D28D9', '#475569',
+]
+
+const EMPTY_NEW_TYPE = {
+  name: '', code: '', paid: true, color: '#6366F1',
+  annualDays: 0, requiresApproval: true, carryForward: false,
+  yearEndRule: 'lapse' as YearEndRule,
+}
+
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', surface: '#F7F8FC' }
 
 // ── Toggle component ───────────────────────────────────────────────────────────
@@ -83,9 +92,9 @@ function Toggle({ checked, onChange, disabled = false }: { checked: boolean; onC
   return (
     <button
       onClick={() => !disabled && onChange(!checked)}
-      style={{ width: 40, height: 22, borderRadius: 11, border: 'none', cursor: disabled ? 'not-allowed' : 'pointer', background: checked ? '#1C2035' : '#D1D5DB', position: 'relative', transition: 'background 0.2s', flexShrink: 0, opacity: disabled ? 0.4 : 1 }}
+      style={{ width: 40, height: 22, borderRadius: 11, border: `1px solid ${checked ? '#818CF8' : '#D1D5DB'}`, cursor: disabled ? 'not-allowed' : 'pointer', background: checked ? '#A5B4FC' : '#F3F4F6', position: 'relative', transition: 'background 0.2s, border-color 0.2s', flexShrink: 0, opacity: disabled ? 0.4 : 1 }}
     >
-      <span style={{ position: 'absolute', top: 3, left: checked ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: checked ? '#F2D000' : '#fff', transition: 'left 0.18s', display: 'block', boxShadow: '0 1px 3px rgba(0,0,0,0.18)' }} />
+      <span style={{ position: 'absolute', top: 2, left: checked ? 20 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.18s', display: 'block', boxShadow: checked ? '0 1px 4px rgba(99,102,241,0.30)' : '0 1px 3px rgba(0,0,0,0.12)' }} />
     </button>
   )
 }
@@ -101,6 +110,10 @@ export default function LeavePolicyPage() {
   const [saveLoading,  setSaveLoading]  = useState(false)
   const [saveSuccess,  setSaveSuccess]  = useState(false)
   const [hasChanges,   setHasChanges]   = useState(false)
+  const [showAddType,   setShowAddType]   = useState(false)
+  const [newType,       setNewType]       = useState(EMPTY_NEW_TYPE)
+  const [addTypeErrors, setAddTypeErrors] = useState<{ name?: string; code?: string }>({})
+  const [addTypeSaving, setAddTypeSaving] = useState(false)
 
   // ── Derived stats ──
   const activeCnt = configs.filter(c => c.active).length
@@ -142,6 +155,49 @@ export default function LeavePolicyPage() {
     setExpandedType(null)
   }
 
+  function closeAddType() {
+    setShowAddType(false)
+    setNewType(EMPTY_NEW_TYPE)
+    setAddTypeErrors({})
+  }
+
+  async function handleAddType() {
+    const errs: { name?: string; code?: string } = {}
+    if (!newType.name.trim())
+      errs.name = 'Leave type name is required'
+    else if (configs.some(c => c.name.toLowerCase() === newType.name.trim().toLowerCase()))
+      errs.name = 'A leave type with this name already exists'
+    if (!newType.code.trim())
+      errs.code = 'Short code is required'
+    else if (configs.some(c => c.code.toUpperCase() === newType.code.trim().toUpperCase()))
+      errs.code = 'This code is already in use'
+    if (Object.keys(errs).length > 0) { setAddTypeErrors(errs); return }
+
+    setAddTypeSaving(true)
+    await new Promise(r => setTimeout(r, 700))
+    const col = newType.color
+    setConfigs(prev => [...prev, {
+      name:               newType.name.trim(),
+      code:               newType.code.trim().toUpperCase(),
+      color:              col,
+      bg:                 `${col}14`,
+      border:             `${col}28`,
+      paid:               newType.paid,
+      active:             true,
+      annualDays:         newType.annualDays,
+      requiresApproval:   newType.requiresApproval,
+      requiresDocument:   false,
+      carryForward:       newType.carryForward,
+      maxCFDays:          0,
+      cfExpiryMonths:     3,
+      yearEndRule:        newType.yearEndRule,
+      encashmentRate:     0,
+    }])
+    setAddTypeSaving(false)
+    closeAddType()
+    mark()
+  }
+
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
@@ -178,7 +234,7 @@ export default function LeavePolicyPage() {
           </button>
           {/* Save */}
           <button onClick={handleSave} disabled={saveLoading || !hasChanges}
-            style={{ height: 40, padding: '0 20px', borderRadius: 10, border: 'none', fontSize: 13.5, fontWeight: 700, cursor: (!hasChanges || saveLoading) ? 'not-allowed' : 'pointer', background: saveSuccess ? '#0EA86A' : (!hasChanges || saveLoading) ? '#E8EAF2' : 'linear-gradient(135deg, #1C2035 0%, #2D3555 100%)', color: (!hasChanges || saveLoading) ? '#B0B4C8' : '#fff', display: 'flex', alignItems: 'center', gap: 7, fontFamily: 'inherit', transition: 'background 0.2s, opacity 0.15s' }}
+            style={{ height: 40, padding: '0 20px', borderRadius: 10, border: 'none', fontSize: 13.5, fontWeight: 700, cursor: (!hasChanges || saveLoading) ? 'not-allowed' : 'pointer', background: saveSuccess ? '#0EA86A' : (!hasChanges || saveLoading) ? '#E8EAF2' : 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)', color: (!hasChanges || saveLoading) ? '#B0B4C8' : '#fff', display: 'flex', alignItems: 'center', gap: 7, fontFamily: 'inherit', transition: 'background 0.2s, opacity 0.15s' }}
             onMouseEnter={e => { if (hasChanges && !saveLoading) e.currentTarget.style.opacity = '0.88' }}
             onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}>
             {saveLoading
@@ -214,7 +270,7 @@ export default function LeavePolicyPage() {
       <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden' }}>
 
         {/* Tab bar */}
-        <div style={{ display: 'flex', borderBottom: `1px solid ${C.border}`, background: C.surface, padding: '0 8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', borderBottom: `1px solid ${C.border}`, background: C.surface, padding: '0 8px' }}>
           {([
             { id: 'types',        label: 'Leave Types',       Icon: Layers       },
             { id: 'entitlements', label: 'Role Entitlements', Icon: Users        },
@@ -227,6 +283,14 @@ export default function LeavePolicyPage() {
               {t.label}
             </button>
           ))}
+          {tab === 'types' && (
+            <button onClick={() => setShowAddType(true)}
+              style={{ marginLeft: 'auto', marginRight: 12, display: 'inline-flex', alignItems: 'center', gap: 6, height: 32, padding: '0 14px', borderRadius: 8, border: `1px solid ${C.border}`, background: '#fff', color: C.muted, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s', flexShrink: 0 }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = '#6366F1'; e.currentTarget.style.color = '#6366F1'; e.currentTarget.style.background = 'rgba(99,102,241,0.05)' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted; e.currentTarget.style.background = '#fff' }}>
+              <Plus size={12} strokeWidth={2.5} /> New Leave Type
+            </button>
+          )}
         </div>
 
         {/* ════════════════════════════ TAB: Leave Types ═══════════════════════ */}
@@ -251,7 +315,6 @@ export default function LeavePolicyPage() {
                   >
                     {/* Name */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <div style={{ width: 10, height: 10, borderRadius: '50%', background: cfg.color, flexShrink: 0 }} />
                       <div>
                         <div style={{ fontSize: 13.5, fontWeight: 600, color: C.navy }}>{cfg.name}</div>
                         {!cfg.paid && <div style={{ fontSize: 11, color: '#DC2626', fontWeight: 600, marginTop: 1 }}>Salary deduction applies</div>}
@@ -402,14 +465,6 @@ export default function LeavePolicyPage() {
           const activeTypes = configs.filter(c => c.active && c.name !== 'LWP')
           return (
             <>
-              {/* Info banner */}
-              <div style={{ padding: '13px 24px', borderBottom: `1px solid ${C.border}`, background: 'rgba(99,102,241,0.04)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Info size={14} strokeWidth={2} style={{ color: '#5B5FDE', flexShrink: 0 }} />
-                <span style={{ fontSize: 13, color: '#5B5FDE', fontWeight: 500 }}>
-                  Set role-specific annual entitlements. <span style={{ color: C.muted, fontWeight: 400 }}>Highlighted cells override the global default. Grey cells match the global default from the Leave Types tab.</span>
-                </span>
-              </div>
-
               {/* Matrix */}
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -453,7 +508,7 @@ export default function LeavePolicyPage() {
                                 <input
                                   type="number" min={0} max={365} value={cellVal}
                                   onChange={e => updateEnt(r.role, t.name, Math.max(0, parseInt(e.target.value) || 0))}
-                                  style={{ width: 60, height: 36, borderRadius: 8, border: `1.5px solid ${isOverride ? t.border : '#E8EAF2'}`, background: isOverride ? t.bg : '#F7F8FC', textAlign: 'center', fontSize: 13.5, fontWeight: 700, color: isOverride ? t.color : C.muted, outline: 'none', fontFamily: 'inherit', transition: 'all 0.15s' }}
+                                  style={{ width: 60, height: 36, borderRadius: 8, border: `1px solid ${isOverride ? t.border : '#E8EAF2'}`, background: isOverride ? t.bg : '#F7F8FC', textAlign: 'center', fontSize: 13.5, fontWeight: 700, color: isOverride ? t.color : C.muted, outline: 'none', fontFamily: 'inherit', transition: 'all 0.15s' }}
                                 />
                               </td>
                             )
@@ -476,9 +531,17 @@ export default function LeavePolicyPage() {
                   <span style={{ fontSize: 12, color: C.muted }}>Using global default</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={{ width: 28, height: 20, borderRadius: 5, background: 'rgba(5,150,105,0.08)', border: '1.5px solid rgba(5,150,105,0.18)' }} />
+                  <div style={{ width: 28, height: 20, borderRadius: 5, background: 'rgba(5,150,105,0.08)', border: '1px solid rgba(5,150,105,0.18)' }} />
                   <span style={{ fontSize: 12, color: C.muted }}>Role-specific override</span>
                 </div>
+              </div>
+
+              {/* Info banner */}
+              <div style={{ padding: '13px 24px', borderTop: `1px solid ${C.border}`, background: 'rgba(99,102,241,0.04)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Info size={14} strokeWidth={2} style={{ color: '#5B5FDE', flexShrink: 0 }} />
+                <span style={{ fontSize: 13, color: '#5B5FDE', fontWeight: 500 }}>
+                  Set role-specific annual entitlements. <span style={{ color: C.muted, fontWeight: 400 }}>Highlighted cells override the global default. Grey cells match the global default from the Leave Types tab.</span>
+                </span>
               </div>
             </>
           )
@@ -506,9 +569,9 @@ export default function LeavePolicyPage() {
                     { value: 'april',   label: 'Apr 1 – Mar 31', sub: 'Financial Year' },
                   ] as const).map(opt => (
                     <button key={opt.value} onClick={() => updateGeneral('leaveYearStart', opt.value)}
-                      style={{ flex: 1, padding: '11px 12px', borderRadius: 10, border: `1.5px solid ${general.leaveYearStart === opt.value ? C.navy : C.border}`, background: general.leaveYearStart === opt.value ? C.navy : '#fff', color: general.leaveYearStart === opt.value ? '#fff' : C.muted, fontSize: 12.5, fontWeight: general.leaveYearStart === opt.value ? 700 : 500, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s', textAlign: 'center' }}>
+                      style={{ flex: 1, padding: '11px 12px', borderRadius: 10, border: `1px solid ${general.leaveYearStart === opt.value ? '#6366F1' : C.border}`, background: general.leaveYearStart === opt.value ? 'rgba(99,102,241,0.07)' : '#fff', color: general.leaveYearStart === opt.value ? '#4F46E5' : C.muted, fontSize: 12.5, fontWeight: general.leaveYearStart === opt.value ? 700 : 500, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s', textAlign: 'center' }}>
                       <div>{opt.label}</div>
-                      <div style={{ fontSize: 11, opacity: 0.7, marginTop: 2 }}>{opt.sub}</div>
+                      <div style={{ fontSize: 11, marginTop: 2, color: general.leaveYearStart === opt.value ? '#6366F1' : C.muted, opacity: 0.8 }}>{opt.sub}</div>
                     </button>
                   ))}
                 </div>
@@ -648,21 +711,146 @@ export default function LeavePolicyPage() {
         )}
       </div>
 
-      {/* ── Unsaved changes floating banner ── */}
-      {hasChanges && !saveLoading && (
-        <div style={{ position: 'fixed', bottom: 28, left: '50%', transform: 'translateX(-50%)', zIndex: 200, background: C.navy, borderRadius: 14, padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 14, boxShadow: '0 8px 32px rgba(10,12,28,0.22)', animation: 'lpFade 0.22s ease-out', fontFamily: "'DM Sans', system-ui, sans-serif", whiteSpace: 'nowrap' }}>
-          <AlertCircle size={15} strokeWidth={2} style={{ color: '#F2D000', flexShrink: 0 }} />
-          <span style={{ fontSize: 13.5, fontWeight: 600, color: 'rgba(255,255,255,0.88)' }}>You have unsaved changes</span>
-          <button onClick={handleSave}
-            style={{ height: 34, padding: '0 16px', borderRadius: 8, border: 'none', background: '#F2D000', color: C.navy, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
-            Save Now
-          </button>
-          <button onClick={handleReset}
-            style={{ height: 34, padding: '0 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: 'rgba(255,255,255,0.55)', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>
-            Discard
-          </button>
+      {/* ── Add New Leave Type Modal ── */}
+      {showAddType && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(10,12,28,0.50)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Sans', system-ui, sans-serif" }}
+          onClick={e => { if (e.target === e.currentTarget && !addTypeSaving) closeAddType() }}>
+          <div style={{ background: '#fff', borderRadius: 22, width: 540, maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 28px 72px rgba(10,12,28,0.22)', animation: 'lpFade 0.22s ease-out' }}>
+
+            {/* Header */}
+            <div style={{ padding: '22px 28px 18px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 40, height: 40, borderRadius: 11, background: `${newType.color}14`, border: `1px solid ${newType.color}28`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.2s' }}>
+                <Layers size={17} strokeWidth={1.8} style={{ color: newType.color }} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 16, fontWeight: 800, color: C.navy, letterSpacing: '-0.2px' }}>Add New Leave Type</div>
+                <div style={{ fontSize: 12.5, color: C.muted, marginTop: 1 }}>Define a custom leave type for your organisation</div>
+              </div>
+              <button onClick={closeAddType}
+                style={{ width: 30, height: 30, borderRadius: 8, border: `1px solid ${C.border}`, background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.muted }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#F7F8FC' }}
+                onMouseLeave={e => { e.currentTarget.style.background = '#fff' }}>
+                <X size={13} strokeWidth={2} />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div style={{ padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 22, flex: 1, overflowY: 'auto' }}>
+
+              {/* Name + Code */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 140px', gap: 16 }}>
+                <div>
+                  <label style={{ fontSize: 11.5, fontWeight: 700, color: C.muted, textTransform: 'uppercase' as const, letterSpacing: '0.06em', display: 'block', marginBottom: 7 }}>
+                    Leave Type Name <span style={{ color: '#E84855' }}>*</span>
+                  </label>
+                  <input value={newType.name}
+                    onChange={e => { setNewType(p => ({ ...p, name: e.target.value })); setAddTypeErrors(p => ({ ...p, name: undefined })) }}
+                    placeholder="e.g. Maternity Leave"
+                    style={{ width: '100%', height: 42, borderRadius: 10, padding: '0 14px', fontSize: 13.5, fontWeight: 500, color: C.navy, outline: 'none', border: `1px solid ${addTypeErrors.name ? '#E84855' : C.border}`, background: newType.name ? C.surface : '#fff', fontFamily: 'inherit', boxSizing: 'border-box', transition: 'border-color 0.15s' }}
+                    onFocus={e => { if (!addTypeErrors.name) e.target.style.borderColor = '#6366F1' }}
+                    onBlur={e => { e.target.style.borderColor = addTypeErrors.name ? '#E84855' : C.border }} />
+                  {addTypeErrors.name && <p style={{ margin: '5px 0 0', fontSize: 12, color: '#E84855', fontWeight: 500 }}>{addTypeErrors.name}</p>}
+                </div>
+                <div>
+                  <label style={{ fontSize: 11.5, fontWeight: 700, color: C.muted, textTransform: 'uppercase' as const, letterSpacing: '0.06em', display: 'block', marginBottom: 7 }}>
+                    Short Code <span style={{ color: '#E84855' }}>*</span>
+                  </label>
+                  <input value={newType.code}
+                    onChange={e => { setNewType(p => ({ ...p, code: e.target.value.toUpperCase().slice(0, 5) })); setAddTypeErrors(p => ({ ...p, code: undefined })) }}
+                    placeholder="e.g. ML"
+                    style={{ width: '100%', height: 42, borderRadius: 10, padding: '0 14px', fontSize: 13.5, fontWeight: 700, color: C.navy, outline: 'none', border: `1px solid ${addTypeErrors.code ? '#E84855' : C.border}`, background: newType.code ? C.surface : '#fff', fontFamily: 'monospace', boxSizing: 'border-box', transition: 'border-color 0.15s', letterSpacing: '0.06em' }}
+                    onFocus={e => { if (!addTypeErrors.code) e.target.style.borderColor = '#6366F1' }}
+                    onBlur={e => { e.target.style.borderColor = addTypeErrors.code ? '#E84855' : C.border }} />
+                  {addTypeErrors.code && <p style={{ margin: '5px 0 0', fontSize: 12, color: '#E84855', fontWeight: 500 }}>{addTypeErrors.code}</p>}
+                </div>
+              </div>
+
+              {/* Category */}
+              <div>
+                <label style={{ fontSize: 11.5, fontWeight: 700, color: C.muted, textTransform: 'uppercase' as const, letterSpacing: '0.06em', display: 'block', marginBottom: 10 }}>Category</label>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  {([
+                    { value: true,  label: 'Paid',   sub: 'No salary deduction' },
+                    { value: false, label: 'Unpaid', sub: 'Salary deducted'      },
+                  ] as const).map(opt => (
+                    <button key={String(opt.value)} onClick={() => setNewType(p => ({ ...p, paid: opt.value }))}
+                      style={{ flex: 1, padding: '11px 14px', borderRadius: 11, border: `1px solid ${newType.paid === opt.value ? '#6366F1' : C.border}`, background: newType.paid === opt.value ? 'rgba(99,102,241,0.06)' : '#fff', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s', textAlign: 'left' as const }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: newType.paid === opt.value ? '#4F46E5' : C.navy }}>{opt.label}</div>
+                      <div style={{ fontSize: 11.5, color: C.muted, marginTop: 2 }}>{opt.sub}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Annual Days + Toggles */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+                <div>
+                  <label style={{ fontSize: 11.5, fontWeight: 700, color: C.muted, textTransform: 'uppercase' as const, letterSpacing: '0.06em', display: 'block', marginBottom: 10 }}>Annual Days</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <input type="number" min={0} max={365} value={newType.annualDays}
+                      onChange={e => setNewType(p => ({ ...p, annualDays: Math.max(0, parseInt(e.target.value) || 0) }))}
+                      style={{ width: 68, height: 40, borderRadius: 9, border: `1px solid ${C.border}`, background: '#fff', textAlign: 'center', fontSize: 15, fontWeight: 700, color: C.navy, outline: 'none', fontFamily: 'inherit' }} />
+                    <span style={{ fontSize: 12.5, color: C.muted }}>days</span>
+                  </div>
+                </div>
+                <div>
+                  <label style={{ fontSize: 11.5, fontWeight: 700, color: C.muted, textTransform: 'uppercase' as const, letterSpacing: '0.06em', display: 'block', marginBottom: 12 }}>Requires Approval</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Toggle checked={newType.requiresApproval} onChange={v => setNewType(p => ({ ...p, requiresApproval: v }))} />
+                    <span style={{ fontSize: 12.5, color: C.muted }}>{newType.requiresApproval ? 'Yes' : 'No'}</span>
+                  </div>
+                </div>
+                <div>
+                  <label style={{ fontSize: 11.5, fontWeight: 700, color: C.muted, textTransform: 'uppercase' as const, letterSpacing: '0.06em', display: 'block', marginBottom: 12 }}>Carry Forward</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Toggle checked={newType.carryForward} onChange={v => setNewType(p => ({ ...p, carryForward: v }))} />
+                    <span style={{ fontSize: 12.5, color: C.muted }}>{newType.carryForward ? 'Yes' : 'No'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Year-End Rule */}
+              <div>
+                <label style={{ fontSize: 11.5, fontWeight: 700, color: C.muted, textTransform: 'uppercase' as const, letterSpacing: '0.06em', display: 'block', marginBottom: 10 }}>Year-End Rule</label>
+                <div style={{ display: 'flex', background: '#F0F2F8', borderRadius: 10, padding: 3, gap: 2, width: 'fit-content' }}>
+                  {(['lapse', 'encashment'] as const).map(rule => (
+                    <button key={rule} onClick={() => setNewType(p => ({ ...p, yearEndRule: rule }))}
+                      style={{ padding: '8px 20px', borderRadius: 7, border: 'none', cursor: 'pointer', fontSize: 12.5, fontWeight: newType.yearEndRule === rule ? 700 : 500, background: newType.yearEndRule === rule ? '#fff' : 'transparent', color: newType.yearEndRule === rule ? C.navy : C.muted, boxShadow: newType.yearEndRule === rule ? '0 1px 3px rgba(28,32,53,0.10)' : 'none', fontFamily: 'inherit', transition: 'all 0.15s' }}>
+                      {rule === 'encashment' ? 'Encashment' : 'Lapse'}
+                    </button>
+                  ))}
+                </div>
+                <p style={{ fontSize: 12, color: C.muted, marginTop: 8, lineHeight: 1.5 }}>
+                  {newType.yearEndRule === 'lapse'
+                    ? 'Unused days will lapse at the end of the leave year.'
+                    : 'Unused days will be paid out as encashment at year end.'}
+                </p>
+              </div>
+
+            </div>
+
+            {/* Footer */}
+            <div style={{ padding: '16px 28px 24px', display: 'flex', gap: 10, borderTop: `1px solid ${C.border}`, flexShrink: 0 }}>
+              <button onClick={closeAddType} disabled={addTypeSaving}
+                style={{ flex: 1, height: 44, borderRadius: 12, border: `1px solid ${C.border}`, background: '#fff', color: C.muted, fontSize: 14, fontWeight: 600, cursor: addTypeSaving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}
+                onMouseEnter={e => { if (!addTypeSaving) { e.currentTarget.style.borderColor = '#C8CCE0'; e.currentTarget.style.color = C.navy } }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted }}>
+                Cancel
+              </button>
+              <button onClick={handleAddType}
+                disabled={addTypeSaving || !newType.name.trim() || !newType.code.trim()}
+                style={{ flex: 2, height: 44, borderRadius: 12, border: 'none', background: (addTypeSaving || !newType.name.trim() || !newType.code.trim()) ? '#E8EAF2' : 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)', color: (addTypeSaving || !newType.name.trim() || !newType.code.trim()) ? '#B0B4C8' : '#fff', fontSize: 14, fontWeight: 700, cursor: (addTypeSaving || !newType.name.trim() || !newType.code.trim()) ? 'not-allowed' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'opacity 0.15s' }}
+                onMouseEnter={e => { if (!addTypeSaving && newType.name.trim() && newType.code.trim()) e.currentTarget.style.opacity = '0.88' }}
+                onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}>
+                {addTypeSaving
+                  ? <><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ animation: 'lpSpin 0.8s linear infinite' }}><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>Adding…</>
+                  : <><Plus size={14} strokeWidth={2.2} />Add Leave Type</>}
+              </button>
+            </div>
+          </div>
         </div>
       )}
+
     </div>
   )
 }

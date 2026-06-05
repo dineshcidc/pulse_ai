@@ -105,13 +105,15 @@ function buildAdminNav(): NavSection[] {
           children: [
             { id: 'all-leave-requests', label: 'All Leave Requests'     },
             { id: 'leave-balance',      label: 'Leave Balance Overview' },
+            { id: 'leave-policy',       label: 'Leave Policy Setup'     },
           ],
         },
         {
           id: 'admin-timesheet', label: 'Timesheet Management', Icon: Clock,
           children: [
-            { id: 'pending-timesheets', label: 'Pending Timesheets' },
-            { id: 'pending-approvals',  label: 'Pending Approvals'  },
+            { id: 'pending-timesheets',  label: 'Pending Timesheets'  },
+            { id: 'pending-approvals',   label: 'Pending Approvals'   },
+            { id: 'timesheet-policies',  label: 'Timesheet Policies'  },
           ],
         },
         { id: 'admin-tickets', label: 'Tickets', Icon: TicketCheck },
@@ -140,6 +142,7 @@ function buildAdminNav(): NavSection[] {
             { id: 'attendance-report', label: 'Attendance Report' },
             { id: 'leave-report',      label: 'Leave Report'      },
             { id: 'all-timesheets',    label: 'Timesheet Report'  },
+            { id: 'audit-trail',       label: 'Audit Trail'       },
           ],
         },
       ],

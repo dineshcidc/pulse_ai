@@ -246,8 +246,6 @@ export default function PendingApprovalsPage() {
     return mgrMatch && projMatch && m.projects.length > 0
   })
 
-  const hasFilter = allSelected || selectedManagers.length > 0
-
   const managersWithPending = MANAGERS.filter(m => m.projects.length > 0).length
   const projectsAffected    = new Set(MANAGERS.flatMap(m => m.projects.map(p => p.project))).size
 
@@ -255,6 +253,8 @@ export default function PendingApprovalsPage() {
     { label: 'Managers w/ Pending', value: managersWithPending, color: '#6366F1', Icon: Users       },
     { label: 'Projects Affected',   value: projectsAffected,   color: '#0A8A58', Icon: AlertCircle  },
   ]
+
+  const hasFilter = allSelected || selectedManagers.length > 0
 
   return (
     <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
