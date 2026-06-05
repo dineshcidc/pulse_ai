@@ -124,7 +124,8 @@ function buildAdminNav(): NavSection[] {
           id: 'dept-projects', label: 'Projects & Departments', Icon: FolderKanban,
           children: [
             { id: 'project-setup',         label: 'Projects'              },
-            { id: 'department-management', label: 'Department Management' },
+            { id: 'department-management', label: 'Department'  },
+            { id: 'designation',           label: 'Designation' },
           ],
         },
         { id: 'admin-org', label: 'Org Structure', Icon: Building2 },

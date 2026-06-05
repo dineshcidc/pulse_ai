@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import {
   Building2, ArrowLeft, MapPin, Phone,
-  Shield, Briefcase, Clock, ChevronDown, Plus,
+  Shield, Briefcase, Clock, ChevronDown, Plus, Trash2,
 } from 'lucide-react'
 import OrgProfilePage from './OrgProfilePage'
 
@@ -40,18 +40,23 @@ function Field({ label, required, children }: { label: string; required?: boolea
 }
 
 function FInput({ label, required, placeholder }: { label: string; required?: boolean; placeholder?: string }) {
+  const [value, setValue] = useState('')
   return (
     <Field label={label} required={required}>
-      <input placeholder={placeholder} style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
+      <input value={value} onChange={e => setValue(e.target.value)} placeholder={placeholder}
+        style={{ ...inputStyle, background: value ? C.surface : '#fff' }}
+        onFocus={onFocus} onBlur={onBlur} />
     </Field>
   )
 }
 
 function FSelect({ label, required, options, placeholder = 'Select…' }: { label: string; required?: boolean; options: string[]; placeholder?: string }) {
+  const [value, setValue] = useState('')
   return (
     <Field label={label} required={required}>
       <div style={{ position: 'relative' }}>
-        <select style={{ ...inputStyle, appearance: 'none', paddingRight: 36, cursor: 'pointer', color: C.muted }}
+        <select value={value} onChange={e => setValue(e.target.value)}
+          style={{ ...inputStyle, appearance: 'none', paddingRight: 36, cursor: 'pointer', color: value ? C.navy : C.muted, background: value ? C.surface : '#fff' }}
           onFocus={onFocus} onBlur={onBlur}>
           <option value="">{placeholder}</option>
           {options.map(o => <option key={o} value={o}>{o}</option>)}
@@ -63,10 +68,11 @@ function FSelect({ label, required, options, placeholder = 'Select…' }: { labe
 }
 
 function FTextarea({ label, placeholder, rows = 3 }: { label: string; placeholder?: string; rows?: number }) {
+  const [value, setValue] = useState('')
   return (
     <Field label={label}>
-      <textarea placeholder={placeholder} rows={rows}
-        style={{ width: '100%', borderRadius: 10, padding: '11px 14px', fontSize: 13.5, fontWeight: 400, color: C.navy, outline: 'none', border: `1px solid ${C.border}`, background: '#fff', resize: 'vertical', lineHeight: 1.7, fontFamily: "'DM Sans', system-ui, sans-serif", boxSizing: 'border-box', transition: 'border-color 0.15s, box-shadow 0.15s' }}
+      <textarea value={value} onChange={e => setValue(e.target.value)} placeholder={placeholder} rows={rows}
+        style={{ width: '100%', borderRadius: 10, padding: '11px 14px', fontSize: 13.5, fontWeight: 400, color: C.navy, outline: 'none', border: `1px solid ${C.border}`, background: value ? C.surface : '#fff', resize: 'vertical', lineHeight: 1.7, fontFamily: "'DM Sans', system-ui, sans-serif", boxSizing: 'border-box', transition: 'border-color 0.15s, box-shadow 0.15s' }}
         onFocus={onFocus} onBlur={onBlur} />
     </Field>
   )
@@ -87,7 +93,7 @@ function SectionCard({ icon: Icon, title, sub, accent, accentBg, gridArea, child
           <div style={{ fontSize: 12, color: C.muted, marginTop: 1 }}>{sub}</div>
         </div>
       </div>
-      <div style={{ padding: '22px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ padding: '22px 24px', display: 'flex', flexDirection: 'column', gap: 20 }}>
         {children}
       </div>
     </div>
@@ -123,12 +129,12 @@ function EmptyState({ onStart }: { onStart: () => void }) {
           <h2 style={{ fontSize: 24, fontWeight: 800, color: C.navy, margin: '0 0 12px', letterSpacing: '-0.4px' }}>
             Set Up Your Company Profile
           </h2>
-          <p style={{ fontSize: 14.5, color: C.muted, lineHeight: 1.75, maxWidth: 480, margin: '0 0 36px' }}>
+          <p style={{ fontSize: 16, color: C.muted, lineHeight: 1.75, maxWidth: 480, margin: '0 0 20px' }}>
             Your organization profile is not configured yet. Add your company's identity, registration details, office locations and platform settings to get started.
           </p>
 
           <button onClick={onStart}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, height: 50, padding: '0 36px', borderRadius: 13, border: 'none', background: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)', color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', transition: 'opacity 0.15s', outline: 'none', boxShadow: '0 4px 16px rgba(99,102,241,0.30)' }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, height: 50, padding: '0 36px', borderRadius: 13, border: 'none', background: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)', color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', transition: 'opacity 0.15s', outline: 'none' }}
             onMouseEnter={e => { e.currentTarget.style.opacity = '0.88' }}
             onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}>
             <Building2 size={18} strokeWidth={2} />
@@ -143,7 +149,46 @@ function EmptyState({ onStart }: { onStart: () => void }) {
 }
 
 // ── Create Profile Form ────────────────────────────────────────────────────────
+function OfficeCard({ label, onDelete }: { label: string; onDelete?: () => void }) {
+  return (
+    <div style={{ border: `1px solid ${C.border}`, borderRadius: 14, overflow: 'hidden', background: '#F8F9FF', marginTop: 14 }}>
+      <div style={{ padding: '18px 22px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+          <span style={{ fontSize: 13.5, fontWeight: 700, color: C.navy }}>{label}</span>
+          {onDelete && (
+            <button onClick={onDelete}
+              style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: 8, border: `1px solid #FEE2E2`, background: '#FFF5F5', cursor: 'pointer', transition: 'all 0.13s' }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#FEE2E2' }}
+              onMouseLeave={e => { e.currentTarget.style.background = '#FFF5F5' }}>
+              <Trash2 size={13} style={{ color: '#E84855' }} strokeWidth={2} />
+            </button>
+          )}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
+          <FInput label="Office Name" placeholder="e.g. Branch Office" />
+          <FTextarea label="Street Address" placeholder="Full street address…" rows={2} />
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 20, marginBottom: 20 }}>
+          <FInput label="City"     placeholder="e.g. Mumbai" />
+          <FInput label="State"    placeholder="e.g. Maharashtra" />
+          <FInput label="Country"  placeholder="e.g. India" />
+          <FInput label="PIN Code" placeholder="e.g. 400001" />
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+          <FInput label="Phone" placeholder="+91 22 0000 0000" />
+          <FInput label="Email" placeholder="office@company.com" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function CreateProfileForm({ onBack, onSave }: { onBack: () => void; onSave: () => void }) {
+  const [extraOffices, setExtraOffices] = useState<number[]>([])
+
+  function addOffice() { setExtraOffices(prev => [...prev, Date.now()]) }
+  function removeOffice(id: number) { setExtraOffices(prev => prev.filter(o => o !== id)) }
+
   return (
     <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
 
@@ -186,7 +231,7 @@ function CreateProfileForm({ onBack, onSave }: { onBack: () => void; onSave: () 
 
         {/* ── Company Identity — full width ── */}
         <SectionCard gridArea="identity" icon={Building2} title="Company Identity" sub="Core company information and branding" accent="#6366F1" accentBg="rgba(99,102,241,0.09)">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
             <FInput label="Company Name"       required placeholder="e.g. Concert IDC Private Limited" />
             <FInput label="Short Name / Brand" placeholder="e.g. Concert IDC" />
             <FSelect label="Industry"          required options={['IT Services & Consulting', 'Banking & Finance', 'Healthcare', 'E-Commerce', 'Manufacturing', 'Education', 'Real Estate']} placeholder="Select industry…" />
@@ -200,7 +245,7 @@ function CreateProfileForm({ onBack, onSave }: { onBack: () => void; onSave: () 
 
         {/* ── Contact Information ── */}
         <SectionCard gridArea="contact" icon={Phone} title="Contact Information" sub="Primary contacts and communication channels" accent="#6366F1" accentBg="rgba(99,102,241,0.09)">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
             <FInput label="Primary Contact Name" required placeholder="e.g. Kavitha Reddy" />
             <FInput label="Designation"          placeholder="e.g. HR Manager" />
             <FInput label="Office Email"         required placeholder="e.g. hr@concertidc.com" />
@@ -212,7 +257,7 @@ function CreateProfileForm({ onBack, onSave }: { onBack: () => void; onSave: () 
 
         {/* ── Business Registration ── */}
         <SectionCard gridArea="bizreg" icon={Shield} title="Business Registration" sub="Legal numbers and certifications" accent="#0EA86A" accentBg="rgba(14,168,106,0.09)">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
             <FInput label="CIN"               placeholder="e.g. U72900KA2018PTC112345" />
             <FInput label="PAN"               placeholder="e.g. AABCC1234D" />
             <FInput label="GST Number"        placeholder="e.g. 29AABCC1234D1Z5" />
@@ -224,7 +269,7 @@ function CreateProfileForm({ onBack, onSave }: { onBack: () => void; onSave: () 
 
         {/* ── Platform Configuration — full width ── */}
         <SectionCard gridArea="platform" icon={Clock} title="Platform Configuration" sub="Localisation and working schedule settings" accent="#E84855" accentBg="rgba(232,72,85,0.09)">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20 }}>
             <FSelect label="Timezone"       options={['Asia/Kolkata (IST +5:30)', 'UTC', 'America/New_York', 'Europe/London', 'Asia/Dubai']} placeholder="Select timezone…" />
             <FSelect label="Date Format"    options={['DD / MM / YYYY', 'MM / DD / YYYY', 'YYYY-MM-DD']} placeholder="Select format…" />
             <FSelect label="Currency"       options={['Indian Rupee (₹ INR)', 'US Dollar ($ USD)', 'Euro (€ EUR)', 'British Pound (£ GBP)']} placeholder="Select currency…" />
@@ -247,7 +292,7 @@ function CreateProfileForm({ onBack, onSave }: { onBack: () => void; onSave: () 
                 <div style={{ fontSize: 12, color: C.muted, marginTop: 1 }}>Registered and branch office addresses</div>
               </div>
             </div>
-            <button style={{ display: 'inline-flex', alignItems: 'center', gap: 5, height: 32, padding: '0 12px', borderRadius: 8, border: `1px solid ${C.border}`, background: C.surface, color: C.muted, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.13s' }}
+            <button onClick={addOffice} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, height: 32, padding: '0 12px', borderRadius: 8, border: `1px solid ${C.border}`, background: C.surface, color: C.muted, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.13s' }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = '#C8CCE0'; e.currentTarget.style.color = C.navy }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted }}>
               <Plus size={12} strokeWidth={2.5} /> Add Office
@@ -256,8 +301,7 @@ function CreateProfileForm({ onBack, onSave }: { onBack: () => void; onSave: () 
 
           <div style={{ padding: '22px 24px' }}>
             {/* Registered Office — full width */}
-            <div style={{ border: `1px solid ${C.border}`, borderRadius: 14, overflow: 'hidden', background: C.surface }}>
-              <div style={{ height: 3, background: 'linear-gradient(90deg, #6366F1, #6366F188)' }} />
+            <div style={{ border: `1px solid ${C.border}`, borderRadius: 14, overflow: 'hidden', background: '#F8F9FF' }}>
               <div style={{ padding: '18px 22px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
                   <span style={{ fontSize: 13.5, fontWeight: 700, color: C.navy }}>Registered Office</span>
@@ -265,22 +309,26 @@ function CreateProfileForm({ onBack, onSave }: { onBack: () => void; onSave: () 
                     Primary
                   </span>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
                   <FInput label="Office Name"  placeholder="e.g. Head Office" />
                   <FTextarea label="Street Address" placeholder="Full street address…" rows={2} />
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14, marginBottom: 16 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 20, marginBottom: 20 }}>
                   <FInput label="City"     placeholder="e.g. Bangalore" />
                   <FInput label="State"    placeholder="e.g. Karnataka" />
                   <FInput label="Country"  placeholder="e.g. India" />
                   <FInput label="PIN Code" placeholder="e.g. 560103" />
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
                   <FInput label="Phone" placeholder="+91 80 0000 0000" />
                   <FInput label="Email" placeholder="office@company.com" />
                 </div>
               </div>
             </div>
+
+            {extraOffices.map((id, i) => (
+              <OfficeCard key={id} label={`Branch Office ${i + 1}`} onDelete={() => removeOffice(id)} />
+            ))}
           </div>
         </div>
 

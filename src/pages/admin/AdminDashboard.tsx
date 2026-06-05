@@ -35,7 +35,7 @@ const PAGE_LABELS: Record<string, string> = {
   'pending-timesheets':   'Pending Timesheets',
   'pending-approvals':    'Pending Approvals',
   'timesheet-policies':   'Timesheet Policies',
-  'department-management':'Department Management',
+  'department-management':'Department',
   'project-setup':        'Projects',
   'team-allocation':      'Team Allocation',
   'admin-org':            'Org Structure',

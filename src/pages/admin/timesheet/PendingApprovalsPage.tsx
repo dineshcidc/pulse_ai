@@ -246,8 +246,6 @@ export default function PendingApprovalsPage() {
     return mgrMatch && projMatch && m.projects.length > 0
   })
 
-  const hasFilter    = allSelected || selectedManagers.length > 0
-
   const managersWithPending = MANAGERS.filter(m => m.projects.length > 0).length
   const projectsAffected    = new Set(MANAGERS.flatMap(m => m.projects.map(p => p.project))).size
 

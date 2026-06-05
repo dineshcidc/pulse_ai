@@ -155,7 +155,7 @@ export default function DesignationPage() {
       {/* ── Table ── */}
       <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', padding: '11px 20px', background: '#F7F8FC', borderBottom: `1px solid ${C.border}` }}>
-          {['Designation', 'Employees', 'Created On', 'Actions'].map(h => (
+          {['Designation Name', 'Designation Badge / Tag', 'Created Date', 'Actions'].map(h => (
             <span key={h} style={{ fontSize: 10.5, fontWeight: 700, color: '#B0B4C8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</span>
           ))}
         </div>
@@ -173,10 +173,10 @@ export default function DesignationPage() {
           const isLast  = idx === filtered.length - 1
           return (
             <div key={d.id} className="dsg-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', padding: '14px 20px', borderBottom: isLast ? 'none' : `1px solid #F0F2F8`, background: '#fff', transition: 'background 0.12s', alignItems: 'center' }}>
-              <span style={{ display: 'inline-flex', alignItems: 'center', padding: '5px 12px', borderRadius: 8, background: palette.bg, color: palette.color, fontSize: 13, fontWeight: 700, width: 'fit-content' }}>
+              <span style={{ fontSize: 13.5, fontWeight: 600, color: C.navy }}>{d.name}</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', padding: '5px 12px', borderRadius: 8, background: palette.bg, color: palette.color, fontSize: 12.5, fontWeight: 700, width: 'fit-content' }}>
                 {d.name}
               </span>
-              <span style={{ fontSize: 13.5, fontWeight: 700, color: C.navy }}>{d.employeeCount}</span>
               <span style={{ fontSize: 12.5, color: C.muted, fontWeight: 500 }}>{d.createdDate}</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <ActionBtn icon={Edit2}  color="#6366F1" bg="rgba(99,102,241,0.09)" title="Edit"   onClick={() => openEdit(d)} />
