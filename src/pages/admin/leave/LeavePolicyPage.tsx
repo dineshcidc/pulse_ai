@@ -73,12 +73,6 @@ const DEFAULT_GENERAL: GeneralPolicy = {
   minAdvanceDays: 1, maxConsecutiveDays: 10, halfDayEnabled: true, backdatedDays: 2,
 }
 
-const COLOR_PALETTE = [
-  '#6366F1', '#2563EB', '#0891B2', '#0D9488',
-  '#059669', '#D97706', '#EA580C', '#DC2626',
-  '#DB2777', '#7C3AED', '#6D28D9', '#475569',
-]
-
 const EMPTY_NEW_TYPE = {
   name: '', code: '', paid: true, color: '#6366F1',
   annualDays: 0, requiresApproval: true, carryForward: false,
