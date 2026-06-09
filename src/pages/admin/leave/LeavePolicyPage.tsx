@@ -1,15 +1,15 @@
 import { useState } from 'react'
 import {
-  CalendarDays, Users, Shield, ChevronDown, ChevronUp,
-  Save, RotateCcw, Check, Info, AlertCircle, TrendingUp,
-  Layers, Settings2, Plus, X,
+  CalendarDays, Shield, ChevronDown, ChevronUp,
+  Save, RotateCcw, Check, Info, AlertCircle,
+  Layers, Settings2, Plus, X, Pencil,
 } from 'lucide-react'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 type LeaveTypeName = string
 
 type YearEndRule = 'lapse' | 'encashment'
-type PolicyTab   = 'types' | 'entitlements' | 'general'
+type PolicyTab   = 'types' | 'general'
 
 interface LeaveTypeConfig {
   name: LeaveTypeName
@@ -49,24 +49,6 @@ const DEFAULT_CONFIGS: LeaveTypeConfig[] = [
   { name: 'LWP',                 code: 'LWP', color: '#DC2626', bg: 'rgba(220,38,38,0.08)',   border: 'rgba(220,38,38,0.18)',   paid: false, active: true,  annualDays: 0,  requiresApproval: true,  requiresDocument: false, carryForward: false, maxCFDays: 0, cfExpiryMonths: 0, yearEndRule: 'lapse',      encashmentRate: 0   },
 ]
 
-const ROLES = [
-  { role: 'Employee',        level: 'Standard'  },
-  { role: 'Senior Employee', level: 'Senior'    },
-  { role: 'Team Lead',       level: 'Lead'      },
-  { role: 'Manager',         level: 'Manager'   },
-  { role: 'HR Staff',        level: 'HR'        },
-]
-
-type EntMatrix = Record<string, Partial<Record<LeaveTypeName, number>>>
-
-const DEFAULT_ENTITLEMENTS: EntMatrix = {
-  'Employee':        { 'Planned Leave': 15, 'Unplanned Leave': 8,  'Bereavement Holiday': 3, 'Birthday Leave': 1, 'Floating Holiday': 3, 'Election Day Leave': 1, 'Paternity Leave': 15 },
-  'Senior Employee': { 'Planned Leave': 18, 'Unplanned Leave': 8,  'Bereavement Holiday': 3, 'Birthday Leave': 1, 'Floating Holiday': 3, 'Election Day Leave': 1, 'Paternity Leave': 15 },
-  'Team Lead':       { 'Planned Leave': 18, 'Unplanned Leave': 10, 'Bereavement Holiday': 3, 'Birthday Leave': 1, 'Floating Holiday': 3, 'Election Day Leave': 1, 'Paternity Leave': 15 },
-  'Manager':         { 'Planned Leave': 21, 'Unplanned Leave': 10, 'Bereavement Holiday': 3, 'Birthday Leave': 1, 'Floating Holiday': 5, 'Election Day Leave': 1, 'Paternity Leave': 15 },
-  'HR Staff':        { 'Planned Leave': 15, 'Unplanned Leave': 8,  'Bereavement Holiday': 3, 'Birthday Leave': 1, 'Floating Holiday': 3, 'Election Day Leave': 1, 'Paternity Leave': 15 },
-}
-
 const DEFAULT_GENERAL: GeneralPolicy = {
   leaveYearStart: 'april', probationRestriction: true, probationMonths: 3,
   sandwichRule: true, noticePeriodRestriction: true,
@@ -75,8 +57,7 @@ const DEFAULT_GENERAL: GeneralPolicy = {
 
 const EMPTY_NEW_TYPE = {
   name: '', code: '', paid: true, color: '#6366F1',
-  annualDays: 0, requiresApproval: true, carryForward: false,
-  yearEndRule: 'lapse' as YearEndRule,
+  annualDays: 0, requiresApproval: true,
 }
 
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', surface: '#F7F8FC' }
@@ -97,31 +78,29 @@ function Toggle({ checked, onChange, disabled = false }: { checked: boolean; onC
 export default function LeavePolicyPage() {
   const [tab,          setTab]          = useState<PolicyTab>('types')
   const [configs,      setConfigs]      = useState<LeaveTypeConfig[]>(DEFAULT_CONFIGS)
-  const [entitlements, setEntitlements] = useState<EntMatrix>(DEFAULT_ENTITLEMENTS)
   const [general,      setGeneral]      = useState<GeneralPolicy>(DEFAULT_GENERAL)
-  const [expandedType, setExpandedType] = useState<LeaveTypeName | null>(null)
   const [fy,           setFy]           = useState<'2025-26' | '2026-27'>('2026-27')
   const [saveLoading,  setSaveLoading]  = useState(false)
   const [saveSuccess,  setSaveSuccess]  = useState(false)
   const [hasChanges,   setHasChanges]   = useState(false)
-  const [showAddType,   setShowAddType]   = useState(false)
-  const [newType,       setNewType]       = useState(EMPTY_NEW_TYPE)
+  const [showAddType,  setShowAddType]  = useState(false)
+  const [newType,      setNewType]      = useState(EMPTY_NEW_TYPE)
   const [addTypeErrors, setAddTypeErrors] = useState<{ name?: string; code?: string }>({})
   const [addTypeSaving, setAddTypeSaving] = useState(false)
 
+  // Edit popup state
+  const [editingType, setEditingType] = useState<string | null>(null)
+  const [editValues,  setEditValues]  = useState<{ name: string; code: string }>({ name: '', code: '' })
+  const [editErrors,  setEditErrors]  = useState<{ name?: string; code?: string }>({})
+  const [editSaving,  setEditSaving]  = useState(false)
+
   // ── Derived stats ──
   const activeCnt = configs.filter(c => c.active).length
-  const cfCnt     = configs.filter(c => c.carryForward).length
   const totalDays = configs.filter(c => c.active && c.name !== 'LWP').reduce((s, c) => s + c.annualDays, 0)
 
   // ── Helpers ──
   function updateConfig<K extends keyof LeaveTypeConfig>(name: LeaveTypeName, key: K, value: LeaveTypeConfig[K]) {
     setConfigs(prev => prev.map(c => c.name === name ? { ...c, [key]: value } : c))
-    mark()
-  }
-
-  function updateEnt(role: string, type: LeaveTypeName, days: number) {
-    setEntitlements(prev => ({ ...prev, [role]: { ...prev[role], [type]: days } }))
     mark()
   }
 
@@ -142,11 +121,9 @@ export default function LeavePolicyPage() {
 
   function handleReset() {
     setConfigs(DEFAULT_CONFIGS)
-    setEntitlements(DEFAULT_ENTITLEMENTS)
     setGeneral(DEFAULT_GENERAL)
     setHasChanges(false)
     setSaveSuccess(false)
-    setExpandedType(null)
   }
 
   function closeAddType() {
@@ -181,14 +158,50 @@ export default function LeavePolicyPage() {
       annualDays:         newType.annualDays,
       requiresApproval:   newType.requiresApproval,
       requiresDocument:   false,
-      carryForward:       newType.carryForward,
+      carryForward:       false,
       maxCFDays:          0,
       cfExpiryMonths:     3,
-      yearEndRule:        newType.yearEndRule,
+      yearEndRule:        'lapse',
       encashmentRate:     0,
     }])
     setAddTypeSaving(false)
     closeAddType()
+    mark()
+  }
+
+  // ── Edit popup helpers ──
+  function openEdit(cfg: LeaveTypeConfig) {
+    setEditingType(cfg.name)
+    setEditValues({ name: cfg.name, code: cfg.code })
+    setEditErrors({})
+  }
+
+  function closeEdit() {
+    setEditingType(null)
+    setEditErrors({})
+  }
+
+  async function handleEditSave() {
+    const errs: { name?: string; code?: string } = {}
+    const trimName = editValues.name.trim()
+    const trimCode = editValues.code.trim().toUpperCase()
+    const origCode = configs.find(c => c.name === editingType)?.code ?? ''
+
+    if (!trimName) errs.name = 'Leave type name is required'
+    else if (configs.some(c => c.name !== editingType && c.name.toLowerCase() === trimName.toLowerCase()))
+      errs.name = 'A leave type with this name already exists'
+
+    if (!trimCode) errs.code = 'Short code is required'
+    else if (configs.some(c => c.code !== origCode && c.code.toUpperCase() === trimCode))
+      errs.code = 'This code is already in use'
+
+    if (Object.keys(errs).length > 0) { setEditErrors(errs); return }
+
+    setEditSaving(true)
+    await new Promise(r => setTimeout(r, 700))
+    setConfigs(prev => prev.map(c => c.name === editingType ? { ...c, name: trimName, code: trimCode } : c))
+    setEditSaving(false)
+    closeEdit()
     mark()
   }
 
@@ -241,11 +254,10 @@ export default function LeavePolicyPage() {
       </div>
 
       {/* ── Stats ── */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-2 gap-4 mb-6">
         {[
-          { label: 'Active Leave Types',    value: activeCnt, sub: `of ${configs.length} configured types`, Icon: Layers,      color: '#5B5FDE', bg: 'rgba(99,102,241,0.08)'  },
-          { label: 'Total Days / Year',     value: totalDays, sub: 'across all active paid leave types',   Icon: CalendarDays, color: '#0EA86A', bg: 'rgba(14,168,106,0.08)' },
-          { label: 'Carry Forward Enabled', value: cfCnt,     sub: `leave type${cfCnt !== 1 ? 's' : ''} with CF rules active`, Icon: TrendingUp,  color: '#D97706', bg: 'rgba(217,119,6,0.08)'   },
+          { label: 'Active Leave Types', value: activeCnt, sub: `of ${configs.length} configured types`, Icon: Layers,      color: '#5B5FDE', bg: 'rgba(99,102,241,0.08)'  },
+          { label: 'Total Days / Year',  value: totalDays, sub: 'across all active paid leave types',   Icon: CalendarDays, color: '#0EA86A', bg: 'rgba(14,168,106,0.08)' },
         ].map(s => (
           <div key={s.label} style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, padding: '18px 20px', display: 'flex', alignItems: 'center', gap: 16 }}>
             <div style={{ width: 50, height: 50, borderRadius: 14, background: s.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -266,9 +278,8 @@ export default function LeavePolicyPage() {
         {/* Tab bar */}
         <div style={{ display: 'flex', alignItems: 'center', borderBottom: `1px solid ${C.border}`, background: C.surface, padding: '0 8px' }}>
           {([
-            { id: 'types',        label: 'Leave Types',       Icon: Layers       },
-            { id: 'entitlements', label: 'Role Entitlements', Icon: Users        },
-            { id: 'general',      label: 'General Rules',     Icon: Shield       },
+            { id: 'types',   label: 'Leave Types',   Icon: Layers  },
+            { id: 'general', label: 'General Rules',  Icon: Shield  },
           ] as const).map(t => (
             <button key={t.id} onClick={() => setTab(t.id)}
               className="lp-tab"
@@ -291,255 +302,77 @@ export default function LeavePolicyPage() {
         {tab === 'types' && (
           <>
             {/* Column header */}
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 0.55fr 0.65fr 1fr 0.9fr 0.9fr 1.1fr 0.65fr 0.45fr', padding: '11px 24px', background: '#F7F8FC', borderBottom: `1px solid ${C.border}` }}>
-              {['Leave Type', 'Code', 'Category', 'Annual Days', 'Approval', 'Carry Fwd', 'Year-End Rule', 'Active', ''].map(h => (
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 0.55fr 0.65fr 1fr 0.9fr 0.65fr 0.45fr', padding: '11px 24px', background: '#F7F8FC', borderBottom: `1px solid ${C.border}` }}>
+              {['Leave Type', 'Code', 'Category', 'Annual Days', 'Approval', 'Active', ''].map(h => (
                 <span key={h} style={{ fontSize: 10.5, fontWeight: 700, color: '#B0B4C8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</span>
               ))}
             </div>
 
-            {configs.map(cfg => {
-              const isExp = expandedType === cfg.name
-              return (
-                <div key={cfg.name} style={{ borderBottom: `1px solid #F0F2F8` }}>
-
-                  {/* Main row */}
-                  <div
-                    className="lp-row"
-                    style={{ display: 'grid', gridTemplateColumns: '2fr 0.55fr 0.65fr 1fr 0.9fr 0.9fr 1.1fr 0.65fr 0.45fr', padding: '15px 24px', alignItems: 'center', background: '#fff', transition: 'background 0.12s', opacity: cfg.active ? 1 : 0.5 }}
-                  >
-                    {/* Name */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <div>
-                        <div style={{ fontSize: 13.5, fontWeight: 600, color: C.navy }}>{cfg.name}</div>
-                        {!cfg.paid && <div style={{ fontSize: 11, color: '#DC2626', fontWeight: 600, marginTop: 1 }}>Salary deduction applies</div>}
-                      </div>
+            {configs.map(cfg => (
+              <div key={cfg.name} style={{ borderBottom: `1px solid #F0F2F8` }}>
+                {/* Main row */}
+                <div
+                  className="lp-row"
+                  style={{ display: 'grid', gridTemplateColumns: '2fr 0.55fr 0.65fr 1fr 0.9fr 0.65fr 0.45fr', padding: '15px 24px', alignItems: 'center', background: '#fff', transition: 'background 0.12s', opacity: cfg.active ? 1 : 0.5 }}
+                >
+                  {/* Name */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div>
+                      <div style={{ fontSize: 13.5, fontWeight: 600, color: C.navy }}>{cfg.name}</div>
+                      {!cfg.paid && <div style={{ fontSize: 11, color: '#DC2626', fontWeight: 600, marginTop: 1 }}>Salary deduction applies</div>}
                     </div>
-
-                    {/* Code */}
-                    <span style={{ display: 'inline-flex', padding: '3px 8px', borderRadius: 6, background: cfg.bg, color: cfg.color, fontSize: 11, fontWeight: 700, width: 'fit-content', border: `1px solid ${cfg.border}` }}>
-                      {cfg.code}
-                    </span>
-
-                    {/* Category */}
-                    <span style={{ display: 'inline-flex', alignItems: 'center', padding: '3px 9px', borderRadius: 99, fontSize: 11.5, fontWeight: 600, width: 'fit-content', background: cfg.paid ? 'rgba(14,168,106,0.10)' : 'rgba(220,38,38,0.08)', color: cfg.paid ? '#0A7040' : '#DC2626', border: `1px solid ${cfg.paid ? 'rgba(14,168,106,0.20)' : 'rgba(220,38,38,0.20)'}` }}>
-                      {cfg.paid ? 'Paid' : 'Unpaid'}
-                    </span>
-
-                    {/* Annual Days */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <input
-                        type="number" min={0} max={365} value={cfg.annualDays}
-                        disabled={cfg.name === 'LWP'}
-                        onChange={e => updateConfig(cfg.name, 'annualDays', Math.max(0, parseInt(e.target.value) || 0))}
-                        style={{ width: 58, height: 34, borderRadius: 8, border: `1px solid ${C.border}`, background: cfg.name === 'LWP' ? '#F7F8FC' : '#fff', textAlign: 'center', fontSize: 14, fontWeight: 700, color: C.navy, outline: 'none', fontFamily: 'inherit', cursor: cfg.name === 'LWP' ? 'not-allowed' : 'text' }}
-                      />
-                      <span style={{ fontSize: 12, color: C.muted }}>{cfg.name === 'LWP' ? '—' : 'days'}</span>
-                    </div>
-
-                    {/* Requires Approval */}
-                    <Toggle checked={cfg.requiresApproval} onChange={v => updateConfig(cfg.name, 'requiresApproval', v)} />
-
-                    {/* Carry Forward */}
-                    <Toggle checked={cfg.carryForward} onChange={v => updateConfig(cfg.name, 'carryForward', v)} disabled={cfg.name === 'LWP' || !cfg.paid} />
-
-                    {/* Year-End Rule */}
-                    <div style={{ display: 'flex', background: '#F0F2F8', borderRadius: 8, padding: 2, gap: 1, width: 'fit-content' }}>
-                      {(['lapse', 'encashment'] as const).map(rule => (
-                        <button key={rule} onClick={() => updateConfig(cfg.name, 'yearEndRule', rule)}
-                          style={{ padding: '5px 10px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 11.5, fontWeight: cfg.yearEndRule === rule ? 700 : 500, background: cfg.yearEndRule === rule ? '#fff' : 'transparent', color: cfg.yearEndRule === rule ? C.navy : C.muted, boxShadow: cfg.yearEndRule === rule ? '0 1px 3px rgba(28,32,53,0.10)' : 'none', fontFamily: 'inherit', transition: 'all 0.15s', textTransform: 'capitalize' }}>
-                          {rule === 'encashment' ? 'Encash' : 'Lapse'}
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* Active */}
-                    <Toggle checked={cfg.active} onChange={v => updateConfig(cfg.name, 'active', v)} />
-
-                    {/* Expand */}
-                    <button
-                      onClick={() => setExpandedType(isExp ? null : cfg.name)}
-                      style={{ width: 30, height: 30, borderRadius: 8, border: `1px solid ${C.border}`, background: isExp ? C.navy : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0 }}
-                      onMouseEnter={e => { if (!isExp) e.currentTarget.style.background = '#F0F2F8' }}
-                      onMouseLeave={e => { if (!isExp) e.currentTarget.style.background = '#fff' }}
-                    >
-                      {isExp
-                        ? <ChevronUp   size={13} strokeWidth={2.2} style={{ color: '#F2D000' }} />
-                        : <ChevronDown size={13} strokeWidth={2.2} style={{ color: C.muted  }} />
-                      }
-                    </button>
                   </div>
 
-                  {/* Expanded advanced settings */}
-                  {isExp && (
-                    <div style={{ background: '#FAFBFE', borderTop: `1px solid #F0F2F8`, padding: '22px 28px 26px', animation: 'lpFade 0.18s ease-out' }}>
-                      <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 18 }}>
-                        Advanced Configuration — {cfg.name}
-                      </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 22 }}>
+                  {/* Code */}
+                  <span style={{ display: 'inline-flex', padding: '3px 8px', borderRadius: 6, background: cfg.bg, color: cfg.color, fontSize: 11, fontWeight: 700, width: 'fit-content', border: `1px solid ${cfg.border}` }}>
+                    {cfg.code}
+                  </span>
 
-                        {/* Requires Document */}
-                        <div style={{ padding: '16px', borderRadius: 12, border: `1px solid ${C.border}`, background: '#fff' }}>
-                          <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Requires Document</div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                            <Toggle checked={cfg.requiresDocument} onChange={v => updateConfig(cfg.name, 'requiresDocument', v)} />
-                            <span style={{ fontSize: 12.5, color: cfg.requiresDocument ? C.navy : C.muted, fontWeight: cfg.requiresDocument ? 600 : 400 }}>
-                              {cfg.requiresDocument ? 'Required on return' : 'Not required'}
-                            </span>
-                          </div>
-                          <div style={{ fontSize: 11.5, color: C.muted, lineHeight: 1.5 }}>
-                            Employee must upload a supporting document when applying.
-                          </div>
-                        </div>
+                  {/* Category */}
+                  <span style={{ display: 'inline-flex', alignItems: 'center', padding: '3px 9px', borderRadius: 99, fontSize: 11.5, fontWeight: 600, width: 'fit-content', background: cfg.paid ? 'rgba(14,168,106,0.10)' : 'rgba(220,38,38,0.08)', color: cfg.paid ? '#0A7040' : '#DC2626', border: `1px solid ${cfg.paid ? 'rgba(14,168,106,0.20)' : 'rgba(220,38,38,0.20)'}` }}>
+                    {cfg.paid ? 'Paid' : 'Unpaid'}
+                  </span>
 
-                        {/* Max Carry Forward */}
-                        <div style={{ padding: '16px', borderRadius: 12, border: `1px solid ${C.border}`, background: '#fff', opacity: cfg.carryForward ? 1 : 0.45 }}>
-                          <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Max Carry Forward</div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                            <input type="number" min={0} max={cfg.annualDays} value={cfg.maxCFDays}
-                              disabled={!cfg.carryForward}
-                              onChange={e => updateConfig(cfg.name, 'maxCFDays', Math.max(0, parseInt(e.target.value) || 0))}
-                              style={{ width: 64, height: 36, borderRadius: 8, border: `1px solid ${C.border}`, background: '#F7F8FC', textAlign: 'center', fontSize: 14, fontWeight: 700, color: C.navy, outline: 'none', fontFamily: 'inherit', cursor: !cfg.carryForward ? 'not-allowed' : 'text' }} />
-                            <span style={{ fontSize: 12.5, color: C.muted }}>days</span>
-                          </div>
-                          <div style={{ fontSize: 11.5, color: C.muted, lineHeight: 1.5 }}>
-                            Unused days above this limit will lapse at year end.
-                          </div>
-                        </div>
+                  {/* Annual Days */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <input
+                      type="number" min={0} max={365} value={cfg.annualDays}
+                      disabled={cfg.name === 'LWP'}
+                      onChange={e => updateConfig(cfg.name, 'annualDays', Math.max(0, parseInt(e.target.value) || 0))}
+                      style={{ width: 58, height: 34, borderRadius: 8, border: `1px solid ${C.border}`, background: cfg.name === 'LWP' ? '#F7F8FC' : '#fff', textAlign: 'center', fontSize: 14, fontWeight: 700, color: C.navy, outline: 'none', fontFamily: 'inherit', cursor: cfg.name === 'LWP' ? 'not-allowed' : 'text' }}
+                    />
+                    <span style={{ fontSize: 12, color: C.muted }}>{cfg.name === 'LWP' ? '—' : 'days'}</span>
+                  </div>
 
-                        {/* CF Expiry */}
-                        <div style={{ padding: '16px', borderRadius: 12, border: `1px solid ${C.border}`, background: '#fff', opacity: cfg.carryForward ? 1 : 0.45 }}>
-                          <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>CF Expiry Period</div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                            <input type="number" min={1} max={12} value={cfg.cfExpiryMonths}
-                              disabled={!cfg.carryForward}
-                              onChange={e => updateConfig(cfg.name, 'cfExpiryMonths', Math.max(1, parseInt(e.target.value) || 1))}
-                              style={{ width: 64, height: 36, borderRadius: 8, border: `1px solid ${C.border}`, background: '#F7F8FC', textAlign: 'center', fontSize: 14, fontWeight: 700, color: C.navy, outline: 'none', fontFamily: 'inherit', cursor: !cfg.carryForward ? 'not-allowed' : 'text' }} />
-                            <span style={{ fontSize: 12.5, color: C.muted }}>months</span>
-                          </div>
-                          <div style={{ fontSize: 11.5, color: C.muted, lineHeight: 1.5 }}>
-                            Carried-forward days expire this many months after the new FY starts.
-                          </div>
-                        </div>
+                  {/* Requires Approval */}
+                  <Toggle checked={cfg.requiresApproval} onChange={v => updateConfig(cfg.name, 'requiresApproval', v)} />
 
-                        {/* Encashment Rate */}
-                        <div style={{ padding: '16px', borderRadius: 12, border: `1px solid ${C.border}`, background: '#fff', opacity: cfg.yearEndRule === 'encashment' ? 1 : 0.45 }}>
-                          <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Encashment Rate</div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                            <span style={{ fontSize: 15, color: C.muted, fontWeight: 500, flexShrink: 0 }}>₹</span>
-                            <input type="number" min={0} value={cfg.encashmentRate}
-                              disabled={cfg.yearEndRule !== 'encashment'}
-                              onChange={e => updateConfig(cfg.name, 'encashmentRate', Math.max(0, parseInt(e.target.value) || 0))}
-                              style={{ width: 80, height: 36, borderRadius: 8, border: `1px solid ${C.border}`, background: '#F7F8FC', textAlign: 'center', fontSize: 14, fontWeight: 700, color: C.navy, outline: 'none', fontFamily: 'inherit', cursor: cfg.yearEndRule !== 'encashment' ? 'not-allowed' : 'text' }} />
-                            <span style={{ fontSize: 12.5, color: C.muted }}>/ day</span>
-                          </div>
-                          <div style={{ fontSize: 11.5, color: C.muted, lineHeight: 1.5 }}>
-                            Payout rate for encashed unused leave days at year end.
-                          </div>
-                        </div>
+                  {/* Active */}
+                  <Toggle checked={cfg.active} onChange={v => updateConfig(cfg.name, 'active', v)} />
 
-                      </div>
-                    </div>
-                  )}
+                  {/* Edit */}
+                  <button
+                    onClick={() => openEdit(cfg)}
+                    style={{ width: 30, height: 30, borderRadius: 8, border: `1px solid ${C.border}`, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0 }}
+                    onMouseEnter={e => { e.currentTarget.style.background = '#F0F2F8'; e.currentTarget.style.borderColor = '#C8CCE0' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = C.border }}
+                    title="Edit leave name and code"
+                  >
+                    <Pencil size={13} strokeWidth={2} style={{ color: C.muted }} />
+                  </button>
                 </div>
-              )
-            })}
+              </div>
+            ))}
 
             {/* Footer note */}
             <div style={{ padding: '13px 24px', background: C.surface, borderTop: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: 8 }}>
               <Info size={13} strokeWidth={2} style={{ color: '#5B5FDE', flexShrink: 0 }} />
               <span style={{ fontSize: 12.5, color: '#5B5FDE' }}>
-                Annual days here are the global defaults. Role-specific overrides can be set in the <strong>Role Entitlements</strong> tab.
+                Annual days are the global defaults. Click the <Pencil size={11} strokeWidth={2} style={{ display: 'inline', verticalAlign: 'middle', marginBottom: 2 }} /> edit icon to update a leave type's name or code.
               </span>
             </div>
           </>
         )}
-
-        {/* ═══════════════════════════ TAB: Role Entitlements ═════════════════ */}
-        {tab === 'entitlements' && (() => {
-          const activeTypes = configs.filter(c => c.active && c.name !== 'LWP')
-          return (
-            <>
-              {/* Matrix */}
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr style={{ background: '#F7F8FC' }}>
-                      <th style={{ padding: '13px 24px', textAlign: 'left', fontSize: 10.5, fontWeight: 700, color: '#B0B4C8', textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: `1px solid ${C.border}`, whiteSpace: 'nowrap' }}>
-                        Role / Leave Type
-                      </th>
-                      {activeTypes.map(t => (
-                        <th key={t.name} style={{ padding: '10px 12px', textAlign: 'center', borderBottom: `1px solid ${C.border}`, minWidth: 96 }}>
-                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
-                            <span style={{ padding: '3px 8px', borderRadius: 6, background: t.bg, color: t.color, fontSize: 10.5, fontWeight: 700, border: `1px solid ${t.border}`, letterSpacing: '0.03em' }}>{t.code}</span>
-                            <span style={{ fontSize: 9.5, color: '#B0B4C8', fontWeight: 600, maxWidth: 72, textAlign: 'center', lineHeight: 1.35 }}>{t.name}</span>
-                          </div>
-                        </th>
-                      ))}
-                      <th style={{ padding: '13px 20px', textAlign: 'center', borderBottom: `1px solid ${C.border}`, fontSize: 10.5, fontWeight: 700, color: '#B0B4C8', textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>
-                        Total Days
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {ROLES.map((r, ri) => {
-                      const rowTotal = activeTypes.reduce((sum, t) => {
-                        return sum + (entitlements[r.role]?.[t.name] ?? t.annualDays)
-                      }, 0)
-                      return (
-                        <tr key={r.role}
-                          style={{ borderBottom: ri < ROLES.length - 1 ? `1px solid #F0F2F8` : 'none', background: '#fff', transition: 'background 0.12s' }}
-                          onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.background = '#FAFBFE' }}
-                          onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.background = '#fff' }}>
-                          <td style={{ padding: '14px 24px', whiteSpace: 'nowrap' }}>
-                            <div style={{ fontSize: 13.5, fontWeight: 700, color: C.navy }}>{r.role}</div>
-                            <div style={{ fontSize: 11.5, color: C.muted, marginTop: 2 }}>{r.level}</div>
-                          </td>
-                          {activeTypes.map(t => {
-                            const cellVal  = entitlements[r.role]?.[t.name] ?? t.annualDays
-                            const isOverride = cellVal !== t.annualDays
-                            return (
-                              <td key={t.name} style={{ padding: '12px', textAlign: 'center' }}>
-                                <input
-                                  type="number" min={0} max={365} value={cellVal}
-                                  onChange={e => updateEnt(r.role, t.name, Math.max(0, parseInt(e.target.value) || 0))}
-                                  style={{ width: 60, height: 36, borderRadius: 8, border: `1px solid ${isOverride ? t.border : '#E8EAF2'}`, background: isOverride ? t.bg : '#F7F8FC', textAlign: 'center', fontSize: 13.5, fontWeight: 700, color: isOverride ? t.color : C.muted, outline: 'none', fontFamily: 'inherit', transition: 'all 0.15s' }}
-                                />
-                              </td>
-                            )
-                          })}
-                          <td style={{ padding: '14px 20px', textAlign: 'center' }}>
-                            <span style={{ fontSize: 14, fontWeight: 800, color: C.navy }}>{rowTotal}</span>
-                            <div style={{ fontSize: 10.5, color: C.muted, marginTop: 2 }}>days/yr</div>
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Legend */}
-              <div style={{ padding: '12px 24px', borderTop: `1px solid ${C.border}`, background: C.surface, display: 'flex', alignItems: 'center', gap: 20 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={{ width: 28, height: 20, borderRadius: 5, background: '#F7F8FC', border: `1px solid ${C.border}` }} />
-                  <span style={{ fontSize: 12, color: C.muted }}>Using global default</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={{ width: 28, height: 20, borderRadius: 5, background: 'rgba(5,150,105,0.08)', border: '1px solid rgba(5,150,105,0.18)' }} />
-                  <span style={{ fontSize: 12, color: C.muted }}>Role-specific override</span>
-                </div>
-              </div>
-
-              {/* Info banner */}
-              <div style={{ padding: '13px 24px', borderTop: `1px solid ${C.border}`, background: 'rgba(99,102,241,0.04)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Info size={14} strokeWidth={2} style={{ color: '#5B5FDE', flexShrink: 0 }} />
-                <span style={{ fontSize: 13, color: '#5B5FDE', fontWeight: 500 }}>
-                  Set role-specific annual entitlements. <span style={{ color: C.muted, fontWeight: 400 }}>Highlighted cells override the global default. Grey cells match the global default from the Leave Types tab.</span>
-                </span>
-              </div>
-            </>
-          )
-        })()}
 
         {/* ══════════════════════════ TAB: General Rules ══════════════════════ */}
         {tab === 'general' && (
@@ -705,6 +538,87 @@ export default function LeavePolicyPage() {
         )}
       </div>
 
+      {/* ── Edit Leave Type Popup ── */}
+      {editingType && (
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(10,12,28,0.50)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Sans', system-ui, sans-serif" }}
+          onClick={e => { if (e.target === e.currentTarget && !editSaving) closeEdit() }}
+        >
+          <div style={{ background: '#fff', borderRadius: 20, width: 480, display: 'flex', flexDirection: 'column', boxShadow: '0 28px 72px rgba(10,12,28,0.22)', animation: 'lpFade 0.22s ease-out' }}>
+
+            {/* Header */}
+            <div style={{ padding: '20px 24px 16px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(99,102,241,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Pencil size={16} strokeWidth={2} style={{ color: '#5B5FDE' }} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 15, fontWeight: 800, color: C.navy, letterSpacing: '-0.2px' }}>Edit Leave Type</div>
+                <div style={{ fontSize: 12, color: C.muted, marginTop: 1 }}>Update the name and short code</div>
+              </div>
+              <button onClick={closeEdit}
+                style={{ width: 30, height: 30, borderRadius: 8, border: `1px solid ${C.border}`, background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.muted }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#F7F8FC' }}
+                onMouseLeave={e => { e.currentTarget.style.background = '#fff' }}>
+                <X size={13} strokeWidth={2} />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div style={{ padding: '22px 24px', display: 'flex', flexDirection: 'column', gap: 18 }}>
+              {/* Leave Name */}
+              <div>
+                <label style={{ fontSize: 11.5, fontWeight: 700, color: C.muted, textTransform: 'uppercase' as const, letterSpacing: '0.06em', display: 'block', marginBottom: 7 }}>
+                  Leave Type Name <span style={{ color: '#E84855' }}>*</span>
+                </label>
+                <input
+                  value={editValues.name}
+                  onChange={e => { setEditValues(p => ({ ...p, name: e.target.value })); setEditErrors(p => ({ ...p, name: undefined })) }}
+                  placeholder="e.g. Maternity Leave"
+                  style={{ width: '100%', height: 42, borderRadius: 10, padding: '0 14px', fontSize: 13.5, fontWeight: 500, color: C.navy, outline: 'none', border: `1px solid ${editErrors.name ? '#E84855' : C.border}`, background: C.surface, fontFamily: 'inherit', boxSizing: 'border-box', transition: 'border-color 0.15s' }}
+                  onFocus={e => { if (!editErrors.name) e.target.style.borderColor = '#6366F1' }}
+                  onBlur={e => { e.target.style.borderColor = editErrors.name ? '#E84855' : C.border }}
+                />
+                {editErrors.name && <p style={{ margin: '5px 0 0', fontSize: 12, color: '#E84855', fontWeight: 500 }}>{editErrors.name}</p>}
+              </div>
+
+              {/* Short Code */}
+              <div>
+                <label style={{ fontSize: 11.5, fontWeight: 700, color: C.muted, textTransform: 'uppercase' as const, letterSpacing: '0.06em', display: 'block', marginBottom: 7 }}>
+                  Short Code <span style={{ color: '#E84855' }}>*</span>
+                </label>
+                <input
+                  value={editValues.code}
+                  onChange={e => { setEditValues(p => ({ ...p, code: e.target.value.toUpperCase().slice(0, 5) })); setEditErrors(p => ({ ...p, code: undefined })) }}
+                  placeholder="e.g. ML"
+                  style={{ width: '100%', height: 42, borderRadius: 10, padding: '0 14px', fontSize: 13.5, fontWeight: 700, color: C.navy, outline: 'none', border: `1px solid ${editErrors.code ? '#E84855' : C.border}`, background: C.surface, fontFamily: 'monospace', boxSizing: 'border-box', transition: 'border-color 0.15s', letterSpacing: '0.06em' }}
+                  onFocus={e => { if (!editErrors.code) e.target.style.borderColor = '#6366F1' }}
+                  onBlur={e => { e.target.style.borderColor = editErrors.code ? '#E84855' : C.border }}
+                />
+                {editErrors.code && <p style={{ margin: '5px 0 0', fontSize: 12, color: '#E84855', fontWeight: 500 }}>{editErrors.code}</p>}
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div style={{ padding: '14px 24px 22px', display: 'flex', gap: 10, borderTop: `1px solid ${C.border}` }}>
+              <button onClick={closeEdit} disabled={editSaving}
+                style={{ flex: 1, height: 42, borderRadius: 11, border: `1px solid ${C.border}`, background: '#fff', color: C.muted, fontSize: 13.5, fontWeight: 600, cursor: editSaving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}
+                onMouseEnter={e => { if (!editSaving) { e.currentTarget.style.borderColor = '#C8CCE0'; e.currentTarget.style.color = C.navy } }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted }}>
+                Cancel
+              </button>
+              <button onClick={handleEditSave} disabled={editSaving || !editValues.name.trim() || !editValues.code.trim()}
+                style={{ flex: 2, height: 42, borderRadius: 11, border: 'none', background: (editSaving || !editValues.name.trim() || !editValues.code.trim()) ? '#E8EAF2' : 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)', color: (editSaving || !editValues.name.trim() || !editValues.code.trim()) ? '#B0B4C8' : '#fff', fontSize: 13.5, fontWeight: 700, cursor: (editSaving || !editValues.name.trim() || !editValues.code.trim()) ? 'not-allowed' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'opacity 0.15s' }}
+                onMouseEnter={e => { if (!editSaving && editValues.name.trim() && editValues.code.trim()) e.currentTarget.style.opacity = '0.88' }}
+                onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}>
+                {editSaving
+                  ? <><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ animation: 'lpSpin 0.8s linear infinite' }}><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>Saving…</>
+                  : <><Check size={14} strokeWidth={2.5} />Save Changes</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Add New Leave Type Modal ── */}
       {showAddType && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(10,12,28,0.50)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Sans', system-ui, sans-serif" }}
@@ -776,8 +690,8 @@ export default function LeavePolicyPage() {
                 </div>
               </div>
 
-              {/* Annual Days + Toggles */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+              {/* Annual Days + Requires Approval */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 <div>
                   <label style={{ fontSize: 11.5, fontWeight: 700, color: C.muted, textTransform: 'uppercase' as const, letterSpacing: '0.06em', display: 'block', marginBottom: 10 }}>Annual Days</label>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -794,31 +708,6 @@ export default function LeavePolicyPage() {
                     <span style={{ fontSize: 12.5, color: C.muted }}>{newType.requiresApproval ? 'Yes' : 'No'}</span>
                   </div>
                 </div>
-                <div>
-                  <label style={{ fontSize: 11.5, fontWeight: 700, color: C.muted, textTransform: 'uppercase' as const, letterSpacing: '0.06em', display: 'block', marginBottom: 12 }}>Carry Forward</label>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <Toggle checked={newType.carryForward} onChange={v => setNewType(p => ({ ...p, carryForward: v }))} />
-                    <span style={{ fontSize: 12.5, color: C.muted }}>{newType.carryForward ? 'Yes' : 'No'}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Year-End Rule */}
-              <div>
-                <label style={{ fontSize: 11.5, fontWeight: 700, color: C.muted, textTransform: 'uppercase' as const, letterSpacing: '0.06em', display: 'block', marginBottom: 10 }}>Year-End Rule</label>
-                <div style={{ display: 'flex', background: '#F0F2F8', borderRadius: 10, padding: 3, gap: 2, width: 'fit-content' }}>
-                  {(['lapse', 'encashment'] as const).map(rule => (
-                    <button key={rule} onClick={() => setNewType(p => ({ ...p, yearEndRule: rule }))}
-                      style={{ padding: '8px 20px', borderRadius: 7, border: 'none', cursor: 'pointer', fontSize: 12.5, fontWeight: newType.yearEndRule === rule ? 700 : 500, background: newType.yearEndRule === rule ? '#fff' : 'transparent', color: newType.yearEndRule === rule ? C.navy : C.muted, boxShadow: newType.yearEndRule === rule ? '0 1px 3px rgba(28,32,53,0.10)' : 'none', fontFamily: 'inherit', transition: 'all 0.15s' }}>
-                      {rule === 'encashment' ? 'Encashment' : 'Lapse'}
-                    </button>
-                  ))}
-                </div>
-                <p style={{ fontSize: 12, color: C.muted, marginTop: 8, lineHeight: 1.5 }}>
-                  {newType.yearEndRule === 'lapse'
-                    ? 'Unused days will lapse at the end of the leave year.'
-                    : 'Unused days will be paid out as encashment at year end.'}
-                </p>
               </div>
 
             </div>

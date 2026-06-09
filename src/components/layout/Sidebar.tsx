@@ -63,7 +63,7 @@ function buildNav(role: 'employee' | 'manager'): NavSection[] {
           children: [
             { id: 'leave-create',  label: 'Create Leave Request'  },
             { id: 'leave-status',  label: 'Leave Approval Status' },
-            { id: 'leave-history', label: 'Leave History'         },
+            // { id: 'leave-history', label: 'Leave History' }, // hidden
           ],
         },
         {
