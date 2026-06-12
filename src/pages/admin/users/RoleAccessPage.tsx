@@ -1,11 +1,15 @@
 import { useState } from 'react'
 import {
   Search, Users, ShieldCheck, Crown, Check, X,
-  ChevronDown, ArrowLeftRight,
+  ChevronDown, ArrowLeftRight, GripVertical, Pencil, Trash2, Plus,
 } from 'lucide-react'
 
 type Role = 'Employee' | 'Manager' | 'Admin'
 type Tab  = 'permissions' | 'users'
+type PermSection = 'can' | 'restricted'
+
+interface PermItem { id: string; label: string }
+type RolePermsMap = Record<Role, { can: PermItem[]; restricted: PermItem[] }>
 
 interface UserRow {
   id: number; name: string; avatar: number; empId: string
@@ -51,83 +55,65 @@ const ROLE_CFG: Record<Role, {
 const ROLE_META: Record<Role, {
   Icon: React.FC<{ size?: number; color?: string }>
   tagline: string
-  perms: string[]
-  restricted: string[]
 }> = {
-  Employee: {
-    Icon: Users,
-    tagline: 'Standard access for day-to-day work',
-    perms: [
-      'View personal dashboard & profile',
-      'Submit and track timesheets',
-      'Apply for leave requests',
-      'View personal payroll & reports',
-      'Raise HR support tickets',
-    ],
-    restricted: [
-      'Approve team requests',
-      'Manage users or policies',
-      'Access system settings',
-      'View organisation-wide data',
-    ],
-  },
-  Manager: {
-    Icon: ShieldCheck,
-    tagline: 'Team-level oversight and approvals',
-    perms: [
-      'All Employee permissions',
-      'Review & approve timesheets',
-      'Approve or reject leave requests',
-      'View team analytics & reports',
-      'Manage project assignments',
-      'Post project announcements',
-    ],
-    restricted: [
-      'Create or delete users',
-      'Access system configuration',
-      'Manage organisation-wide policies',
-    ],
-  },
-  Admin: {
-    Icon: Crown,
-    tagline: 'Full system control and configuration',
-    perms: [
-      'All Manager permissions',
-      'Create, edit & deactivate users',
-      'Assign and change user roles',
-      'Configure leave & timesheet policies',
-      'Manage departments & projects',
-      'Full reports & audit log access',
-      'System settings & configuration',
-    ],
-    restricted: [],
-  },
+  Employee: { Icon: Users,       tagline: 'Standard access for day-to-day work' },
+  Manager:  { Icon: ShieldCheck, tagline: 'Team-level oversight and approvals'  },
+  Admin:    { Icon: Crown,       tagline: 'Full system control and configuration' },
 }
 
-const PERM_MATRIX = [
-  { label: 'View own dashboard',          employee: true,  manager: true,  admin: true  },
-  { label: 'Submit timesheets',           employee: true,  manager: true,  admin: true  },
-  { label: 'Apply for leave',             employee: true,  manager: true,  admin: true  },
-  { label: 'View own payroll',            employee: true,  manager: true,  admin: true  },
-  { label: 'Raise HR tickets',            employee: true,  manager: true,  admin: true  },
-  { label: 'Approve timesheets',          employee: false, manager: true,  admin: true  },
-  { label: 'Approve leave requests',      employee: false, manager: true,  admin: true  },
-  { label: 'View team analytics',         employee: false, manager: true,  admin: true  },
-  { label: 'Manage project assignments',  employee: false, manager: true,  admin: true  },
-  { label: 'Create / deactivate users',   employee: false, manager: false, admin: true  },
-  { label: 'Assign user roles',           employee: false, manager: false, admin: true  },
-  { label: 'Configure policies',          employee: false, manager: false, admin: true  },
-  { label: 'Manage departments',          employee: false, manager: false, admin: true  },
-  { label: 'Audit log & system reports',  employee: false, manager: false, admin: true  },
-  { label: 'System settings',             employee: false, manager: false, admin: true  },
-]
+function initRolePerms(): RolePermsMap {
+  let n = 0
+  const mk = (label: string): PermItem => ({ id: `p${n++}`, label })
+  return {
+    Employee: {
+      can: [
+        'View personal dashboard & profile',
+        'Submit and track timesheets',
+        'Apply for leave requests',
+        'View personal payroll & reports',
+        'Raise HR support tickets',
+      ].map(mk),
+      restricted: [
+        'Approve team requests',
+        'Manage users or policies',
+        'Access system settings',
+        'View organisation-wide data',
+      ].map(mk),
+    },
+    Manager: {
+      can: [
+        'All Employee permissions',
+        'Review & approve timesheets',
+        'Approve or reject leave requests',
+        'View team analytics & reports',
+        'Manage project assignments',
+        'Post project announcements',
+      ].map(mk),
+      restricted: [
+        'Create or delete users',
+        'Access system configuration',
+        'Manage organisation-wide policies',
+      ].map(mk),
+    },
+    Admin: {
+      can: [
+        'All Manager permissions',
+        'Create, edit & deactivate users',
+        'Assign and change user roles',
+        'Configure leave & timesheet policies',
+        'Manage departments & projects',
+        'Full reports & audit log access',
+        'System settings & configuration',
+      ].map(mk),
+      restricted: [],
+    },
+  }
+}
 
 const DEPARTMENTS  = ['All Departments', 'Engineering', 'Design', 'QA & Testing', 'DevOps', 'Product', 'IT Operations']
 const ROLES_FILTER = ['All Roles', 'Employee', 'Manager', 'Admin']
-
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', surface: '#F7F8FC', hover: '#F0F2F8' }
 
-/* ── helpers ── */
 function Dropdown({ value, options, onChange, minW = 140 }: { value: string; options: string[]; onChange: (v: string) => void; minW?: number }) {
   return (
     <div style={{ position: 'relative' }}>
@@ -151,7 +137,7 @@ function Dropdown({ value, options, onChange, minW = 140 }: { value: string; opt
 }
 
 function RoleBadge({ role }: { role: Role }) {
-  const c = ROLE_CFG[role]
+  const c    = ROLE_CFG[role]
   const Icon = ROLE_META[role].Icon
   return (
     <span style={{
@@ -166,36 +152,32 @@ function RoleBadge({ role }: { role: Role }) {
   )
 }
 
-function PermDot({ granted }: { granted: boolean }) {
-  return (
-    <div style={{
-      width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: granted ? 'rgba(16,185,129,0.1)' : 'rgba(139,144,167,0.08)',
-    }}>
-      {granted
-        ? <Check size={11} color="#059669" strokeWidth={3} />
-        : <X     size={9}  color={C.muted}  strokeWidth={2.5} />}
-    </div>
-  )
-}
-
 /* ══════════════════════════════════════════
    MAIN
 ══════════════════════════════════════════ */
 export default function RoleAccessPage() {
-  const [users,   setUsers]   = useState<UserRow[]>(INIT_USERS)
-  const [tab,     setTab]     = useState<Tab>('users')
-  const [search,  setSearch]  = useState('')
-  const [rFilter, setRFilter] = useState('All Roles')
-  const [dFilter, setDFilter] = useState('All Departments')
-  const [sFocus,  setSFocus]  = useState(false)
-
+  /* ── existing state ── */
+  const [users,       setUsers]       = useState<UserRow[]>(INIT_USERS)
+  const [tab,         setTab]         = useState<Tab>('users')
+  const [search,      setSearch]      = useState('')
+  const [rFilter,     setRFilter]     = useState('All Roles')
+  const [dFilter,     setDFilter]     = useState('All Departments')
+  const [sFocus,      setSFocus]      = useState(false)
   const [modalUser,   setModalUser]   = useState<UserRow | null>(null)
   const [selectedNew, setSelectedNew] = useState<Role | null>(null)
   const [saving,      setSaving]      = useState(false)
   const [toast,       setToast]       = useState<string | null>(null)
 
+  /* ── permissions state ── */
+  const [rolePerms, setRolePerms] = useState<RolePermsMap>(initRolePerms)
+  const [dragItem,  setDragItem]  = useState<{ role: Role; section: PermSection; id: string } | null>(null)
+  const [dragOver,  setDragOver]  = useState<{ role: Role; section: PermSection } | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editVal,   setEditVal]   = useState('')
+  const [addTarget, setAddTarget] = useState<{ role: Role; section: PermSection } | null>(null)
+  const [addVal,    setAddVal]    = useState('')
+
+  /* ── derived ── */
   const counts: Record<Role, number> = {
     Employee: users.filter(u => u.role === 'Employee').length,
     Manager:  users.filter(u => u.role === 'Manager').length,
@@ -225,6 +207,264 @@ export default function RoleAccessPage() {
 
   const anyFilter = !!(search || rFilter !== 'All Roles' || dFilter !== 'All Departments')
 
+  /* ── perm mutations ── */
+  function movePerm(toRole: Role, toSection: PermSection) {
+    if (!dragItem) return
+    const { role: fr, section: fs, id } = dragItem
+    if (fr === toRole && fs === toSection) { setDragItem(null); setDragOver(null); return }
+    const item = rolePerms[fr][fs].find(p => p.id === id)
+    if (!item) return
+    setRolePerms(prev => {
+      const next: RolePermsMap = {
+        Employee: { can: [...prev.Employee.can], restricted: [...prev.Employee.restricted] },
+        Manager:  { can: [...prev.Manager.can],  restricted: [...prev.Manager.restricted]  },
+        Admin:    { can: [...prev.Admin.can],    restricted: [...prev.Admin.restricted]    },
+      }
+      next[fr][fs]          = next[fr][fs].filter(p => p.id !== id)
+      next[toRole][toSection] = [...next[toRole][toSection], { id: item.id, label: item.label }]
+      return next
+    })
+    setDragItem(null); setDragOver(null)
+    setToast(`"${item.label}" moved to ${toRole} → ${toSection === 'can' ? 'Can do' : 'Restricted'}`)
+    setTimeout(() => setToast(null), 3000)
+  }
+
+  function deletePerm(role: Role, section: PermSection, id: string) {
+    setRolePerms(prev => ({
+      ...prev,
+      [role]: { ...prev[role], [section]: prev[role][section].filter(p => p.id !== id) },
+    }))
+  }
+
+  function saveEdit(role: Role, section: PermSection, id: string) {
+    const v = editVal.trim()
+    if (!v) { setEditingId(null); return }
+    setRolePerms(prev => ({
+      ...prev,
+      [role]: { ...prev[role], [section]: prev[role][section].map(p => p.id === id ? { ...p, label: v } : p) },
+    }))
+    setEditingId(null)
+  }
+
+  function commitAdd(role: Role, section: PermSection) {
+    const v = addVal.trim()
+    if (!v) { setAddTarget(null); setAddVal(''); return }
+    setRolePerms(prev => ({
+      ...prev,
+      [role]: { ...prev[role], [section]: [...prev[role][section], { id: `p${Date.now()}`, label: v }] },
+    }))
+    setAddVal(''); setAddTarget(null)
+  }
+
+  /* ── section renderer ── */
+  function renderSection(role: Role, section: PermSection) {
+    const cfg       = ROLE_CFG[role]
+    const items     = rolePerms[role][section]
+    const isCan     = section === 'can'
+    const isTarget  = dragOver?.role === role && dragOver?.section === section
+    const isDragging = !!dragItem
+    const isAdding  = addTarget?.role === role && addTarget?.section === section
+
+    const pillBg   = isCan ? 'rgba(16,185,129,0.07)' : 'rgba(139,144,167,0.07)'
+    const pillBord = isCan ? 'rgba(16,185,129,0.2)'  : C.border
+    const pillText = isCan ? '#065F46'                : C.navy
+
+    return (
+      <div
+        onDragOver={e => { e.preventDefault(); e.stopPropagation(); setDragOver({ role, section }) }}
+        onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOver(null) }}
+        onDrop={e => { e.preventDefault(); movePerm(role, section) }}
+        style={{
+          borderRadius: 10, padding: '8px',
+          transition: 'background 0.15s, outline 0.15s',
+          outline: isTarget
+            ? `2px dashed ${cfg.accent}`
+            : isDragging
+              ? `1px dashed ${C.border}`
+              : 'none',
+          outlineOffset: -1,
+          background: isTarget ? cfg.light : isDragging ? 'rgba(0,0,0,0.015)' : 'transparent',
+          minHeight: isDragging ? 52 : 'auto',
+        }}
+      >
+        {/* Section header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+          <p style={{ margin: 0, fontSize: 10, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            {isCan ? 'Can do' : 'Restricted'}
+          </p>
+          <button
+            onClick={() => { setAddTarget({ role, section }); setAddVal(''); setEditingId(null) }}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 3,
+              padding: '2px 7px', borderRadius: 5, cursor: 'pointer',
+              fontSize: 10.5, fontWeight: 600, color: cfg.color,
+              background: cfg.light, border: `1px solid ${cfg.border}`,
+            }}
+          >
+            <Plus size={9} /> Add
+          </button>
+        </div>
+
+        {/* Pills list */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+          {items.map(item => {
+            const isGhost  = dragItem?.id === item.id
+            const isEditing = editingId === item.id
+            return (
+              <div
+                key={item.id}
+                draggable={!isEditing}
+                onDragStart={e => {
+                  e.dataTransfer.setData('text/plain', item.id)
+                  e.stopPropagation()
+                  setDragItem({ role, section, id: item.id })
+                }}
+                onDragEnd={() => { setDragItem(null); setDragOver(null) }}
+                className="perm-pill"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 5,
+                  padding: '5px 7px', borderRadius: 7,
+                  fontSize: 11.5, fontWeight: 500, color: pillText,
+                  background: isGhost ? 'transparent' : pillBg,
+                  border: `1px solid ${isGhost ? 'transparent' : pillBord}`,
+                  opacity: isGhost ? 0.3 : 1,
+                  cursor: isEditing ? 'default' : 'grab',
+                  transition: 'opacity 0.15s',
+                  userSelect: 'none',
+                }}
+              >
+                {/* Grip */}
+                <GripVertical size={11} style={{ flexShrink: 0, color: C.muted, opacity: 0.4 }} />
+
+                {/* Section icon */}
+                {isCan
+                  ? <Check size={9}  color="#059669" strokeWidth={3}   style={{ flexShrink: 0 }} />
+                  : <X     size={8}  color={C.muted}  strokeWidth={2.5} style={{ flexShrink: 0 }} />
+                }
+
+                {/* Label / edit input */}
+                {isEditing ? (
+                  <input
+                    autoFocus
+                    value={editVal}
+                    onChange={e => setEditVal(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter')  saveEdit(role, section, item.id)
+                      if (e.key === 'Escape') setEditingId(null)
+                    }}
+                    style={{
+                      flex: 1, border: `1.5px solid ${cfg.accent}`, borderRadius: 5,
+                      padding: '2px 6px', fontSize: 11.5, color: C.navy,
+                      background: '#fff', outline: 'none',
+                      fontFamily: "'DM Sans',system-ui,sans-serif",
+                    }}
+                  />
+                ) : (
+                  <span style={{ flex: 1, lineHeight: 1.4 }}>{item.label}</span>
+                )}
+
+                {/* Action buttons */}
+                {isEditing ? (
+                  <div style={{ display: 'flex', gap: 3, flexShrink: 0 }}>
+                    <button
+                      title="Save"
+                      onClick={() => saveEdit(role, section, item.id)}
+                      style={{ background: cfg.light, border: `1px solid ${cfg.border}`, borderRadius: 4, width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: cfg.color }}
+                    >
+                      <Check size={9} strokeWidth={3} />
+                    </button>
+                    <button
+                      title="Cancel"
+                      onClick={() => setEditingId(null)}
+                      style={{ background: C.hover, border: `1px solid ${C.border}`, borderRadius: 4, width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: C.muted }}
+                    >
+                      <X size={9} strokeWidth={2.5} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="pill-actions">
+                    <button
+                      title="Edit"
+                      onClick={() => { setEditingId(item.id); setEditVal(item.label); setAddTarget(null) }}
+                      onDragStart={e => e.stopPropagation()}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px 3px', borderRadius: 4, display: 'flex', alignItems: 'center', color: C.muted }}
+                    >
+                      <Pencil size={9} />
+                    </button>
+                    <button
+                      title="Delete"
+                      onClick={() => deletePerm(role, section, item.id)}
+                      onDragStart={e => e.stopPropagation()}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px 3px', borderRadius: 4, display: 'flex', alignItems: 'center', color: '#EF4444' }}
+                    >
+                      <Trash2 size={9} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            )
+          })}
+
+          {/* Inline add row */}
+          {isAdding && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 5,
+              padding: '5px 7px', borderRadius: 7,
+              background: '#fff', border: `1.5px dashed ${cfg.accent}`,
+            }}>
+              {isCan
+                ? <Check size={9}  color="#059669" strokeWidth={3}   style={{ flexShrink: 0 }} />
+                : <X     size={8}  color={C.muted}  strokeWidth={2.5} style={{ flexShrink: 0 }} />
+              }
+              <input
+                autoFocus
+                value={addVal}
+                onChange={e => setAddVal(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter')  commitAdd(role, section)
+                  if (e.key === 'Escape') { setAddTarget(null); setAddVal('') }
+                }}
+                placeholder="New permission type…"
+                style={{
+                  flex: 1, border: 'none', outline: 'none',
+                  fontSize: 11.5, color: C.navy, background: 'transparent',
+                  padding: 0, fontFamily: "'DM Sans',system-ui,sans-serif",
+                }}
+              />
+              <div style={{ display: 'flex', gap: 3 }}>
+                <button
+                  onClick={() => commitAdd(role, section)}
+                  style={{ background: cfg.light, border: `1px solid ${cfg.border}`, borderRadius: 4, width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: cfg.color }}
+                >
+                  <Check size={9} strokeWidth={3} />
+                </button>
+                <button
+                  onClick={() => { setAddTarget(null); setAddVal('') }}
+                  style={{ background: C.hover, border: `1px solid ${C.border}`, borderRadius: 4, width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: C.muted }}
+                >
+                  <X size={9} strokeWidth={2.5} />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Empty state / drop hint */}
+          {items.length === 0 && !isAdding && (
+            <div style={{
+              padding: '10px 8px', borderRadius: 7, textAlign: 'center',
+              fontSize: 11, color: C.muted,
+              border: `1px dashed ${isTarget ? cfg.accent : C.border}`,
+              background: isTarget ? cfg.light : 'transparent',
+              transition: 'background 0.15s',
+            }}>
+              {isDragging ? '↓ Drop here' : 'No items — click Add above'}
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div style={{ fontFamily: "'DM Sans',system-ui,sans-serif" }}>
       <style>{`
@@ -233,6 +473,9 @@ export default function RoleAccessPage() {
         @keyframes raToast { 0%{opacity:0;transform:translateY(8px)} 10%{opacity:1;transform:translateY(0)} 85%{opacity:1} 100%{opacity:0} }
         .tr-row:hover { background: #F7F8FC !important; }
         .tab-btn { transition: color 0.15s, border-color 0.15s; }
+        .perm-pill .pill-actions { display: none; align-items: center; gap: 2px; flex-shrink: 0; }
+        .perm-pill:hover .pill-actions { display: flex !important; }
+        .perm-pill:hover { filter: brightness(0.97); }
       `}</style>
 
       {/* ── Page header ── */}
@@ -250,7 +493,7 @@ export default function RoleAccessPage() {
           const meta = ROLE_META[role]
           const Icon = meta.Icon
           return (
-            <div key={role} className="stat-card" style={{
+            <div key={role} style={{
               background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16,
               padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 14,
               cursor: 'pointer',
@@ -295,123 +538,110 @@ export default function RoleAccessPage() {
 
       {/* ══ TAB 1: Permissions Overview ══ */}
       {tab === 'permissions' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+        <div>
+          {/* Instruction banner */}
+          <div style={{
+            marginBottom: 16, padding: '10px 16px', borderRadius: 10,
+            background: C.surface, border: `1px solid ${C.border}`,
+            display: 'flex', alignItems: 'center', gap: 10,
+          }}>
+            <GripVertical size={14} color={C.muted} style={{ flexShrink: 0, opacity: 0.7 }} />
+            <p style={{ margin: 0, fontSize: 12.5, color: C.muted, lineHeight: 1.5 }}>
+              <strong>Drag</strong> any permission between role cards to reassign it. <strong>Hover</strong> a permission to edit or delete. Use <strong>+ Add</strong> to create new types.
+            </p>
+          </div>
 
-          {/* TOP: 3 role cards in a row */}
+          {/* Role cards */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14 }}>
             {(['Employee', 'Manager', 'Admin'] as Role[]).map(role => {
-              const cfg  = ROLE_CFG[role]
-              const meta = ROLE_META[role]
-              const Icon = meta.Icon
+              const cfg     = ROLE_CFG[role]
+              const meta    = ROLE_META[role]
+              const Icon    = meta.Icon
+              const isCardTarget = dragOver?.role === role
+
               return (
                 <div key={role} style={{
-                  background: '#fff', border: `1px solid ${C.border}`,
-                  borderRadius: 14, overflow: 'hidden',
+                  background: '#fff',
+                  border: `2px solid ${isCardTarget ? cfg.accent : C.border}`,
+                  borderRadius: 16, overflow: 'hidden',
+                  transition: 'border-color 0.15s, box-shadow 0.15s',
+                  boxShadow: isCardTarget ? `0 0 0 4px ${cfg.light}` : 'none',
                 }}>
-                  {/* Role header */}
-                  <div style={{ padding: '12px 14px', background: cfg.bg, display: 'flex', alignItems: 'center', gap: 10 }}>
+                  {/* Card header */}
+                  <div style={{ padding: '13px 16px', background: role === 'Employee' ? '#E8ECFF' : cfg.bg, display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div style={{
-                      width: 32, height: 32, borderRadius: 9, flexShrink: 0,
+                      width: 34, height: 34, borderRadius: 9, flexShrink: 0,
                       background: '#fff', border: `1px solid ${cfg.border}`,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}>
-                      <Icon size={15} color={cfg.color} />
+                      <Icon size={16} color={cfg.color} />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: cfg.color }}>{role}</p>
                       <p style={{ margin: '1px 0 0', fontSize: 10.5, color: cfg.color, opacity: 0.65, lineHeight: 1.3 }}>{meta.tagline}</p>
                     </div>
                     <span style={{
-                      fontSize: 13, fontWeight: 800, color: cfg.color,
+                      fontSize: 12, fontWeight: 800, color: cfg.color,
                       background: '#fff', border: `1px solid ${cfg.border}`,
-                      borderRadius: 7, padding: '1px 8px',
-                    }}>{counts[role]}</span>
+                      borderRadius: 7, padding: '2px 9px',
+                    }}>{counts[role]} users</span>
                   </div>
 
-                  {/* Permission pills */}
-                  <div style={{ padding: '16px 14px 18px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-                    <div>
-                      <p style={{ margin: '0 0 8px', fontSize: 10, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Can do</p>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                        {meta.perms.map(p => (
-                          <span key={p} style={{
-                            display: 'inline-flex', alignItems: 'center', gap: 6,
-                            padding: '4px 9px', borderRadius: 6,
-                            fontSize: 11, fontWeight: 500, color: '#065F46',
-                            background: 'rgba(16,185,129,0.07)', border: '1px solid rgba(16,185,129,0.15)',
-                          }}>
-                            <Check size={9} color="#059669" strokeWidth={3} />
-                            {p}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    {meta.restricted.length > 0 && (
-                      <>
-                        <div style={{ borderTop: `1px solid ${C.border}`, margin: '6px 0' }} />
-                        <div>
-                          <p style={{ margin: '0 0 8px', fontSize: 10, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Restricted</p>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                            {meta.restricted.map(p => (
-                              <span key={p} style={{
-                                display: 'inline-flex', alignItems: 'center', gap: 6,
-                                padding: '4px 9px', borderRadius: 6,
-                                fontSize: 11, fontWeight: 500, color: C.muted,
-                                background: 'rgba(139,144,167,0.06)', border: `1px solid ${C.border}`,
-                              }}>
-                                <X size={8} color={C.muted} strokeWidth={2.5} />
-                                {p}
-                              </span>
-                            ))}
+                  {/* Card body */}
+                  <div style={{ padding: '14px 12px 18px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+                    {/* Can do */}
+                    {renderSection(role, 'can')}
+
+                    {/* Divider */}
+                    <div style={{ borderTop: `1px solid ${C.border}` }} />
+
+                    {/* Restricted */}
+                    {(rolePerms[role].restricted.length > 0
+                      || (addTarget?.role === role && addTarget.section === 'restricted')
+                      || (dragOver?.role  === role && dragOver.section  === 'restricted')
+                    ) ? (
+                      renderSection(role, 'restricted')
+                    ) : (
+                      /* Collapsed restricted zone — still accepts drops */
+                      <div
+                        onDragOver={e => { e.preventDefault(); e.stopPropagation(); setDragOver({ role, section: 'restricted' }) }}
+                        onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOver(null) }}
+                        onDrop={e => { e.preventDefault(); movePerm(role, 'restricted') }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                          <p style={{ margin: 0, fontSize: 10, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Restricted</p>
+                          <button
+                            onClick={() => { setAddTarget({ role, section: 'restricted' }); setAddVal(''); setEditingId(null) }}
+                            style={{
+                              display: 'inline-flex', alignItems: 'center', gap: 3,
+                              padding: '2px 7px', borderRadius: 5, cursor: 'pointer',
+                              fontSize: 10.5, fontWeight: 600, color: cfg.color,
+                              background: cfg.light, border: `1px solid ${cfg.border}`,
+                            }}
+                          >
+                            <Plus size={9} /> Add
+                          </button>
+                        </div>
+                        {role === 'Admin' ? (
+                          <div style={{ padding: '8px 10px', borderRadius: 8, background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.14)' }}>
+                            <p style={{ margin: 0, fontSize: 11, color: '#047857', fontWeight: 600 }}>Full system access — no restrictions</p>
                           </div>
-                        </div>
-                      </>
-                    )}
-                    {meta.restricted.length === 0 && (
-                      <>
-                        <div style={{ borderTop: `1px solid ${C.border}`, margin: '6px 0' }} />
-                        <div style={{ padding: '8px 10px', borderRadius: 8, background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.14)' }}>
-                          <p style={{ margin: 0, fontSize: 11, color: '#047857', fontWeight: 600 }}>Full system access</p>
-                        </div>
-                      </>
+                        ) : (
+                          <div style={{
+                            padding: '9px', borderRadius: 7, textAlign: 'center',
+                            fontSize: 11, color: C.muted,
+                            border: `1px dashed ${C.border}`,
+                          }}>
+                            No restricted items — drop here or click Add
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
               )
             })}
-          </div>
-
-          {/* BOTTOM: Permission matrix full-width */}
-          <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 18, overflow: 'hidden' }}>
-            <div style={{ padding: '16px 22px', borderBottom: `1px solid ${C.border}` }}>
-              <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: C.navy }}>Permission Matrix</p>
-              <p style={{ margin: '2px 0 0', fontSize: 12, color: C.muted }}>At-a-glance access across all {PERM_MATRIX.length} permission points</p>
-            </div>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ background: C.surface }}>
-                  <th style={{ padding: '11px 22px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.05em', width: '52%' }}>Permission</th>
-                  {(['Employee', 'Manager', 'Admin'] as Role[]).map(r => {
-                    const cfg = ROLE_CFG[r]
-                    return (
-                      <th key={r} style={{ padding: '11px 22px', textAlign: 'center', fontSize: 11, fontWeight: 700, color: cfg.color, textTransform: 'uppercase', letterSpacing: '0.05em', width: '16%' }}>
-                        {r}
-                      </th>
-                    )
-                  })}
-                </tr>
-              </thead>
-              <tbody>
-                {PERM_MATRIX.map((row, i) => (
-                  <tr key={row.label} style={{ borderTop: `1px solid ${C.border}`, background: i % 2 === 0 ? '#fff' : '#FAFBFF' }}>
-                    <td style={{ padding: '11px 22px', fontSize: 13, color: C.navy, fontWeight: 500 }}>{row.label}</td>
-                    <td style={{ padding: '11px 22px', textAlign: 'center' }}><div style={{ display: 'flex', justifyContent: 'center' }}><PermDot granted={row.employee} /></div></td>
-                    <td style={{ padding: '11px 22px', textAlign: 'center' }}><div style={{ display: 'flex', justifyContent: 'center' }}><PermDot granted={row.manager} /></div></td>
-                    <td style={{ padding: '11px 22px', textAlign: 'center' }}><div style={{ display: 'flex', justifyContent: 'center' }}><PermDot granted={row.admin} /></div></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           </div>
         </div>
       )}
@@ -485,7 +715,6 @@ export default function RoleAccessPage() {
                       <tr key={u.id} className="tr-row"
                         style={{ borderTop: i === 0 ? 'none' : `1px solid ${C.border}`, background: '#fff', transition: 'background 0.12s' }}>
 
-                        {/* Employee */}
                         <td style={{ padding: '13px 18px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                             <div style={{ position: 'relative', flexShrink: 0 }}>
@@ -504,12 +733,10 @@ export default function RoleAccessPage() {
                           </div>
                         </td>
 
-                        {/* Department */}
                         <td style={{ padding: '13px 18px' }}>
                           <span style={{ fontSize: 13, color: C.navy, fontWeight: 500 }}>{u.department}</span>
                         </td>
 
-                        {/* Emp ID */}
                         <td style={{ padding: '13px 18px' }}>
                           <span style={{
                             fontSize: 12.5, fontWeight: 700, color: '#4338CA',
@@ -518,17 +745,14 @@ export default function RoleAccessPage() {
                           }}>{u.empId}</span>
                         </td>
 
-                        {/* Role */}
                         <td style={{ padding: '13px 18px' }}>
                           <RoleBadge role={u.role} />
                         </td>
 
-                        {/* Since */}
                         <td style={{ padding: '13px 18px' }}>
                           <span style={{ fontSize: 12.5, color: C.muted }}>{u.lastChanged}</span>
                         </td>
 
-                        {/* Action */}
                         <td style={{ padding: '13px 18px', textAlign: 'center' }}>
                           <button
                             onClick={() => openModal(u)}
@@ -571,7 +795,6 @@ export default function RoleAccessPage() {
             boxShadow: '0 32px 80px rgba(10,12,28,0.2)',
             overflow: 'hidden', animation: 'raModal 0.18s ease',
           }}>
-            {/* Modal header */}
             <div style={{ padding: '20px 24px', borderBottom: `1px solid ${C.border}`, background: C.surface, display: 'flex', alignItems: 'center', gap: 14 }}>
               <img src={`https://i.pravatar.cc/44?img=${modalUser.avatar}`} alt={modalUser.name}
                 style={{ width: 44, height: 44, borderRadius: '50%', flexShrink: 0 }} />
