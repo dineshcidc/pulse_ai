@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import {
-  CalendarDays, Shield, ChevronDown, ChevronUp,
+  CalendarDays, Shield,
   Save, RotateCcw, Check, Info, AlertCircle,
   Layers, Settings2, Plus, X, Pencil,
 } from 'lucide-react'
