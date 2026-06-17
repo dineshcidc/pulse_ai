@@ -377,7 +377,7 @@ export default function AddEmployeePage() {
       {/* ── Page header ── */}
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: C.navy, letterSpacing: '-0.4px' }}>Add Employee</h1>
-        <p style={{ margin: '4px 0 0', fontSize: 13.5, color: C.muted }}>
+        <p style={{ margin: '4px 0 0', fontSize: 13.5, color: '#787878', fontWeight: 500 }}>
           Complete both tabs to create a new employee account
         </p>
       </div>

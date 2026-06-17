@@ -208,7 +208,7 @@ export default function TimesheetPoliciesPage() {
           <h1 style={{ fontSize: 22, fontWeight: 800, color: C.navy, letterSpacing: '-0.3px', margin: '0 0 4px' }}>
             Timesheet Policies
           </h1>
-          <p style={{ fontSize: 13.5, color: C.muted, margin: 0 }}>
+          <p style={{ fontSize: 13.5, color: '#787878', fontWeight: 500, margin: 0 }}>
             Configure submission rules, hour limits and overtime tracking for the organisation
           </p>
         </div>

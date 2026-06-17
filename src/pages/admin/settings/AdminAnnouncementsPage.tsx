@@ -523,7 +523,7 @@ export default function AdminAnnouncementsPage() {
               </span>
             )}
           </div>
-          <p className="text-sm" style={{ color: C.muted }}>Create and broadcast announcements to your entire organization, teams, or individuals</p>
+          <p className="text-sm" style={{ color: '#787878', fontWeight: 500 }}>Create and broadcast announcements to your entire organization, teams, or individuals</p>
         </div>
         <button onClick={() => setView('compose')}
           style={{ height: 40, padding: '0 18px', borderRadius: 11, border: 'none', background: C.navy, color: '#fff', fontSize: 13.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 7, transition: 'background 0.15s', flexShrink: 0 }}

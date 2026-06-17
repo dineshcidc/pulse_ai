@@ -220,7 +220,7 @@ export default function LeavePolicyPage() {
       <div className="flex items-start justify-between mb-6">
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 800, color: C.navy, letterSpacing: '-0.3px', marginBottom: 4 }}>Leave Policy Setup</h1>
-          <p style={{ fontSize: 13.5, color: C.muted }}>Define leave types, entitlements, and organisation-wide rules</p>
+          <p style={{ fontSize: 13.5, color: '#787878', fontWeight: 500 }}>Define leave types, entitlements, and organisation-wide rules</p>
         </div>
         <div className="flex items-center gap-3">
           {/* FY selector */}

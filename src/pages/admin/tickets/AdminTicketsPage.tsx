@@ -361,7 +361,7 @@ export default function AdminTicketsPage() {
             <h1 style={{ fontSize: 22, fontWeight: 800, color: C.navy, letterSpacing: '-0.3px', marginBottom: 4 }}>
               Support Tickets
             </h1>
-            <p style={{ fontSize: 13.5, color: C.muted }}>
+            <p style={{ fontSize: 13.5, color: '#787878', fontWeight: 500 }}>
               Manage and respond to all employee &amp; HR support tickets
             </p>
           </div>

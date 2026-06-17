@@ -234,7 +234,7 @@ export default function EmailNotificationsPage() {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 22 }}>
         <div>
           <h1 style={{ fontSize: 20, fontWeight: 700, color: C.navy, margin: '0 0 4px' }}>Email Notifications</h1>
-          <p style={{ fontSize: 13.5, color: C.muted, margin: 0 }}>Control which email alerts are sent to employees, managers, and admins</p>
+          <p style={{ fontSize: 13.5, color: '#787878', fontWeight: 500, margin: 0 }}>Control which email alerts are sent to employees, managers, and admins</p>
         </div>
         <button onClick={handleSave} style={{
           display: 'flex', alignItems: 'center', gap: 7,

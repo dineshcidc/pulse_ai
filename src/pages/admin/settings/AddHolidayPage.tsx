@@ -150,7 +150,7 @@ export default function AddHolidayPage({ onBack, onSave }: {
       {/* Title */}
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ fontSize: 22, fontWeight: 800, color: C.navy, margin: '0 0 6px', letterSpacing: '-0.3px' }}>Add Holiday</h1>
-        <p style={{ fontSize: 13.5, color: C.muted, margin: 0 }}>Add a new holiday to the organisation's annual calendar</p>
+        <p style={{ fontSize: 13.5, color: '#787878', fontWeight: 500, margin: 0 }}>Add a new holiday to the organisation's annual calendar</p>
       </div>
 
       {/* Two-column layout */}

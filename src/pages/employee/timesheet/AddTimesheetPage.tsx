@@ -653,7 +653,7 @@ export default function AddTimesheetPage() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, gap: 16 }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 800, color: C.navy, letterSpacing: '-0.4px', margin: '0 0 4px' }}>Add Timesheet</h1>
-          <p style={{ fontSize: 13.5, color: C.muted, margin: 0 }}>Log your work hours and submit your daily timesheet</p>
+          <p style={{ fontSize: 13.5, color: '#787878', fontWeight: 500, margin: 0 }}>Log your work hours and submit your daily timesheet</p>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'stretch', gap: 10 }}>

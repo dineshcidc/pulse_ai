@@ -390,7 +390,7 @@ function AddDepartmentPage({ onBack, onSave }: {
         <h1 style={{ fontSize: 22, fontWeight: 800, color: C.navy, margin: '0 0 6px', letterSpacing: '-0.3px' }}>
           Create New Department
         </h1>
-        <p style={{ fontSize: 13.5, color: C.muted, margin: 0 }}>
+        <p style={{ fontSize: 13.5, color: '#787878', fontWeight: 500, margin: 0 }}>
           Set up a new department with its head, icon, colour and target headcount.
         </p>
       </div>

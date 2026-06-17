@@ -455,7 +455,7 @@ export default function LeaveBalancePage() {
       <div style={{ marginBottom: 22, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
         <div>
           <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: C.navy }}>Leave Balance Overview</h1>
-          <p style={{ margin: '5px 0 0', fontSize: 13.5, color: C.muted, lineHeight: 1.65 }}>
+          <p style={{ margin: '5px 0 0', fontSize: 13.5, color: '#787878', fontWeight: 500, lineHeight: 1.65 }}>
             Monitor allocated, consumed, and remaining leave days for every employee. Click any row to view the full per-type breakdown.
           </p>
         </div>

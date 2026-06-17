@@ -14,6 +14,7 @@ import {
   Settings,
   FolderKanban,
   TicketCheck,
+  IndianRupee,
 } from 'lucide-react'
 
 
@@ -160,6 +161,12 @@ function buildAdminNav(): NavSection[] {
         },
       ],
     },
+    {
+      label: 'PAYROLL',
+      items: [
+        { id: 'admin-payroll', label: 'Payroll', Icon: IndianRupee },
+      ],
+    },
   ]
 }
 
@@ -284,7 +291,7 @@ export default function Sidebar({ isOpen, activeItem, onNavigate, onLogout, role
                         : 'transparent',
                       color: isActive || parentActive
                         ? C.gold
-                        : 'rgba(255,255,255,0.48)',
+                        : 'rgba(255,255,255,0.80)',
                     }}
                     onMouseEnter={e => {
                       if (!isActive) {
@@ -297,7 +304,7 @@ export default function Sidebar({ isOpen, activeItem, onNavigate, onLogout, role
                         ? 'rgba(242,208,0,0.13)'
                         : parentActive ? 'rgba(255,255,255,0.05)' : 'transparent'
                       e.currentTarget.style.color = isActive || parentActive
-                        ? C.gold : 'rgba(255,255,255,0.48)'
+                        ? C.gold : 'rgba(255,255,255,0.80)'
                     }}
                   >
                     {/* Active left bar */}
@@ -355,7 +362,7 @@ export default function Sidebar({ isOpen, activeItem, onNavigate, onLogout, role
                                 paddingLeft: 10,
                                 paddingRight: 8,
                                 background: childActive ? 'rgba(242,208,0,0.10)' : 'transparent',
-                                color: childActive ? C.gold : 'rgba(255,255,255,0.38)',
+                                color: childActive ? C.gold : 'rgba(255,255,255,0.75)',
                               }}
                               onMouseEnter={e => {
                                 if (!childActive) {
@@ -365,7 +372,7 @@ export default function Sidebar({ isOpen, activeItem, onNavigate, onLogout, role
                               }}
                               onMouseLeave={e => {
                                 e.currentTarget.style.background = childActive ? 'rgba(242,208,0,0.10)' : 'transparent'
-                                e.currentTarget.style.color = childActive ? C.gold : 'rgba(255,255,255,0.38)'
+                                e.currentTarget.style.color = childActive ? C.gold : 'rgba(255,255,255,0.75)'
                               }}
                             >
                               {/* Dot — neutral always for neutralDots items, gold-on-active for others */}
@@ -410,7 +417,7 @@ export default function Sidebar({ isOpen, activeItem, onNavigate, onLogout, role
             paddingRight: isOpen ? 10 : 0,
             justifyContent: isOpen ? 'flex-start' : 'center',
             background: 'transparent',
-            color: 'rgba(255,255,255,0.38)',
+            color: 'rgba(255,255,255,0.75)',
           }}
           onMouseEnter={e => {
             e.currentTarget.style.background = 'rgba(232,72,85,0.12)'
@@ -418,7 +425,7 @@ export default function Sidebar({ isOpen, activeItem, onNavigate, onLogout, role
           }}
           onMouseLeave={e => {
             e.currentTarget.style.background = 'transparent'
-            e.currentTarget.style.color = 'rgba(255,255,255,0.38)'
+            e.currentTarget.style.color = 'rgba(255,255,255,0.75)'
           }}
         >
           <LogOut size={17} style={{ flexShrink: 0 }} />

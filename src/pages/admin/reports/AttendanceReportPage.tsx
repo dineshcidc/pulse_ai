@@ -473,7 +473,7 @@ export default function AttendanceReportPage() {
       {/* Page header */}
       <div style={{ marginBottom: 22 }}>
         <h1 style={{ fontSize: 20, fontWeight: 700, color: C.navy, margin: '0 0 4px' }}>Attendance Report</h1>
-        <p style={{ fontSize: 13.5, color: C.muted, margin: 0 }}>Generate attendance reports for employees, teams, or project groups</p>
+        <p style={{ fontSize: 13.5, color: '#787878', fontWeight: 500, margin: 0 }}>Generate attendance reports for employees, teams, or project groups</p>
       </div>
 
       {/* 4 / 8 split */}

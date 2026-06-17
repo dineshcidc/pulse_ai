@@ -71,7 +71,7 @@ const BRAND = {
   surface: '#F0F2F8',
   card: '#FFFFFF',
   border: '#E4E6EF',
-  muted: '#8B90A7',
+  muted: '#6F7890',
   placeholder: '#C1C4D0',
   input: '#F8F9FC',
 }

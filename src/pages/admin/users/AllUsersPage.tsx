@@ -155,7 +155,7 @@ export default function AllUsersPage({ onNavigate }: { onNavigate: (id: string) 
       <div className="flex items-start justify-between mb-5">
         <div>
           <h1 className="text-xl font-bold" style={{ color: C.navy }}>All Users</h1>
-          <p className="text-sm mt-0.5" style={{ color: C.muted }}>Manage all employees, managers, and admins in your organization</p>
+          <p className="text-sm mt-0.5" style={{ color: '#787878', fontWeight: 500 }}>Manage all employees, managers, and admins in your organization</p>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
           <button style={{

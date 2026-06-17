@@ -163,7 +163,7 @@ export default function OrgStructurePage() {
       <div className="mb-5" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
         <div>
           <h1 className="text-xl font-bold" style={{ color: C.navy }}>Org Structure</h1>
-          <p className="text-sm mt-0.5" style={{ color: C.muted }}>Explore your company's organizational hierarchy</p>
+          <p className="text-sm mt-0.5" style={{ color: '#787878', fontWeight: 500 }}>Explore your company's organizational hierarchy</p>
         </div>
 
         {/* Stat chips */}

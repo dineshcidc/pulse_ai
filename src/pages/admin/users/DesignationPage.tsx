@@ -123,7 +123,7 @@ export default function DesignationPage() {
       <div className="flex items-start justify-between" style={{ marginBottom: 24 }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 800, color: C.navy, letterSpacing: '-0.3px', margin: 0 }}>Designation</h1>
-          <p style={{ fontSize: 13.5, color: C.muted, margin: '4px 0 0' }}>
+          <p style={{ fontSize: 13.5, color: '#787878', fontWeight: 500, margin: '4px 0 0' }}>
             Manage all employee designations used across the organisation
           </p>
         </div>

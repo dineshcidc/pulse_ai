@@ -336,7 +336,7 @@ export default function AllLeaveRequestsPage() {
       {/* Page header */}
       <div style={{ marginBottom: 22 }}>
         <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: C.navy }}>All Leave Requests</h1>
-        <p style={{ margin: '5px 0 0', fontSize: 13.5, color: C.muted, lineHeight: 1.65 }}>
+        <p style={{ margin: '5px 0 0', fontSize: 13.5, color: '#787878', fontWeight: 500, lineHeight: 1.65 }}>
           View and monitor all employee leave requests across the organisation. Filter by project, leave type, or date. Click any request to review the full details and manager remarks.
         </p>
       </div>

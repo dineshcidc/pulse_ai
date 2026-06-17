@@ -437,14 +437,9 @@ export default function TeamLeaveRequestsPage() {
         )}
 
         {/* Footer */}
-        <div className="flex items-center justify-between" style={{ padding: '13px 20px', borderTop: `1px solid ${C.border}`, background: C.surface }}>
+        <div style={{ padding: '13px 20px', borderTop: `1px solid ${C.border}`, background: C.surface }}>
           <span style={{ fontSize: 12, color: C.muted }}>
             Showing <strong style={{ color: C.navy }}>{filtered.length}</strong> of {rows.length} requests
-          </span>
-          <span style={{ fontSize: 12, color: C.muted }}>
-            <span style={{ fontWeight: 700, color: '#0A8A58' }}>{approvedCount}</span> Approved ·{' '}
-            <span style={{ fontWeight: 700, color: '#D97706' }}>{pendingCount}</span> Pending ·{' '}
-            <span style={{ fontWeight: 700, color: '#E84855' }}>{rows.filter(r => r.status === 'rejected').length}</span> Rejected
           </span>
         </div>
       </div>

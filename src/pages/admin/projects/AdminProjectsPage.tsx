@@ -472,7 +472,7 @@ export default function AdminProjectsPage() {
               {activeCount} Active
             </span>
           </div>
-          <p className="text-sm" style={{ color: C.muted }}>
+          <p className="text-sm" style={{ color: '#787878', fontWeight: 500 }}>
             Organisation-wide view of all projects — track progress, teams, and delivery across every department
           </p>
         </div>

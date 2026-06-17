@@ -107,7 +107,7 @@ export default function LeaveCreatePage() {
           <h1 className="font-bold mb-1" style={{ fontSize: 22, color: C.navy, letterSpacing: '-0.3px' }}>
             Create Leave Request
           </h1>
-          <p style={{ fontSize: 13.5, color: C.muted }}>
+          <p style={{ fontSize: 13.5, color: '#787878', fontWeight: 500 }}>
             Fill in the details below to submit your leave application
           </p>
         </div>

@@ -841,21 +841,10 @@ export default function TeamTimesheetsPage() {
         )}
 
         {/* Footer */}
-        <div className="flex items-center justify-between" style={{ padding: '13px 20px', borderTop: `1px solid ${C.border}`, background: C.surface }}>
+        <div style={{ padding: '13px 20px', borderTop: `1px solid ${C.border}`, background: C.surface }}>
           <span style={{ fontSize: 12, color: C.muted }}>
             Showing <strong style={{ color: C.navy }}>{filtered.length}</strong> of {rows.length} entries
           </span>
-          <div className="flex items-center gap-4">
-            {[
-              { label: 'Approved', value: approvedCount, color: '#0A8A58' },
-              { label: 'Pending',  value: pendingCount,  color: '#D97706' },
-              { label: 'Returned', value: rejectedCount, color: '#E84855' },
-            ].map(s => (
-              <span key={s.label} style={{ fontSize: 12, color: C.muted }}>
-                <span style={{ fontWeight: 700, color: s.color }}>{s.value}</span> {s.label}
-              </span>
-            ))}
-          </div>
         </div>
       </div>
 

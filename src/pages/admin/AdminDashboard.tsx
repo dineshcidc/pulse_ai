@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Sidebar from '../../components/layout/Sidebar'
 import Header from '../../components/layout/Header'
 import AdminDashboardPage from './dashboard/AdminDashboardPage'
+import AdminProfilePage from './AdminProfilePage'
 import AllUsersPage from './users/AllUsersPage'
 import AddEmployeePage from './users/AddEmployeePage'
 import RoleAccessPage from './users/RoleAccessPage'
@@ -23,8 +24,10 @@ import TimesheetPoliciesPage from './timesheet/TimesheetPoliciesPage'
 import AdminTicketsPage from './tickets/AdminTicketsPage'
 import LeavePolicyPage from './leave/LeavePolicyPage'
 import DesignationPage from './users/DesignationPage'
+import PayrollBAPage from './payroll/PayrollBAPage'
 
 const PAGE_LABELS: Record<string, string> = {
+  'my-profile':           'My Profile',
   'admin-dashboard':      'Dashboard',
   'all-users':            'All Users',
   'add-employee':         'Add Employee',
@@ -50,6 +53,7 @@ const PAGE_LABELS: Record<string, string> = {
   'announcements':        'Announcements',
   'admin-tickets':        'Support Tickets',
   'designation':          'Designation Management',
+  'admin-payroll':        'Payroll',
 }
 
 function ComingSoon({ id }: { id: string }) {
@@ -87,6 +91,7 @@ function ComingSoon({ id }: { id: string }) {
 }
 
 function PageContent({ activeItem, onNavigate }: { activeItem: string; onNavigate: (id: string) => void }) {
+  if (activeItem === 'my-profile')       return <AdminProfilePage />
   if (activeItem === 'admin-dashboard') return <AdminDashboardPage onNavigate={onNavigate} />
   if (activeItem === 'all-users')       return <AllUsersPage onNavigate={onNavigate} />
   if (activeItem === 'add-employee')    return <AddEmployeePage />
@@ -109,6 +114,7 @@ function PageContent({ activeItem, onNavigate }: { activeItem: string; onNavigat
   if (activeItem === 'admin-tickets')          return <AdminTicketsPage />
   if (activeItem === 'leave-policy')           return <LeavePolicyPage />
   if (activeItem === 'designation')            return <DesignationPage />
+  if (activeItem === 'admin-payroll')          return <PayrollBAPage />
   return <ComingSoon id={activeItem} />
 }
 

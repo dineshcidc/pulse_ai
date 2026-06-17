@@ -143,7 +143,7 @@ export default function WorkingHoursPage() {
       {/* Page header */}
       <div style={{ marginBottom: 22 }}>
         <h1 style={{ fontSize: 20, fontWeight: 700, color: C.navy, margin: '0 0 4px' }}>Working Hours & Holidays</h1>
-        <p style={{ fontSize: 13.5, color: C.muted, margin: 0 }}>Configure the organisation's work week schedule and manage the annual holiday calendar</p>
+        <p style={{ fontSize: 13.5, color: '#787878', fontWeight: 500, margin: 0 }}>Configure the organisation's work week schedule and manage the annual holiday calendar</p>
       </div>
 
       {/* 4 / 8 split */}

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ClipboardList, Search, X, ChevronDown, AlertTriangle, Eye } from 'lucide-react'
+import { ClipboardList, Search, X, AlertTriangle, Eye } from 'lucide-react'
 
 type Status = 'Pending' | 'Approved' | 'Rejected' | 'Cancelled'
 
@@ -62,7 +62,6 @@ export default function LeaveStatusPage() {
   const [activeTab,     setActiveTab]     = useState<typeof STAT_TABS[number]>('All')
   const [fromFilter,    setFromFilter]    = useState('')
   const [toFilter,      setToFilter]      = useState('')
-  const [statusDrop,    setStatusDrop]    = useState<Status | 'All'>('All')
   const [cancelTarget,  setCancelTarget]  = useState<string | null>(null)
   const [viewTarget,    setViewTarget]    = useState<string | null>(null)
 
@@ -75,16 +74,15 @@ export default function LeaveStatusPage() {
     const q = search.toLowerCase()
     const matchSearch  = !q || r.type.toLowerCase().includes(q) || r.id.toLowerCase().includes(q) || r.approver.toLowerCase().includes(q)
     const matchTab     = activeTab === 'All' || r.status === activeTab
-    const matchDrop    = statusDrop === 'All' || r.status === statusDrop
     const matchFrom    = !fromFilter || r.fromDate >= fromFilter
     const matchTo      = !toFilter   || r.toDate   <= toFilter
-    return matchSearch && matchTab && matchDrop && matchFrom && matchTo
+    return matchSearch && matchTab && matchFrom && matchTo
   })
 
-  const hasFilters = search || fromFilter || toFilter || statusDrop !== 'All'
+  const hasFilters = search || fromFilter || toFilter
 
   function clearFilters() {
-    setSearch(''); setFromFilter(''); setToFilter(''); setStatusDrop('All')
+    setSearch(''); setFromFilter(''); setToFilter('')
   }
 
   function doCancel() {
@@ -106,7 +104,7 @@ export default function LeaveStatusPage() {
           <h1 className="font-bold mb-1" style={{ fontSize: 22, color: C.navy, letterSpacing: '-0.3px' }}>
             Leave Approval Status
           </h1>
-          <p style={{ fontSize: 13.5, color: C.muted }}>
+          <p style={{ fontSize: 13.5, color: '#787878', fontWeight: 500 }}>
             Track and manage all your submitted leave requests
           </p>
         </div>
@@ -233,31 +231,6 @@ export default function LeaveStatusPage() {
               fontFamily: "'DM Sans', system-ui, sans-serif",
             }}
           />
-        </div>
-
-        {/* Divider */}
-        <div style={{ width: 1, height: 28, background: C.border, flexShrink: 0 }} />
-
-        {/* Status dropdown */}
-        <div className="relative">
-          <select
-            value={statusDrop}
-            onChange={e => setStatusDrop(e.target.value as Status | 'All')}
-            style={{
-              height: 38, borderRadius: 9, border: `1px solid ${statusDrop !== 'All' ? '#6366F1' : C.border}`,
-              background: statusDrop !== 'All' ? '#F5F6FF' : '#F7F8FC',
-              padding: '0 32px 0 12px', fontSize: 13, fontWeight: 500, color: C.navy,
-              appearance: 'none', cursor: 'pointer', outline: 'none',
-              fontFamily: "'DM Sans', system-ui, sans-serif",
-            }}
-          >
-            <option value="All">All Statuses</option>
-            <option value="Pending">Pending</option>
-            <option value="Approved">Approved</option>
-            <option value="Rejected">Rejected</option>
-            <option value="Cancelled">Cancelled</option>
-          </select>
-          <ChevronDown size={13} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', color: C.muted, pointerEvents: 'none' }} />
         </div>
 
         {/* Clear */}
@@ -431,33 +404,6 @@ export default function LeaveStatusPage() {
         )}
 
         {/* Footer */}
-        {filtered.length > 0 && (
-          <div
-            className="flex items-center justify-between"
-            style={{ padding: '12px 20px', borderTop: `1px solid ${C.border}`, background: '#FAFBFE' }}
-          >
-            <span style={{ fontSize: 12.5, color: C.muted, fontWeight: 500 }}>
-              Showing <strong style={{ color: C.navy }}>{filtered.length}</strong> of <strong style={{ color: C.navy }}>{records.length}</strong> leave requests
-            </span>
-            <div className="flex items-center gap-1.5">
-              {STAT_TABS.slice(1).map(s => {
-                const ss = STATUS_STYLE[s as Status]
-                const cnt = records.filter(r => r.status === s).length
-                if (!cnt) return null
-                return (
-                  <span
-                    key={s}
-                    className="inline-flex items-center gap-1 rounded-full"
-                    style={{ padding: '3px 9px', background: ss.bg, fontSize: 11, fontWeight: 600, color: ss.color }}
-                  >
-                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: ss.dot, display: 'inline-block' }} />
-                    {cnt} {s}
-                  </span>
-                )
-              })}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* ── Cancel confirmation modal ── */}

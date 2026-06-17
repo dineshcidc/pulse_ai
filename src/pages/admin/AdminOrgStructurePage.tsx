@@ -485,7 +485,7 @@ function AddOrgPage({ onBack, onSave }: { onBack: () => void; onSave: (node: Org
         <h1 style={{ fontSize: 22, fontWeight: 800, color: C.navy, margin: '0 0 6px', letterSpacing: '-0.3px' }}>
           Add Organisation Unit
         </h1>
-        <p style={{ fontSize: 13.5, color: C.muted, margin: 0 }}>
+        <p style={{ fontSize: 13.5, color: '#787878', fontWeight: 500, margin: 0 }}>
           Create a new department with a manager and their team
         </p>
       </div>
@@ -711,7 +711,7 @@ export default function AdminOrgStructurePage() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 22, gap: 12 }}>
         <div>
           <h1 style={{ fontSize: 20, fontWeight: 700, color: C.navy, margin: '0 0 6px' }}>Org Structure</h1>
-          <p style={{ fontSize: 13.5, color: C.muted, margin: '0 0 12px' }}>Complete organisation hierarchy — view by tree, department, or manager</p>
+          <p style={{ fontSize: 13.5, color: '#787878', fontWeight: 500, margin: '0 0 12px' }}>Complete organisation hierarchy — view by tree, department, or manager</p>
           {/* Stat badges */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             {[
