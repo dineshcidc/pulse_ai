@@ -260,7 +260,6 @@ export default function TeamLeaveRequestsPage() {
   })
 
   const pendingCount  = rows.filter(r => r.status === 'pending').length
-  const approvedCount = rows.filter(r => r.status === 'approved').length
   const hasActiveFilter = search || dateFilter
 
   const COLS = '2fr 1fr 1.2fr 1.2fr 0.6fr 2fr 1fr 1.1fr'

@@ -1,4 +1,4 @@
-import { User2, Briefcase, Phone, MapPin, Edit2, Trash2 } from 'lucide-react'
+import { User2, Briefcase, Phone, MapPin, Edit2 } from 'lucide-react'
 
 const C = {
   navy:   '#1C2035',

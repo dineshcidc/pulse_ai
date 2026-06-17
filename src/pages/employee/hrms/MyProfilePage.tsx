@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Edit2, User2, Briefcase, MapPin, CreditCard, Shield, Users, GraduationCap, Phone, Plus, Star, FileText, Inbox, Download, Trash2, X } from 'lucide-react'
+import { Edit2, User2, Briefcase, MapPin, CreditCard, Shield, Users, GraduationCap, Phone, Plus, Star, FileText, Inbox, Trash2, X } from 'lucide-react'
 
 const C = {
   navy:   '#1C2035',

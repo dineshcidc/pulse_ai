@@ -2,7 +2,7 @@ import { useState } from 'react'
 import {
   Building2, ArrowLeft, MapPin, Phone,
   Shield, Briefcase, Clock, ChevronDown, Plus, Trash2,
-  Edit3, Upload, X, Image as ImageIcon,
+  Edit3, Image as ImageIcon,
 } from 'lucide-react'
 import OrgProfilePage from './OrgProfilePage'
 
@@ -192,9 +192,9 @@ function FLogoUpload({ label }: { label?: string }) {
   )
 }
 
-function SectionCard({ icon: Icon, title, sub, accent, accentBg, gridArea, onEdit, children }: {
+function SectionCard({ icon: Icon, title, sub, accent = '#6366F1', accentBg = 'rgba(99,102,241,0.09)', gridArea, onEdit, children }: {
   icon: React.ElementType; title: string; sub: string
-  accent: string; accentBg: string; gridArea?: string; onEdit?: () => void; children: React.ReactNode
+  accent?: string; accentBg?: string; gridArea?: string; onEdit?: () => void; children: React.ReactNode
 }) {
   return (
     <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 18, overflow: 'hidden', gridArea }}>

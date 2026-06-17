@@ -532,8 +532,6 @@ export default function TeamTimesheetsPage() {
   })
 
   const pendingCount    = rows.filter(r => r.status === 'pending').length
-  const approvedCount   = rows.filter(r => r.status === 'approved').length
-  const rejectedCount   = rows.filter(r => r.status === 'rejected').length
   const selectedPending = selected.filter(id => rows.find(r => r.id === id)?.status === 'pending')
   const hasActiveFilter = search || dateFilter || projectFilter !== 'All Projects'
 
