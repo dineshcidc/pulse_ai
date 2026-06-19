@@ -10,7 +10,9 @@ import LeaveHistoryPage from './leave/LeaveHistoryPage'
 import MyProfilePage from './hrms/MyProfilePage'
 import OrgStructurePage from './hrms/OrgStructurePage'
 import TicketsPage from './hrms/TicketsPage'
+import AssetManagementPage from './assets/AssetManagementPage'
 import PayrollPage from './payroll/PayrollPage'
+import ExpensePage from './expense/ExpensePage'
 import ReportsPage from './reports/ReportsPage'
 
 const PAGE_LABELS: Record<string, string> = {
@@ -22,6 +24,7 @@ const PAGE_LABELS: Record<string, string> = {
   'my-profile':    'My Profile',
   'org-structure': 'Org Structure',
   tickets:         'Tickets',
+  expense:         'Expense',
   reports:         'Reports',
 }
 
@@ -69,6 +72,8 @@ function PageContent({ activeItem, onNavigate }: { activeItem: string; onNavigat
   if (activeItem === 'my-profile')    return <MyProfilePage />
   if (activeItem === 'org-structure') return <OrgStructurePage />
   if (activeItem === 'tickets')       return <TicketsPage />
+  if (activeItem === 'assets')        return <AssetManagementPage />
+  if (activeItem === 'expense')       return <ExpensePage />
   if (activeItem === 'reports')       return <ReportsPage />
   if (activeItem === 'payroll')       return <PayrollPage />
   return <ComingSoon id={activeItem} />

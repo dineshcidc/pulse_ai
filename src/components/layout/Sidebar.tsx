@@ -13,8 +13,9 @@ import {
   Building2,
   Settings,
   FolderKanban,
-  TicketCheck,
   IndianRupee,
+  Package,
+  Receipt,
 } from 'lucide-react'
 
 
@@ -75,6 +76,8 @@ function buildNav(role: 'employee' | 'manager'): NavSection[] {
             { id: 'tickets',       label: 'Tickets'       },
           ],
         },
+        { id: 'assets', label: 'Assets', Icon: Package },
+        { id: 'expense', label: 'Expense', Icon: Receipt },
         { id: 'payroll', label: 'Payroll', Icon: Wallet    },
         { id: 'reports', label: 'Reports', Icon: BarChart3 },
       ],
@@ -117,7 +120,6 @@ function buildAdminNav(): NavSection[] {
             { id: 'timesheet-policies',  label: 'Timesheet Policies'  },
           ],
         },
-        { id: 'admin-tickets', label: 'Tickets', Icon: TicketCheck },
       ],
     },
     {
@@ -132,6 +134,19 @@ function buildAdminNav(): NavSection[] {
           ],
         },
         { id: 'admin-org', label: 'Org Structure', Icon: Building2 },
+      ],
+    },
+    {
+      label: 'ASSETS & SERVICES',
+      items: [
+        {
+          id: 'asset-services', label: 'Asset & Service', Icon: Briefcase,
+          children: [
+            { id: 'admin-assets', label: 'Assets' },
+            { id: 'admin-tickets', label: 'Tickets' },
+            { id: 'expense-management', label: 'Expense' },
+          ],
+        },
       ],
     },
     {
@@ -157,6 +172,7 @@ function buildAdminNav(): NavSection[] {
             { id: 'org-profile',          label: 'Organization Profile'      },
             { id: 'working-hours',        label: 'Working Hours & Holidays'  },
             { id: 'announcements',        label: 'Announcements'             },
+            { id: 'rewards-recognition',  label: 'Rewards and Recognition'   },
           ],
         },
       ],

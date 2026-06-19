@@ -8,9 +8,9 @@ const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', hover: '#F0F2F
 
 /* ── Current employee ── */
 const ME = {
-  empId:      'EMP-0047',
-  name:       'Sarah Johnson',
-  avatar:     47,
+  empId:      'EMP-2024-0042',
+  name:       'John Doe',
+  avatar:     32,
   department: 'Engineering',
   role:       'Senior Engineer',
 }
@@ -321,7 +321,7 @@ export default function EmployeeTimesheetReportPage({ onBack }: { onBack: () => 
               <div style={{ fontSize:10.5, fontWeight:700, color:'#6366F1', textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:14 }}>My Profile</div>
               <div style={{ display:'flex', alignItems:'center', gap:13 }}>
                 <div style={{ position:'relative', flexShrink:0 }}>
-                  <img src={`https://i.pravatar.cc/150?img=${((ME.avatar-1)%70)+1}`} alt={ME.name}
+                  <img src={`https://randomuser.me/api/portraits/men/32.jpg`} alt={ME.name}
                     style={{ width:50, height:50, borderRadius:'50%', objectFit:'cover', display:'block', border:'2.5px solid #fff', boxShadow:'0 2px 10px rgba(99,102,241,0.18)' }} />
                   <div style={{ position:'absolute', bottom:0, right:0, width:14, height:14, borderRadius:'50%', background:'#0EA86A', border:'2px solid #fff' }} />
                 </div>

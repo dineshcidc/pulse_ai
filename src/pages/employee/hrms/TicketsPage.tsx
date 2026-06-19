@@ -708,7 +708,7 @@ export default function TicketsPage() {
                 )}
               </div>
 
-              <div className="mb-7">
+              <div className="mb-7" style={{ display: 'none' }}>
                 <label style={LABEL}>
                   Preferred Contact Method <span style={{ fontSize: 11, color: '#B0B4C8', fontWeight: 500, textTransform: 'none', letterSpacing: 0 }}>(optional)</span>
                 </label>
@@ -981,6 +981,42 @@ export default function TicketsPage() {
               {/* ══ RIGHT ══ */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
+                {/* Ticket Summary - Hidden for now */}
+                <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden', display: 'none' }}>
+                  <div style={{ padding: '13px 18px', borderBottom: `1px solid ${C.border}`, background: '#FAFBFE' }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.07em' }}>Ticket Summary</span>
+                  </div>
+                  <div style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <div className="flex items-center justify-between">
+                      <span style={{ fontSize: 12.5, fontWeight: 500, color: C.muted }}>Status</span>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 700, color: ss.color, background: ss.bg, padding: '3px 10px', borderRadius: 99, border: `1px solid ${ss.dot}30` }}>
+                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: ss.dot }} />
+                        {t.status}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span style={{ fontSize: 12.5, fontWeight: 500, color: C.muted }}>Priority</span>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 700, color: ps.color, background: ps.bg, padding: '3px 10px', borderRadius: 99, border: `1px solid ${ps.border}` }}>
+                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: ps.dot }} />
+                        {t.priority}
+                      </span>
+                    </div>
+                    {[
+                      { label: 'Ticket ID',   value: t.id,                                                                          mono: true  },
+                      { label: 'Category',    value: t.category,                                                                    mono: false },
+                      { label: 'Assigned To', value: t.assignedTo,                                                                  mono: false },
+                      { label: 'Opened',      value: fmtDate(t.createdDate),                                                        mono: false },
+                      { label: 'Ticket Age',  value: `${ticketAge} day${ticketAge !== 1 ? 's' : ''}`,                              mono: false },
+                      { label: 'Replies',     value: `${localComments.length} message${localComments.length !== 1 ? 's' : ''}`,    mono: false },
+                    ].map(m => (
+                      <div key={m.label} className="flex items-center justify-between" style={{ paddingTop: 10, borderTop: '1px solid #F5F6FC' }}>
+                        <span style={{ fontSize: 12.5, fontWeight: 500, color: C.muted }}>{m.label}</span>
+                        <span style={{ fontSize: 12.5, fontWeight: 600, color: C.navy, fontVariantNumeric: m.mono ? 'tabular-nums' : undefined }}>{m.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Add Comment */}
                 <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden' }}>
                   <div style={{ padding: '13px 18px', borderBottom: `1px solid ${C.border}`, background: '#FAFBFE' }}>
@@ -1017,42 +1053,6 @@ export default function TicketsPage() {
                         {commentLoading ? 'Sending…' : 'Send'}
                       </button>
                     </div>
-                  </div>
-                </div>
-
-                {/* Ticket Summary */}
-                <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden' }}>
-                  <div style={{ padding: '13px 18px', borderBottom: `1px solid ${C.border}`, background: '#FAFBFE' }}>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.07em' }}>Ticket Summary</span>
-                  </div>
-                  <div style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    <div className="flex items-center justify-between">
-                      <span style={{ fontSize: 12.5, fontWeight: 500, color: C.muted }}>Status</span>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 700, color: ss.color, background: ss.bg, padding: '3px 10px', borderRadius: 99, border: `1px solid ${ss.dot}30` }}>
-                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: ss.dot }} />
-                        {t.status}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span style={{ fontSize: 12.5, fontWeight: 500, color: C.muted }}>Priority</span>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 700, color: ps.color, background: ps.bg, padding: '3px 10px', borderRadius: 99, border: `1px solid ${ps.border}` }}>
-                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: ps.dot }} />
-                        {t.priority}
-                      </span>
-                    </div>
-                    {[
-                      { label: 'Ticket ID',   value: t.id,                                                                          mono: true  },
-                      { label: 'Category',    value: t.category,                                                                    mono: false },
-                      { label: 'Assigned To', value: t.assignedTo,                                                                  mono: false },
-                      { label: 'Opened',      value: fmtDate(t.createdDate),                                                        mono: false },
-                      { label: 'Ticket Age',  value: `${ticketAge} day${ticketAge !== 1 ? 's' : ''}`,                              mono: false },
-                      { label: 'Replies',     value: `${localComments.length} message${localComments.length !== 1 ? 's' : ''}`,    mono: false },
-                    ].map(m => (
-                      <div key={m.label} className="flex items-center justify-between" style={{ paddingTop: 10, borderTop: '1px solid #F5F6FC' }}>
-                        <span style={{ fontSize: 12.5, fontWeight: 500, color: C.muted }}>{m.label}</span>
-                        <span style={{ fontSize: 12.5, fontWeight: 600, color: C.navy, fontVariantNumeric: m.mono ? 'tabular-nums' : undefined }}>{m.value}</span>
-                      </div>
-                    ))}
                   </div>
                 </div>
 

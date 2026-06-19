@@ -192,9 +192,9 @@ function FLogoUpload({ label }: { label?: string }) {
   )
 }
 
-function SectionCard({ icon: Icon, title, sub, accent = '#6366F1', accentBg = 'rgba(99,102,241,0.09)', gridArea, onEdit, children }: {
+function SectionCard({ icon: Icon, title, sub, accent, accentBg, gridArea, onEdit, children }: {
   icon: React.ElementType; title: string; sub: string
-  accent?: string; accentBg?: string; gridArea?: string; onEdit?: () => void; children: React.ReactNode
+  accent: string; accentBg: string; gridArea?: string; onEdit?: () => void; children: React.ReactNode
 }) {
   return (
     <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 18, overflow: 'hidden', gridArea }}>
@@ -351,7 +351,7 @@ function CreateProfileForm({ onBack, onSave }: { onBack: () => void; onSave: () 
 
         {/* ── LEFT: Brand Logo (3 cols) ── */}
         <div style={{ height: 'fit-content' }}>
-          <SectionCard icon={ImageIcon} title="Brand Logo" sub="Upload company logo" accent="#6366F1" accentBg="rgba(99,102,241,0.09)">
+          <SectionCard icon={ImageIcon} title="Brand Logo" sub="Upload company logo" accent="#6366F1" accentBg="rgba(99,102,241,0.09)" gridArea="">
             <FLogoUpload label="" />
           </SectionCard>
         </div>
@@ -361,7 +361,7 @@ function CreateProfileForm({ onBack, onSave }: { onBack: () => void; onSave: () 
 
           {/* ── Company Identity — full width ── */}
           <div style={{ gridColumn: '1 / -1' }}>
-            <SectionCard icon={Building2} title="Company Identity" sub="Core company information">
+            <SectionCard icon={Building2} title="Company Identity" sub="Core company information" accent="#6366F1" accentBg="rgba(99,102,241,0.09)">
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
                 <FInput label="Company Name"       required placeholder="e.g. Concert IDC Private Limited" />
                 <FInput label="Short Name / Brand" placeholder="e.g. Concert IDC" />
@@ -376,7 +376,7 @@ function CreateProfileForm({ onBack, onSave }: { onBack: () => void; onSave: () 
           </div>
 
           {/* ── Contact Information ── */}
-          <SectionCard icon={Phone} title="Contact Information" sub="Primary contacts and communication">
+          <SectionCard icon={Phone} title="Contact Information" sub="Primary contacts and communication" accent="#6366F1" accentBg="rgba(99,102,241,0.09)">
             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 20 }}>
               <FInput label="Primary Contact Name" required placeholder="e.g. Kavitha Reddy" />
               <FInput label="Designation"          placeholder="e.g. HR Manager" />
@@ -388,7 +388,7 @@ function CreateProfileForm({ onBack, onSave }: { onBack: () => void; onSave: () 
           </SectionCard>
 
           {/* ── Business Registration ── */}
-          <SectionCard icon={Shield} title="Business Registration" sub="Legal numbers and certifications">
+          <SectionCard icon={Shield} title="Business Registration" sub="Legal numbers and certifications" accent="#0EA86A" accentBg="rgba(14,168,106,0.09)">
             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 20 }}>
               <FInput label="CIN"               placeholder="e.g. U72900KA2018PTC112345" />
               <FInput label="PAN"               placeholder="e.g. AABCC1234D" />
@@ -401,7 +401,7 @@ function CreateProfileForm({ onBack, onSave }: { onBack: () => void; onSave: () 
 
           {/* ── Platform Configuration — full width ── */}
           <div style={{ gridColumn: '1 / -1' }}>
-            <SectionCard icon={Clock} title="Platform Configuration" sub="Localisation and working schedule settings">
+            <SectionCard icon={Clock} title="Platform Configuration" sub="Localisation and working schedule settings" accent="#E84855" accentBg="rgba(232,72,85,0.09)">
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20 }}>
                 <FSelect label="Timezone"       options={['Asia/Kolkata (IST +5:30)', 'UTC', 'America/New_York', 'Europe/London', 'Asia/Dubai']} placeholder="Select timezone…" />
                 <FSelect label="Date Format"    options={['DD / MM / YYYY', 'MM / DD / YYYY', 'YYYY-MM-DD']} placeholder="Select format…" />

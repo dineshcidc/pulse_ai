@@ -19,12 +19,14 @@ import AuditTrailPage from './reports/AuditTrailPage'
 import OrgProfileWrapperPage from './settings/OrgProfileWrapperPage'
 import WorkingHoursPage from './settings/WorkingHoursPage'
 import AdminAnnouncementsPage from './settings/AdminAnnouncementsPage'
+import RewardsAndRecognitionPage from './settings/RewardsAndRecognitionPage'
 import PendingApprovalsPage from './timesheet/PendingApprovalsPage'
 import TimesheetPoliciesPage from './timesheet/TimesheetPoliciesPage'
 import AdminTicketsPage from './tickets/AdminTicketsPage'
 import LeavePolicyPage from './leave/LeavePolicyPage'
 import DesignationPage from './users/DesignationPage'
 import PayrollBAPage from './payroll/PayrollBAPage'
+import AdminAssetManagementPage from './assets/AdminAssetManagementPage'
 
 const PAGE_LABELS: Record<string, string> = {
   'my-profile':           'My Profile',
@@ -51,9 +53,11 @@ const PAGE_LABELS: Record<string, string> = {
   'working-hours':        'Working Hours & Holidays',
   'email-notifications':  'Email Notifications',
   'announcements':        'Announcements',
+  'rewards-recognition':  'Rewards and Recognition',
   'admin-tickets':        'Support Tickets',
   'designation':          'Designation Management',
   'admin-payroll':        'Payroll',
+  'admin-assets':         'Asset Management',
 }
 
 function ComingSoon({ id }: { id: string }) {
@@ -111,10 +115,12 @@ function PageContent({ activeItem, onNavigate }: { activeItem: string; onNavigat
   if (activeItem === 'org-profile')            return <OrgProfileWrapperPage />
   if (activeItem === 'working-hours')          return <WorkingHoursPage />
   if (activeItem === 'announcements')          return <AdminAnnouncementsPage />
+  if (activeItem === 'rewards-recognition')    return <RewardsAndRecognitionPage />
   if (activeItem === 'admin-tickets')          return <AdminTicketsPage />
   if (activeItem === 'leave-policy')           return <LeavePolicyPage />
   if (activeItem === 'designation')            return <DesignationPage />
   if (activeItem === 'admin-payroll')          return <PayrollBAPage />
+  if (activeItem === 'admin-assets')           return <AdminAssetManagementPage />
   return <ComingSoon id={activeItem} />
 }
 

@@ -12,8 +12,10 @@ import LeaveHistoryPage from '../employee/leave/LeaveHistoryPage'
 import MyProfilePage from '../employee/hrms/MyProfilePage'
 import OrgStructurePage from '../employee/hrms/OrgStructurePage'
 import TicketsPage from '../employee/hrms/TicketsPage'
+import AssetManagementPage from '../employee/assets/AssetManagementPage'
 import PayrollPage from '../employee/payroll/PayrollPage'
 import ReportsPage from '../employee/reports/ReportsPage'
+import ExpensePage from '../employee/expense/ExpensePage'
 
 // Manager-only pages
 import ProjectListPage from './projects/ProjectListPage'
@@ -31,6 +33,7 @@ const PAGE_LABELS: Record<string, string> = {
   'my-profile':        'My Profile',
   'org-structure':     'Org Structure',
   'tickets':           'Tickets',
+  'expense':           'Expense',
   'reports':           'Reports',
   'project-list':           'Project List',
   'team-dashboard':         'Team Dashboard',
@@ -84,6 +87,8 @@ function PageContent({ activeItem, onNavigate }: { activeItem: string; onNavigat
   if (activeItem === 'my-profile')       return <MyProfilePage />
   if (activeItem === 'org-structure')    return <OrgStructurePage />
   if (activeItem === 'tickets')          return <TicketsPage />
+  if (activeItem === 'assets')           return <AssetManagementPage />
+  if (activeItem === 'expense')          return <ExpensePage />
   if (activeItem === 'payroll')          return <PayrollPage />
   if (activeItem === 'reports')          return <ReportsPage />
 

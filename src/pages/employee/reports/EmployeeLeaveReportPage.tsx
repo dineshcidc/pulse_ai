@@ -14,14 +14,14 @@ const WORKING_PER_MONTH = [22,20,21,22,22,21,23,21,22,23,20,23]
 
 /* ── Current employee (logged-in user) ── */
 const ME = {
-  empId:      'EMP-0047',
-  name:       'Sarah Johnson',
-  avatar:     47,
+  empId:      'EMP-2024-0042',
+  name:       'John Doe',
+  avatar:     32,
   department: 'Engineering',
   role:       'Senior Engineer',
   project:    'Pulse.AI Platform v2',
   manager:    'Rohan Mehta',
-  email:      'sarah.johnson@concertidc.com',
+  email:      'john.doe@concertidc.com',
 }
 
 /* ── Leave seed data for Sarah ── */
@@ -208,11 +208,11 @@ function LeaveCardView({ card }: { card: LeaveCard }) {
 
       {/* Header */}
       <div style={{ display:'flex', alignItems:'center', gap:14, padding:'16px 20px', borderBottom:`1px solid ${C.border}` }}>
-        <img src={`https://i.pravatar.cc/150?img=${((ME.avatar-1)%70)+1}`} alt={ME.name}
+        <img src={`https://randomuser.me/api/portraits/men/32.jpg`} alt={ME.name}
           style={{ width:44, height:44, borderRadius:'50%', objectFit:'cover', flexShrink:0, border:`2px solid ${C.border}` }} />
         <div style={{ flex:1, minWidth:0 }}>
           <div style={{ fontSize:14.5, fontWeight:700, color:C.navy }}>{ME.name}</div>
-          <div style={{ fontSize:11.5, color:C.muted, marginTop:2 }}>{ME.empId} · {ME.department} · {ME.role}</div>
+          <div style={{ fontSize:11.5, color:C.muted, marginTop:2 }}>{ME.empId} · {ME.role}</div>
         </div>
         <button
           style={{ width:34, height:34, borderRadius:9, border:`1px solid ${C.border}`, background:'#fff', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, transition:'all 0.15s' }}
@@ -380,15 +380,14 @@ export default function EmployeeLeaveReportPage({ onBack }: { onBack: () => void
               <div style={{ fontSize:10.5, fontWeight:700, color:'#6366F1', textTransform:'uppercase' as const, letterSpacing:'0.07em', marginBottom:14 }}>My Profile</div>
               <div style={{ display:'flex', alignItems:'center', gap:13 }}>
                 <div style={{ position:'relative', flexShrink:0 }}>
-                  <img src={`https://i.pravatar.cc/150?img=${((ME.avatar-1)%70)+1}`} alt={ME.name}
+                  <img src={`https://randomuser.me/api/portraits/men/32.jpg`} alt={ME.name}
                     style={{ width:50, height:50, borderRadius:'50%', objectFit:'cover', display:'block', border:'2.5px solid #fff', boxShadow:'0 2px 10px rgba(99,102,241,0.18)' }} />
                   <div style={{ position:'absolute', bottom:0, right:0, width:14, height:14, borderRadius:'50%', background:'#0EA86A', border:'2px solid #fff' }} />
                 </div>
                 <div style={{ minWidth:0 }}>
                   <div style={{ fontSize:14.5, fontWeight:800, color:C.navy, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{ME.name}</div>
                   <div style={{ fontSize:11.5, color:C.muted, marginTop:1 }}>{ME.empId}</div>
-                  <div style={{ display:'flex', gap:5, marginTop:7, flexWrap:'wrap' as const }}>
-                    <span style={{ fontSize:11, fontWeight:600, padding:'2px 9px', borderRadius:99, background:'rgba(99,102,241,0.12)', color:'#4338CA', border:'1px solid rgba(99,102,241,0.20)' }}>{ME.department}</span>
+                  <div style={{ marginTop:7 }}>
                     <span style={{ fontSize:11, fontWeight:600, padding:'2px 9px', borderRadius:99, background:'rgba(255,255,255,0.70)', color:C.navy, border:`1px solid ${C.border}` }}>{ME.role}</span>
                   </div>
                 </div>

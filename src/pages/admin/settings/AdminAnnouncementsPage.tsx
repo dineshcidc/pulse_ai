@@ -534,12 +534,11 @@ export default function AdminAnnouncementsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-4 mb-5">
+      <div className="grid grid-cols-3 gap-4 mb-5">
         {[
           { label: 'Total Sent',   value: sentCount,        color: '#0A8A58', bg: 'rgba(14,168,106,0.08)',   hoverBg: 'rgba(14,168,106,0.14)',  icon: Send       },
           { label: 'Scheduled',    value: scheduledCount,   color: '#6366F1', bg: 'rgba(99,102,241,0.08)',  hoverBg: 'rgba(99,102,241,0.14)',  icon: Clock      },
           { label: 'Drafts',       value: draftCount,       color: '#8B90A7', bg: 'rgba(139,144,167,0.10)', hoverBg: 'rgba(139,144,167,0.18)', icon: FileText   },
-          { label: 'Total Reached',value: totalRecipients,  color: '#D97706', bg: 'rgba(245,158,11,0.08)',  hoverBg: 'rgba(245,158,11,0.14)',  icon: Users      },
         ].map(({ label, value, color, bg, hoverBg, icon: Icon }) => (
           <div key={label}
             style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, padding: '20px 20px', display: 'flex', alignItems: 'center', gap: 14, cursor: 'default', transition: 'box-shadow 0.15s, border-color 0.15s' }}

@@ -1037,8 +1037,8 @@ export default function AdminTicketsPage() {
                   </div>
                 )}
 
-                {/* Quick info sidebar */}
-                <div style={{ background: '#FAFBFE', border: `1px solid ${C.border}`, borderRadius: 14, padding: '16px 18px' }}>
+                {/* Quick info sidebar - Hidden for now */}
+                <div style={{ background: '#FAFBFE', border: `1px solid ${C.border}`, borderRadius: 14, padding: '16px 18px', display: 'none' }}>
                   <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 12 }}>Ticket Summary</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {[
