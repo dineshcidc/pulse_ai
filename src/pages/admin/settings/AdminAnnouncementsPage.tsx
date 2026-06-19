@@ -505,7 +505,6 @@ export default function AdminAnnouncementsPage() {
   const sentCount      = announcements.filter(a => a.status === 'sent').length
   const scheduledCount = announcements.filter(a => a.status === 'scheduled').length
   const draftCount     = announcements.filter(a => a.status === 'draft').length
-  const totalRecipients = announcements.filter(a => a.status === 'sent').reduce((s, a) => s + a.recipients, 0)
 
   function handleDelete(id: number) { setAnnouncements(p => p.filter(a => a.id !== id)); setDeleteId(null) }
 

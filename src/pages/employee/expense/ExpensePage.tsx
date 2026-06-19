@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FileText, Search, Calendar, ChevronDown, X, Eye } from 'lucide-react'
+import { FileText, Search, ChevronDown, X, Eye } from 'lucide-react'
 import ExpenseClaimPage from './ExpenseClaimPage'
 
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', bg: '#F0F2F8', surface: '#F7F8FC' }

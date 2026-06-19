@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Search, ChevronDown, Eye, Edit, Laptop, Monitor, Smartphone, Package, X } from 'lucide-react'
+import { Search, ChevronDown, Edit, Laptop, Monitor, Smartphone, Package, X } from 'lucide-react'
 
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', hover: '#F0F2F8', surface: '#F7F8FC' }
 
@@ -256,28 +256,6 @@ function Dropdown({ value, options, onChange, minW = 140 }: { value: string; opt
       </select>
       <ChevronDown size={11} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: C.muted, pointerEvents: 'none' }} />
     </div>
-  )
-}
-
-function ActionBtn({ icon, title, onClick }: { icon: React.ReactNode; title: string; onClick?: () => void }) {
-  const [hov, setHov] = useState(false)
-  return (
-    <button
-      onClick={onClick}
-      title={title}
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
-      style={{
-        width: 28, height: 28, borderRadius: 6,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        border: `1px solid ${hov ? 'rgba(99,102,241,0.25)' : 'transparent'}`,
-        background: hov ? 'rgba(99,102,241,0.07)' : 'transparent',
-        color: hov ? '#4B4ECC' : C.muted,
-        cursor: 'pointer', transition: 'all 0.15s',
-      }}
-    >
-      {icon}
-    </button>
   )
 }
 
@@ -642,7 +620,7 @@ export default function AdminAssetManagementPage() {
           </div>
 
           {/* Table Rows */}
-          {filtered.map((emp, idx) => {
+          {filtered.map((emp) => {
             const isExpanded = expandedEmployees.has(emp.id)
             return (
               <div key={emp.id}>

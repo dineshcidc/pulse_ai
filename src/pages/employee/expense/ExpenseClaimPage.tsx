@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowLeft, FileText, Download, CheckCircle2, DollarSign, Calendar, Paperclip, ChevronDown, Upload, X, Trash2, Edit2 } from 'lucide-react'
+import { ArrowLeft, FileText, CheckCircle2, DollarSign, Paperclip, ChevronDown, Upload, X, Trash2, Edit2 } from 'lucide-react'
 
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', bg: '#F0F2F8', surface: '#F7F8FC' }
 
