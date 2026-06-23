@@ -489,7 +489,6 @@ export default function AdminAnnouncementsPage() {
 
   const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
   const currentMonth = new Date().getMonth()
-  const currentYear = new Date().getFullYear()
   const [selectedMonth, setSelectedMonth] = useState<string>(months[currentMonth])
 
   if (view === 'compose') {

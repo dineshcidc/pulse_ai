@@ -27,7 +27,6 @@ const SAMPLE_IMAGES = [
 export default function RewardsAndRecognitionPage() {
   const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
   const currentMonth = new Date().getMonth()
-  const currentYear = new Date().getFullYear()
 
   const [view, setView] = useState<'list' | 'compose'>('list')
   const [search, setSearch] = useState('')

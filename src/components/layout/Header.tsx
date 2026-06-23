@@ -203,7 +203,7 @@ export default function Header({ isSidebarOpen, onToggleSidebar, onNavigate, onL
       <button onClick={onToggleSidebar} style={{ width: 36, height: 36, borderRadius: 11, background: C.icon, color: C.muted, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }} onMouseEnter={e => { e.currentTarget.style.background = C.hover; e.currentTarget.style.color = C.navy }} onMouseLeave={e => { e.currentTarget.style.background = C.icon; e.currentTarget.style.color = C.muted }}>{isSidebarOpen ? <PanelLeftClose size={17} /> : <PanelLeftOpen size={17} />}</button>
 
       {/* Center: Recognition Badge */}
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingX: 20 }}>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 20px' }}>
         <RecognitionBadge recognition={CURRENT_RECOGNITION} />
       </div>
 
