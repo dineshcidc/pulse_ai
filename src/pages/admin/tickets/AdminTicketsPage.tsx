@@ -542,7 +542,7 @@ export default function AdminTicketsPage() {
                       onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.08)'; e.currentTarget.style.borderColor = 'rgba(99,102,241,0.30)' }}
                       onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = '#E8EAF2' }}
                     >
-                      <Eye size={14} strokeWidth={1.8} style={{ color: '#5B5FDE' }} />
+                      <Eye size={14} strokeWidth={1.8} style={{ color: '#8B90A7' }} />
                     </button>
                   </div>
                 )

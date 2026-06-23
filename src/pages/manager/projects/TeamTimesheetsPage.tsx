@@ -748,9 +748,9 @@ export default function TeamTimesheetsPage() {
                         ? setExpandedRow(prev => prev === row.id ? null : row.id)
                         : setViewRow(row)}
                       title={isPending ? 'Quick Preview' : 'View Details'}
-                      style={{ width: 32, height: 32, borderRadius: 9, border: 'none', background: isExpanded ? 'rgba(99,102,241,0.20)' : 'rgba(99,102,241,0.09)', color: '#4B4ECC', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.14s' }}
-                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.20)' }}
-                      onMouseLeave={e => { e.currentTarget.style.background = isExpanded ? 'rgba(99,102,241,0.20)' : 'rgba(99,102,241,0.09)' }}
+                      style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${C.border}`, background: '#fff', color: C.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.14s' }}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.08)'; e.currentTarget.style.borderColor = 'rgba(99,102,241,0.30)'; e.currentTarget.style.color = '#6366F1' }}
+                      onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted }}
                     >
                       <Eye size={14} strokeWidth={1.8} />
                     </button>

@@ -3,7 +3,7 @@ import {
   Ticket, ClipboardList, PlusCircle, ChevronRight, ChevronDown, ArrowLeft,
   Search, Monitor, FolderOpen, User, Users, Laptop, DollarSign, LayoutGrid, X,
   Paperclip, Mail, Phone, MessageSquare, MapPin, Tag, AlertTriangle, Eye,
-  Download, FileText, Send, Clock, Calendar,
+  Download, FileText, Send, Clock, Calendar, Package,
 } from 'lucide-react'
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -36,6 +36,7 @@ const CATEGORIES = [
   { id: 'HR Request',      label: 'HR Request',     Icon: Users,      color: '#0EA86A', bg: 'rgba(14,168,106,0.10)',  desc: 'Payslips, documents, leave & policy queries'   },
   { id: 'IT Support',      label: 'IT Support',     Icon: Laptop,     color: '#6366F1', bg: 'rgba(99,102,241,0.10)',  desc: 'Hardware, software, VPN & device requests'     },
   { id: 'Finance',         label: 'Finance',        Icon: DollarSign, color: '#D97706', bg: 'rgba(245,158,11,0.10)',  desc: 'Reimbursements, claims & invoice queries'      },
+  { id: 'Asset Request',   label: 'Asset Request',  Icon: Package,    color: '#14B8A6', bg: 'rgba(20,184,166,0.10)',  desc: 'Request new assets or equipment'      },
 ] as const
 
 const TICKETS: TicketRecord[] = [
@@ -144,6 +145,7 @@ const CAT_BADGE: Record<string, { bg: string; color: string }> = {
   'Finance':         { bg: 'rgba(245,158,11,0.10)',  color: '#B45309' },
   'Project Request': { bg: 'rgba(124,58,237,0.10)',  color: '#7C3AED' },
   'Personal':        { bg: 'rgba(13,148,136,0.10)',  color: '#0D9488' },
+  'Asset Request':   { bg: 'rgba(20,184,166,0.10)',  color: '#0D9488' },
 }
 
 const C      = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7' }
@@ -579,11 +581,11 @@ export default function TicketsPage() {
                     <button
                       onClick={() => openTicketView(t)}
                       title="View ticket details"
-                      style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid #E8EAF2', background: '#fff', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.14s' }}
+                      style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${C.border}`, background: '#fff', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.14s' }}
                       onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.08)'; e.currentTarget.style.borderColor = 'rgba(99,102,241,0.30)' }}
-                      onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = '#E8EAF2' }}
+                      onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = C.border }}
                     >
-                      <Eye size={14} strokeWidth={1.8} style={{ color: '#5B5FDE' }} />
+                      <Eye size={14} strokeWidth={1.8} style={{ color: C.muted }} />
                     </button>
                   </div>
                 )

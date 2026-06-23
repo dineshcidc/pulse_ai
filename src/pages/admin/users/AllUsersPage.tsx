@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Search, ChevronDown, Eye, Pencil, Trash2, MoreHorizontal, UserPlus, Download } from 'lucide-react'
+import { Search, ChevronDown, Eye, Pencil, Trash2, UserPlus, Download } from 'lucide-react'
 
 type Role   = 'Employee' | 'Manager' | 'Admin'
 type Status = 'Active' | 'Inactive' | 'On Leave'
@@ -302,7 +302,6 @@ export default function AllUsersPage({ onNavigate }: { onNavigate: (id: string) 
                 <ActionBtn icon={<Eye size={13} />}             title="View Profile" />
                 <ActionBtn icon={<Pencil size={13} />}          title="Edit User" />
                 <ActionBtn icon={<Trash2 size={13} />}          title="Delete User" danger />
-                <ActionBtn icon={<MoreHorizontal size={13} />}  title="More Options" />
               </div>
             </div>
           ))

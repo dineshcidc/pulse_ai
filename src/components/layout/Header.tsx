@@ -5,6 +5,7 @@ import {
   CalendarCheck, FileText, TicketCheck, TrendingUp, Megaphone,
   Paperclip, Download, Search, Image, Link as LinkIcon,
 } from 'lucide-react'
+import RecognitionBadge from '../RecognitionBadge'
 
 interface HeaderProps {
   isSidebarOpen:    boolean
@@ -88,6 +89,16 @@ const ANNOUNCEMENTS = [
   { id: 5, title: 'Product Launch: Pulse.AI v2.0', subtext: 'New features and improvements', description: 'Introducing Pulse.AI v2.0 with groundbreaking AI-powered features, enhanced performance, and an improved user experience. Check out our product launch video and download the technical documentation.', attachments: [{ type: 'image', name: 'Product_Launch_Banner', url: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=250&fit=crop' }, { type: 'link', name: 'Watch Product Demo', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }], senderName: 'Alex Chen', senderRole: 'Manager', senderDate: 'Jun 18, 2026', priority: 'Important' },
   { id: 6, title: 'Team Outing - Adventure Sports Day', subtext: 'Fun activities and team bonding', description: 'Join us for an exciting day of adventure sports and team building activities! We\'ll have rock climbing, zip-lining, obstacle course, and lots of fun games. Food and beverages will be provided throughout the day.', attachments: [{ type: 'image', name: 'Outing_Photos', url: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=250&fit=crop' }, { type: 'link', name: 'Register Here', url: 'https://forms.google.com/team-outing-2026' }], senderName: 'Neha Desai', senderRole: 'Manager', senderDate: 'Jun 17, 2026', priority: 'Normal' },
 ] as const
+
+// Sample recognition data - in real app, this would come from API
+const CURRENT_RECOGNITION = {
+  id: 1,
+  tagName: 'June Month Winners & Special Day Poster',
+  title: 'Congratulations to our Rising Stars!',
+  description: 'Recognition for outstanding performance in June 2026. You have been recognized for your exceptional contributions, dedication, and outstanding performance that exceeded expectations. Your commitment to excellence and teamwork has made a significant impact on our organization.',
+  recipients: 42,
+  date: 'Jun 15, 2026',
+}
 
 export default function Header({ isSidebarOpen, onToggleSidebar, onNavigate, onLogout, userRole = 'Employee' }: HeaderProps) {
   const [notifOpen, setNotifOpen] = useState(false)
@@ -188,8 +199,13 @@ export default function Header({ isSidebarOpen, onToggleSidebar, onNavigate, onL
 
   return (
     <>
-    <header style={{ height: 64, background: '#fff', borderBottom: `1px solid ${C.border}`, padding: '0 32px', fontFamily: "'DM Sans', system-ui, sans-serif", display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+    <header style={{ height: 68, background: '#fff', borderBottom: `1px solid ${C.border}`, padding: '0 32px', fontFamily: "'DM Sans', system-ui, sans-serif", display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
       <button onClick={onToggleSidebar} style={{ width: 36, height: 36, borderRadius: 11, background: C.icon, color: C.muted, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }} onMouseEnter={e => { e.currentTarget.style.background = C.hover; e.currentTarget.style.color = C.navy }} onMouseLeave={e => { e.currentTarget.style.background = C.icon; e.currentTarget.style.color = C.muted }}>{isSidebarOpen ? <PanelLeftClose size={17} /> : <PanelLeftOpen size={17} />}</button>
+
+      {/* Center: Recognition Badge */}
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingX: 20 }}>
+        <RecognitionBadge recognition={CURRENT_RECOGNITION} />
+      </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <button style={{ width: 36, height: 36, borderRadius: 11, background: C.icon, color: C.muted, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onMouseEnter={e => { e.currentTarget.style.background = C.hover; e.currentTarget.style.color = C.navy }} onMouseLeave={e => { e.currentTarget.style.background = C.icon; e.currentTarget.style.color = C.muted }}><LayoutGrid size={17} /></button>

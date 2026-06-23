@@ -322,7 +322,7 @@ export default function AssetManagementPage() {
                   <span style={{ fontSize: 13, color: C.muted, fontWeight: 500 }}>
                     {asset.dateFrom}
                   </span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <button
                       onClick={() => setViewPopup(asset)}
                       style={{
@@ -331,20 +331,25 @@ export default function AssetManagementPage() {
                         justifyContent: 'center',
                         width: 32,
                         height: 32,
-                        color: '#6366F1',
-                        background: 'none',
-                        border: 'none',
+                        color: C.muted,
+                        background: '#fff',
+                        border: `1px solid ${C.border}`,
+                        borderRadius: 8,
                         cursor: 'pointer',
-                        transition: 'color 0.15s',
+                        transition: 'all 0.15s',
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.color = '#4F46E5'
+                        e.currentTarget.style.color = '#6366F1'
+                        e.currentTarget.style.background = 'rgba(99,102,241,0.08)'
+                        e.currentTarget.style.borderColor = 'rgba(99,102,241,0.30)'
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.color = '#6366F1'
+                        e.currentTarget.style.color = C.muted
+                        e.currentTarget.style.background = '#fff'
+                        e.currentTarget.style.borderColor = C.border
                       }}
                     >
-                      <Eye size={18} strokeWidth={2} />
+                      <Eye size={14} strokeWidth={1.8} />
                     </button>
                     <button
                       onClick={() => setReturnPopup(asset)}
@@ -354,20 +359,25 @@ export default function AssetManagementPage() {
                         justifyContent: 'center',
                         width: 32,
                         height: 32,
-                        color: '#6366F1',
-                        background: 'none',
-                        border: 'none',
+                        color: C.muted,
+                        background: '#fff',
+                        border: `1px solid ${C.border}`,
+                        borderRadius: 8,
                         cursor: 'pointer',
-                        transition: 'color 0.15s',
+                        transition: 'all 0.15s',
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.color = '#4F46E5'
+                        e.currentTarget.style.color = '#F59E0B'
+                        e.currentTarget.style.background = 'rgba(245,158,11,0.08)'
+                        e.currentTarget.style.borderColor = 'rgba(245,158,11,0.30)'
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.color = '#6366F1'
+                        e.currentTarget.style.color = C.muted
+                        e.currentTarget.style.background = '#fff'
+                        e.currentTarget.style.borderColor = C.border
                       }}
                     >
-                      <RotateCcw size={18} strokeWidth={2} />
+                      <RotateCcw size={14} strokeWidth={1.8} />
                     </button>
                   </div>
                 </div>
@@ -422,11 +432,11 @@ export default function AssetManagementPage() {
                   <span style={{ fontSize: 12, color: '#5A6080', fontWeight: 500 }}>{fmtDate(ar.updatedDate)}</span>
                   <button
                     title="View asset request details"
-                    style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid #E8EAF2', background: '#fff', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.14s' }}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.08)'; e.currentTarget.style.borderColor = 'rgba(99,102,241,0.30)' }}
-                    onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = '#E8EAF2' }}
+                    style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${C.border}`, background: '#fff', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.14s' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.08)'; e.currentTarget.style.borderColor = 'rgba(99,102,241,0.30)'; e.currentTarget.style.color = '#6366F1' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted }}
                   >
-                    <Eye size={14} strokeWidth={1.8} style={{ color: '#5B5FDE' }} />
+                    <Eye size={14} strokeWidth={1.8} style={{ color: C.muted }} />
                   </button>
                 </div>
               )

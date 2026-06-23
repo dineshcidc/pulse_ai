@@ -240,7 +240,7 @@ export default function Sidebar({ isOpen, activeItem, onNavigate, onLogout, role
       <div
         className="flex items-center flex-shrink-0"
         style={{
-          height: 64,
+          height: 68,
           padding: '0 16px',
           borderBottom: `1px solid ${C.border}`,
           justifyContent: isOpen ? 'flex-start' : 'center',

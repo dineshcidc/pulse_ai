@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Search, Clock, TrendingUp, Users, CheckCircle2, Calendar, ArrowRight, Building2, Plus } from 'lucide-react'
+import { Search, Clock, TrendingUp, Users, CheckCircle2, Calendar, ArrowRight, Building2, Plus, Edit } from 'lucide-react'
 import ProjectDetailPage from '../../manager/projects/ProjectDetailPage'
 import AddProjectPage from './AddProjectPage'
 
@@ -316,7 +316,7 @@ function ProjectCard({
         boxShadow: hovered ? '0 4px 20px rgba(28,32,53,0.07)' : 'none',
       }}
     >
-      {/* Top: bar + name/desc | status badge */}
+      {/* Top: bar + name/desc | action buttons + status badge */}
       <div className="flex items-start gap-3" style={{ marginBottom: 20 }}>
         <div style={{ display: 'flex', alignItems: 'stretch', gap: 12, flex: 1, minWidth: 0 }}>
           <div style={{ width: 3, borderRadius: 99, background: project.color, flexShrink: 0 }} />
@@ -333,13 +333,29 @@ function ProjectCard({
             </p>
           </div>
         </div>
-        <span style={{
-          fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 7,
-          background: st.bg, color: st.color, border: `1px solid ${st.border}`,
-          letterSpacing: '0.04em', textTransform: 'uppercase' as const, flexShrink: 0, alignSelf: 'flex-start',
-        }}>
-          {st.label}
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          <button
+            style={{
+              width: 32, height: 32, borderRadius: 7, border: `1px solid ${C.border}`,
+              background: hovered ? C.hover : '#fff', color: C.muted,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', transition: 'all 0.15s',
+              flexShrink: 0,
+            }}
+            title="Edit Project"
+            onMouseEnter={e => { e.currentTarget.style.borderColor = project.color; e.currentTarget.style.color = project.color }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted }}
+          >
+            <Edit size={13} strokeWidth={1.8} />
+          </button>
+          <span style={{
+            fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 7,
+            background: st.bg, color: st.color, border: `1px solid ${st.border}`,
+            letterSpacing: '0.04em', textTransform: 'uppercase' as const, flexShrink: 0, alignSelf: 'flex-start', marginTop: 2,
+          }}>
+            {st.label}
+          </span>
+        </div>
       </div>
 
       <div style={{ height: 1, background: '#F0F2F8', marginBottom: 18 }} />

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Search, ChevronDown, Edit, Laptop, Monitor, Smartphone, Package, X } from 'lucide-react'
+import { Search, ChevronDown, Edit, Laptop, Monitor, Smartphone, Package, X, Eye, Plus } from 'lucide-react'
 
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', hover: '#F0F2F8', surface: '#F7F8FC' }
 
@@ -546,7 +546,7 @@ export default function AdminAssetManagementPage() {
                 border: 'none', borderRadius: 6, cursor: 'pointer', transition: 'all 0.15s',
               }}
             >
-              Assigned
+              Assigned ({groupedList.length})
             </button>
             <button
               onClick={() => setAssetStatus('pending')}
@@ -661,30 +661,46 @@ export default function AdminAssetManagementPage() {
                     {emp.email}
                   </span>
 
-                  {/* Actions - View Badge Button */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'flex-start' }}>
+                  {/* Actions - Eye & Plus Icons */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                     <button
                       onClick={() => toggleExpandEmployee(emp.id)}
                       title="View assets"
                       style={{
-                        padding: '5px 12px', borderRadius: 99,
+                        width: 32, height: 32, borderRadius: 8,
+                        border: `1px solid ${C.border}`, background: '#fff',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        border: `1px solid ${isExpanded ? 'rgba(99,102,241,0.3)' : 'rgba(99,102,241,0.2)'}`,
-                        background: isExpanded ? 'rgba(99,102,241,0.12)' : 'rgba(99,102,241,0.08)',
-                        color: isExpanded ? '#4B4ECC' : '#6366F1',
                         cursor: 'pointer', transition: 'all 0.15s',
-                        fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em',
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.borderColor = 'rgba(99,102,241,0.4)'
-                        e.currentTarget.style.background = 'rgba(99,102,241,0.14)'
+                        e.currentTarget.style.background = 'rgba(99,102,241,0.08)'
+                        e.currentTarget.style.borderColor = 'rgba(99,102,241,0.30)'
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.borderColor = isExpanded ? 'rgba(99,102,241,0.3)' : 'rgba(99,102,241,0.2)'
-                        e.currentTarget.style.background = isExpanded ? 'rgba(99,102,241,0.12)' : 'rgba(99,102,241,0.08)'
+                        e.currentTarget.style.background = '#fff'
+                        e.currentTarget.style.borderColor = C.border
                       }}
                     >
-                      View ({emp.assets.length})
+                      <Eye size={14} strokeWidth={1.8} style={{ color: isExpanded ? '#6366F1' : C.muted }} />
+                    </button>
+                    <button
+                      title="Add asset"
+                      style={{
+                        width: 32, height: 32, borderRadius: 8,
+                        border: `1px solid ${C.border}`, background: '#fff',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        cursor: 'pointer', transition: 'all 0.15s',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(14,168,106,0.08)'
+                        e.currentTarget.style.borderColor = 'rgba(14,168,106,0.30)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = '#fff'
+                        e.currentTarget.style.borderColor = C.border
+                      }}
+                    >
+                      <Plus size={14} strokeWidth={2} style={{ color: C.muted }} />
                     </button>
                   </div>
                 </div>

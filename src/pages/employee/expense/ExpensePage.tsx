@@ -228,8 +228,11 @@ export default function ExpensePage() {
                 display: 'grid', gridTemplateColumns: '1fr 1.5fr 1.5fr 0.8fr 1fr 0.6fr',
                 borderBottom: idx < filteredExpenses.length - 1 ? `1px solid ${C.border}` : 'none',
                 padding: '14px 20px', alignItems: 'center',
-                background: idx % 2 === 0 ? '#fff' : C.surface,
+                background: '#fff',
+                transition: 'background 0.12s',
               }}
+              onMouseEnter={e => { e.currentTarget.style.background = C.surface }}
+              onMouseLeave={e => { e.currentTarget.style.background = '#fff' }}
             >
               {/* Date */}
               <div style={{ fontSize: 13, fontWeight: 500, color: C.navy }}>
@@ -275,21 +278,23 @@ export default function ExpensePage() {
                 onClick={() => setViewingExpenseId(expense.id)}
                 style={{
                   width: 32, height: 32, borderRadius: 8,
-                  background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.20)',
+                  background: '#fff', border: `1px solid ${C.border}`,
                   cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  transition: 'all 0.15s', color: '#6366F1', padding: 0,
+                  transition: 'all 0.15s', color: C.muted, padding: 0,
                 }}
                 onMouseEnter={e => {
-                  e.currentTarget.style.background = 'rgba(99,102,241,0.15)'
-                  e.currentTarget.style.borderColor = 'rgba(99,102,241,0.35)'
+                  e.currentTarget.style.background = 'rgba(99,102,241,0.08)'
+                  e.currentTarget.style.borderColor = 'rgba(99,102,241,0.30)'
+                  e.currentTarget.style.color = '#6366F1'
                 }}
                 onMouseLeave={e => {
-                  e.currentTarget.style.background = 'rgba(99,102,241,0.10)'
-                  e.currentTarget.style.borderColor = 'rgba(99,102,241,0.20)'
+                  e.currentTarget.style.background = '#fff'
+                  e.currentTarget.style.borderColor = C.border
+                  e.currentTarget.style.color = C.muted
                 }}
                 title="View details"
               >
-                <Eye size={16} strokeWidth={1.8} />
+                <Eye size={14} strokeWidth={1.8} />
               </button>
             </div>
           ))

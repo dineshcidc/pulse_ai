@@ -332,7 +332,7 @@ function ActionBtn({ icon: Icon, color, bg, title, onClick }: { icon: React.Elem
   return (
     <button onClick={onClick} title={title}
       onMouseEnter={() => setH(true)} onMouseLeave={() => setH(false)}
-      style={{ width: 30, height: 30, borderRadius: 8, border: 'none', cursor: 'pointer', background: h ? bg : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.14s' }}>
+      style={{ width: 30, height: 30, borderRadius: 8, border: `1px solid ${h ? color + '30' : C.border}`, cursor: 'pointer', background: h ? bg : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.14s' }}>
       <Icon size={13} style={{ color: h ? color : '#8B90A7' }} strokeWidth={1.8} />
     </button>
   )

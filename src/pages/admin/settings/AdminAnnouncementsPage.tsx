@@ -1,9 +1,9 @@
 import { useState, useRef } from 'react'
 import {
-  Megaphone, Send, Clock, FileText, Paperclip, Users, User,
+  Megaphone, Send, Clock, FileText, Paperclip, User,
   Search, Plus, X, ChevronDown, Calendar, Trash2, Eye,
   CheckCircle, Download, Bell, Image as ImageIcon, ArrowLeft,
-  AlertTriangle, Info, Tag, Building2,
+  AlertTriangle, Info, Tag, Building2, Edit2,
 } from 'lucide-react'
 
 /* ── Types ── */
@@ -487,6 +487,11 @@ export default function AdminAnnouncementsPage() {
   const [viewAnn, setViewAnn]             = useState<Announcement | null>(null)
   const [deleteId, setDeleteId]           = useState<number | null>(null)
 
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+  const currentMonth = new Date().getMonth()
+  const currentYear = new Date().getFullYear()
+  const [selectedMonth, setSelectedMonth] = useState<string>(months[currentMonth])
+
   if (view === 'compose') {
     return (
       <ComposePage
@@ -566,6 +571,16 @@ export default function AdminAnnouncementsPage() {
               onBlur={e => { e.target.style.borderColor = C.border; e.target.style.background = C.surface }}
             />
           </div>
+          <div style={{ position: 'relative', flexShrink: 0 }}>
+            <select value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)}
+              style={{ height: 38, paddingLeft: 12, paddingRight: 32, borderRadius: 9, border: `1px solid ${C.border}`, fontSize: 13, color: C.navy, background: C.surface, fontFamily: "'DM Sans', system-ui, sans-serif", cursor: 'pointer', appearance: 'none', outline: 'none', transition: 'border-color 0.15s, background 0.15s' }}
+              onFocus={e => { e.currentTarget.style.borderColor = '#6366F1'; e.currentTarget.style.background = '#fff' }}
+              onBlur={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.background = C.surface }}
+            >
+              {months.map((month) => <option key={month} value={month}>{month}</option>)}
+            </select>
+            <ChevronDown size={13} style={{ position: 'absolute', right: 9, top: '50%', transform: 'translateY(-50%)', color: '#B0B4C8', pointerEvents: 'none' }} />
+          </div>
           <div className="flex items-center gap-1.5 ml-auto">
             {ANN_TABS.map(t => (
               <button key={t.id} onClick={() => setTab(t.id)}
@@ -620,9 +635,13 @@ export default function AdminAnnouncementsPage() {
                       <span style={{ fontWeight: 600, color: '#3D4266' }}>{ann.audienceLabel}</span>
                     </span>
                     <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: C.muted }}><Clock size={11} strokeWidth={1.8} />{ann.timeLabel}</span>
-                    {ann.recipients > 0 && <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: C.muted }}><Users size={11} strokeWidth={1.8} />{ann.recipients} recipients</span>}
                     {ann.attachments.length > 0 && <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: C.muted }}><Paperclip size={11} strokeWidth={1.8} />{ann.attachments.length} file{ann.attachments.length > 1 ? 's' : ''}</span>}
                     <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
+                      {(ann.status === 'scheduled' || ann.status === 'draft') && (
+                        <button title="Edit" style={{ width: 32, height: 32, borderRadius: 9, border: 'none', background: 'rgba(124,58,237,0.09)', color: '#7C3AED', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.14s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.18)' }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.09)' }}>
+                          <Edit2 size={14} strokeWidth={1.8} />
+                        </button>
+                      )}
                       <button onClick={() => setViewAnn(ann)} title="View" style={{ width: 32, height: 32, borderRadius: 9, border: 'none', background: 'rgba(99,102,241,0.09)', color: '#6366F1', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.14s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.18)' }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.09)' }}><Eye size={14} strokeWidth={1.8} /></button>
                       <button onClick={() => setDeleteId(ann.id)} title="Delete" style={{ width: 32, height: 32, borderRadius: 9, border: 'none', background: 'rgba(232,72,85,0.09)', color: '#E84855', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.14s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(232,72,85,0.18)' }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(232,72,85,0.09)' }}><Trash2 size={14} strokeWidth={1.8} /></button>
                     </div>

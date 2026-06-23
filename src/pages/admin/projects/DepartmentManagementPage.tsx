@@ -968,7 +968,7 @@ function DeptRow({ dept, onView, onEdit }: { dept: Department; onView: () => voi
           style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${C.border}`, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0 }}
           onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.08)'; e.currentTarget.style.borderColor = 'rgba(99,102,241,0.30)' }}
           onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = C.border }}>
-          <Edit2 size={13} style={{ color: '#6366F1' }} strokeWidth={1.8} />
+          <Edit2 size={13} style={{ color: hovered ? '#6366F1' : C.muted }} strokeWidth={1.8} />
         </button>
         <button onClick={onView}
           style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${hovered ? dept.color + '40' : C.border}`, background: hovered ? `${dept.color}0E` : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0 }}>
