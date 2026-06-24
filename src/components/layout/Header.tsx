@@ -93,7 +93,7 @@ const ANNOUNCEMENTS = [
 // Sample recognition data - in real app, this would come from API
 const CURRENT_RECOGNITION = {
   id: 1,
-  tagName: 'June Month Winners & Special Day Poster',
+  tagName: 'Explore the Spotlight',
   title: 'Congratulations to our Rising Stars!',
   description: 'Recognition for outstanding performance in June 2026. You have been recognized for your exceptional contributions, dedication, and outstanding performance that exceeded expectations. Your commitment to excellence and teamwork has made a significant impact on our organization.',
   recipients: 42,

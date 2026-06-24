@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Trophy, Eye, ChevronLeft, ChevronRight, X } from 'lucide-react'
+import Rewardimage1 from '../assets/Rewardimage-1.png'
+import Rewardimage2 from '../assets/Rewardimage-2.png'
+import Rewardimage5 from '../assets/Rewardimage-5.png'
 
 interface Recognition {
   id: number
@@ -17,11 +20,23 @@ interface RecognitionBadgeProps {
   onClick?: () => void
 }
 
-// Sample poster images
+// Sample poster data with images, titles, and subtexts
 const SAMPLE_POSTERS = [
-  '/Rewardimage-1.png',
-  '/Rewardimage-5.png',
-  '/Rewardimage-2.png',
+  {
+    image: Rewardimage1,
+    title: 'Rising Star Recognition',
+    subtext: 'Celebrating exceptional talent, dedication, and achievements that continue to inspire excellence.',
+  },
+  {
+    image: Rewardimage5,
+    title: 'Peer Appreciation Spotlight',
+    subtext: 'Recognizing team members who make a difference through collaboration, support, and positive impact.',
+  },
+  {
+    image: Rewardimage2,
+    title: 'New Year Celebrations',
+    subtext: 'Wishing everyone a year filled with success, happiness, growth, and new opportunities.',
+  },
 ]
 
 export default function RecognitionBadge({ recognition, onClick }: RecognitionBadgeProps) {
@@ -316,7 +331,7 @@ export default function RecognitionBadge({ recognition, onClick }: RecognitionBa
                   lineHeight: 1.2,
                 }}
               >
-                {recognition?.tagName || 'Achievement Unlocked!'}
+                {SAMPLE_POSTERS[currentImageIdx]?.title || 'Achievement Unlocked!'}
               </div>
 
               <div
@@ -327,7 +342,7 @@ export default function RecognitionBadge({ recognition, onClick }: RecognitionBa
                   lineHeight: 1.3,
                 }}
               >
-                {recognition?.wishingMessage || 'You have been recognized for your outstanding contributions!'}
+                {SAMPLE_POSTERS[currentImageIdx]?.subtext || 'You have been recognized for your outstanding contributions!'}
               </div>
             </div>
 
@@ -439,7 +454,7 @@ export default function RecognitionBadge({ recognition, onClick }: RecognitionBa
               >
                 <img
                   key={currentImageIdx}
-                  src={SAMPLE_POSTERS[currentImageIdx]}
+                  src={SAMPLE_POSTERS[currentImageIdx]?.image}
                   alt={`Poster ${currentImageIdx + 1}`}
                   style={{
                     width: '100%',

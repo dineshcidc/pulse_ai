@@ -1,34 +1,37 @@
-import { useState, useRef } from 'react'
-import { ArrowLeft, FileText, Send, Calendar, Users, Image as ImageIcon, Eye } from 'lucide-react'
+import React, { useState, useRef } from 'react'
+import { ArrowLeft, FileText, Send, Calendar, Users, Image as ImageIcon, Clock } from 'lucide-react'
+import ImageUploadCard from '../../../components/ImageUploadCard'
+import ImageCarouselModal from '../../../components/ImageCarouselModal'
 
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', hover: '#F0F2F8', surface: '#F7F8FC' }
 
 interface RecognitionData {
   tagName: string
-  title: string
   description: string
   images: { name: string; size: string; preview: string }[]
   audience: 'all'
+  visibilityDays: string
   scheduled: boolean
   scheduleDate: string
+  scheduleTime: string
 }
 
 export default function NewRecognitionPage({ onBack }: { onBack: () => void }) {
   const [data, setData] = useState<RecognitionData>({
     tagName: '',
-    title: '',
     description: '',
     images: [],
     audience: 'all',
+    visibilityDays: '7',
     scheduled: false,
     scheduleDate: '',
+    scheduleTime: '',
   })
   const [sending, setSending] = useState(false)
-  const [viewingImages, setViewingImages] = useState<{ count: number; images: string[] } | null>(null)
-  const [currentImageIdx, setCurrentImageIdx] = useState(0)
+  const [viewingImages, setViewingImages] = useState<string[] | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
-  const canSend = data.tagName.trim().length > 0 && data.title.trim().length > 0 && data.images.length > 0
+  const canSend = data.tagName.trim().length > 0 && data.images.length > 0
 
   function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? [])
@@ -130,16 +133,6 @@ export default function NewRecognitionPage({ onBack }: { onBack: () => void }) {
                 style={{ width: '100%', border: 'none', outline: 'none', fontSize: 24, fontWeight: 800, color: C.navy, background: 'transparent', fontFamily: "'DM Sans', system-ui, sans-serif", marginBottom: 14, boxSizing: 'border-box', caretColor: '#6366F1' }}
               />
 
-              {/* Title */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingBottom: 16, borderBottom: `1px solid ${C.border}`, marginBottom: 24 }}>
-                <span style={{ fontSize: 12, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em', flexShrink: 0 }}>Wishing Title</span>
-                <input
-                  value={data.title}
-                  onChange={e => setData({ ...data, title: e.target.value })}
-                  placeholder="e.g., Congratulations to our Rising Stars!"
-                  style={{ flex: 1, border: 'none', outline: 'none', fontSize: 13.5, color: '#5A6080', background: 'transparent', fontFamily: "'DM Sans', system-ui, sans-serif" }}
-                />
-              </div>
 
               {/* Description */}
               <textarea
@@ -191,37 +184,14 @@ export default function NewRecognitionPage({ onBack }: { onBack: () => void }) {
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
                     {data.images.map((img, idx) => (
-                      <div key={idx} style={{ position: 'relative', borderRadius: 12, overflow: 'hidden', border: `1px solid ${C.border}`, background: '#fff' }}>
-                        {/* Image */}
-                        <div style={{ position: 'relative', height: 160, overflow: 'hidden', background: C.hover }}>
-                          <img src={img.preview} alt={img.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-
-                          {/* Overlay on Hover */}
-                          <div style={{ position: 'absolute', inset: 0, background: 'rgba(28,32,53,0.50)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: 'opacity 0.2s', cursor: 'pointer' }}
-                            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
-                            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '0' }}
-                            onClick={() => { setViewingImages({ count: data.images.length, images: data.images.map(img => img.preview) }); setCurrentImageIdx(0) }}
-                          >
-                            <Eye size={28} style={{ color: '#fff' }} />
-                          </div>
-                        </div>
-
-                        {/* Info Section */}
-                        <div style={{ padding: '10px' }}>
-                          <p style={{ fontSize: 10, fontWeight: 600, color: C.navy, margin: '0 0 3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{img.name}</p>
-                          <p style={{ fontSize: 9, color: C.muted, margin: 0 }}>{img.size}</p>
-                        </div>
-
-                        {/* Delete Button */}
-                        <button
-                          onClick={() => setData(p => ({ ...p, images: p.images.filter((_, i) => i !== idx) }))}
-                          style={{ position: 'absolute', top: 6, right: 6, width: 28, height: 28, borderRadius: 6, border: 'none', background: 'rgba(0,0,0,0.6)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.15s', fontSize: 14, zIndex: 10 }}
-                          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.85)' }}
-                          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.6)' }}
-                        >
-                          ×
-                        </button>
-                      </div>
+                      <ImageUploadCard
+                        key={idx}
+                        name={img.name}
+                        size={img.size}
+                        preview={img.preview}
+                        onDelete={() => setData(p => ({ ...p, images: p.images.filter((_, i) => i !== idx) }))}
+                        onView={() => setViewingImages(data.images.map(img => img.preview))}
+                      />
                     ))}
                   </div>
                   <button
@@ -255,6 +225,47 @@ export default function NewRecognitionPage({ onBack }: { onBack: () => void }) {
             </div>
           </div>
 
+          {/* Visibility Period */}
+          <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 20px' }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 12 }}>Visibility</div>
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10 }}>
+              <div style={{ flex: 1 }}>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: C.navy, marginBottom: 8 }}>How many days should this reward be visible?</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <input
+                    type="number"
+                    min="1"
+                    max="365"
+                    value={data.visibilityDays}
+                    onChange={e => setData({ ...data, visibilityDays: e.target.value })}
+                    style={{
+                      flex: 1,
+                      height: 38,
+                      padding: '0 10px',
+                      border: `1px solid ${C.border}`,
+                      borderRadius: 9,
+                      fontSize: 13,
+                      color: C.navy,
+                      background: C.surface,
+                      outline: 'none',
+                      fontFamily: 'inherit',
+                      boxSizing: 'border-box',
+                    }}
+                    onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.background = '#fff' }}
+                    onBlur={e => { e.target.style.borderColor = C.border; e.target.style.background = C.surface }}
+                  />
+                  <span style={{ fontSize: 13, fontWeight: 600, color: C.navy, whiteSpace: 'nowrap' }}>days</span>
+                </div>
+              </div>
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(99,102,241,0.10)', border: `1px solid rgba(99,102,241,0.20)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Clock size={20} strokeWidth={1.8} style={{ color: '#6366F1' }} />
+              </div>
+            </div>
+            <div style={{ fontSize: 11, color: C.muted, marginTop: 8 }}>
+              Recognition will be hidden after {data.visibilityDays} day{data.visibilityDays !== '1' ? 's' : ''}
+            </div>
+          </div>
+
           {/* Schedule */}
           <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 20px' }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 12 }}>Schedule</div>
@@ -281,138 +292,61 @@ export default function NewRecognitionPage({ onBack }: { onBack: () => void }) {
               </button>
             </div>
             {data.scheduled && (
-              <input
-                type="datetime-local"
-                value={data.scheduleDate}
-                onChange={e => setData({ ...data, scheduleDate: e.target.value })}
-                style={{
-                  width: '100%',
-                  height: 38,
-                  padding: '0 10px',
-                  border: `1px solid ${C.border}`,
-                  borderRadius: 9,
-                  fontSize: 13,
-                  color: C.navy,
-                  background: C.surface,
-                  outline: 'none',
-                  fontFamily: 'inherit',
-                  boxSizing: 'border-box',
-                }}
-                onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.background = '#fff' }}
-                onBlur={e => { e.target.style.borderColor = C.border; e.target.style.background = C.surface }}
-              />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: C.muted, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Date</label>
+                  <input
+                    type="date"
+                    value={data.scheduleDate}
+                    onChange={e => setData({ ...data, scheduleDate: e.target.value })}
+                    style={{
+                      width: '100%',
+                      height: 38,
+                      padding: '0 10px',
+                      border: `1px solid ${C.border}`,
+                      borderRadius: 9,
+                      fontSize: 13,
+                      color: C.navy,
+                      background: C.surface,
+                      outline: 'none',
+                      fontFamily: 'inherit',
+                      boxSizing: 'border-box',
+                    }}
+                    onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.background = '#fff' }}
+                    onBlur={e => { e.target.style.borderColor = C.border; e.target.style.background = C.surface }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: C.muted, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Time</label>
+                  <input
+                    type="time"
+                    value={data.scheduleTime}
+                    onChange={e => setData({ ...data, scheduleTime: e.target.value })}
+                    style={{
+                      width: '100%',
+                      height: 38,
+                      padding: '0 10px',
+                      border: `1px solid ${C.border}`,
+                      borderRadius: 9,
+                      fontSize: 13,
+                      color: C.navy,
+                      background: C.surface,
+                      outline: 'none',
+                      fontFamily: 'inherit',
+                      boxSizing: 'border-box',
+                    }}
+                    onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.background = '#fff' }}
+                    onBlur={e => { e.target.style.borderColor = C.border; e.target.style.background = C.surface }}
+                  />
+                </div>
+              </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* Images Carousel Modal - View Images */}
-      {viewingImages && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 9999,
-            background: 'rgba(10,12,28,0.85)',
-            backdropFilter: 'blur(8px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 20,
-          }}
-          onClick={() => { setViewingImages(null); setCurrentImageIdx(0) }}
-        >
-          <div
-            style={{
-              position: 'relative',
-              width: '90vw',
-              height: '92vh',
-              borderRadius: 16,
-              overflow: 'hidden',
-              background: '#fff',
-              boxShadow: '0 20px 60px rgba(10,12,28,0.30)',
-              display: 'flex',
-              flexDirection: 'column',
-            }}
-            onClick={e => e.stopPropagation()}
-          >
-            {/* Image Container - Fixed Size with Padding */}
-            <div style={{
-              position: 'relative',
-              flex: 1,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: '#f5f5f5',
-              overflow: 'hidden',
-              padding: '24px',
-            }}>
-              <img
-                src={viewingImages.images[currentImageIdx]}
-                alt={`Image ${currentImageIdx + 1}`}
-                style={{
-                  maxWidth: '100%',
-                  maxHeight: '100%',
-                  width: 'auto',
-                  height: 'auto',
-                  objectFit: 'contain',
-                  display: 'block',
-                }}
-              />
-
-              {/* Close Button - Overlay */}
-              <button
-                onClick={() => { setViewingImages(null); setCurrentImageIdx(0) }}
-                style={{
-                  position: 'absolute',
-                  top: 12,
-                  right: 12,
-                  width: 40,
-                  height: 40,
-                  borderRadius: 10,
-                  border: 'none',
-                  background: 'rgba(0,0,0,0.50)',
-                  color: '#fff',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'background 0.2s',
-                  fontSize: 24,
-                  fontWeight: 600,
-                  zIndex: 10,
-                }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.75)' }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.50)' }}
-              >
-                ×
-              </button>
-            </div>
-
-            {/* Dots Navigation - Bottom */}
-            {viewingImages.count > 1 && (
-              <div style={{ padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, borderTop: `1px solid ${C.border}`, background: '#fff', flexShrink: 0 }}>
-                {Array.from({ length: viewingImages.count }).map((_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setCurrentImageIdx(idx)}
-                    style={{
-                      width: currentImageIdx === idx ? 28 : 10,
-                      height: 10,
-                      borderRadius: 5,
-                      border: 'none',
-                      background: currentImageIdx === idx ? '#6366F1' : '#D0D3E4',
-                      cursor: 'pointer',
-                      transition: 'all 0.25s',
-                    }}
-                    title={`Image ${idx + 1}`}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Images Carousel Modal */}
+      {viewingImages && <ImageCarouselModal images={viewingImages} onClose={() => setViewingImages(null)} />}
     </div>
   )
 }

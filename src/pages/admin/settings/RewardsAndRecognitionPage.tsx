@@ -1,13 +1,18 @@
 import { useState } from 'react'
 import { Trophy, Plus, Search, Send, Clock, FileText, Trash2, Image as ImageIcon, Edit2, ChevronDown } from 'lucide-react'
 import NewRecognitionPage from './NewRecognitionPage'
+import ImageCarouselModal from '../../../components/ImageCarouselModal'
+import Rewardimage1 from '../../../assets/Rewardimage-1.png'
+import Rewardimage2 from '../../../assets/Rewardimage-2.png'
+import Rewardimage3 from '../../../assets/Rewardimage-3.png'
+import Rewardimage4 from '../../../assets/Rewardimage-4.png'
+import Rewardimage5 from '../../../assets/Rewardimage-5.png'
 
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', hover: '#F0F2F8', surface: '#F7F8FC' }
 
 interface RecognitionItem {
   id: number
   tagName: string
-  title: string
   description: string
   status: 'sent' | 'scheduled' | 'draft'
   date: string
@@ -17,11 +22,11 @@ interface RecognitionItem {
 }
 
 const SAMPLE_IMAGES = [
-  '/Rewardimage-1.png',
-  '/Rewardimage-2.png',
-  '/Rewardimage-3.png',
-  '/Rewardimage-4.png',
-  '/Rewardimage-5.png',
+  Rewardimage1,
+  Rewardimage2,
+  Rewardimage3,
+  Rewardimage4,
+  Rewardimage5,
 ]
 
 export default function RewardsAndRecognitionPage() {
@@ -32,8 +37,7 @@ export default function RewardsAndRecognitionPage() {
   const [search, setSearch] = useState('')
   const [tab, setTab] = useState('sent')
   const [selectedMonth, setSelectedMonth] = useState<string>(months[currentMonth])
-  const [viewingImages, setViewingImages] = useState<{ id: number; count: number; images: string[] } | null>(null)
-  const [currentImageIdx, setCurrentImageIdx] = useState(0)
+  const [viewingImages, setViewingImages] = useState<string[] | null>(null)
 
   if (view === 'compose') {
     return <NewRecognitionPage onBack={() => setView('list')} />
@@ -44,7 +48,6 @@ export default function RewardsAndRecognitionPage() {
     {
       id: 1,
       tagName: 'June Month Winners',
-      title: 'Congratulations to our Rising Stars!',
       description: 'Recognition for outstanding performance in June 2026. Celebrating employees who exceeded expectations.',
       status: 'sent',
       date: 'Jun 15, 2026 · 10:30 AM',
@@ -55,7 +58,6 @@ export default function RewardsAndRecognitionPage() {
     {
       id: 2,
       tagName: 'Employee Excellence Awards',
-      title: 'Quarter Excellence Recognition',
       description: 'Honoring top performers who demonstrated excellence in their roles during Q2 2026.',
       status: 'sent',
       date: 'Jun 10, 2026 · 02:15 PM',
@@ -66,7 +68,6 @@ export default function RewardsAndRecognitionPage() {
     {
       id: 3,
       tagName: 'Mid-Year Recognition',
-      title: 'Happy Mid-Year Milestone!',
       description: 'Celebrating the first half of 2026 with recognition for outstanding contributions.',
       status: 'scheduled',
       date: 'Scheduled: Jun 30, 2026 · 09:00 AM',
@@ -77,7 +78,6 @@ export default function RewardsAndRecognitionPage() {
     {
       id: 4,
       tagName: 'Draft Recognition',
-      title: 'Team Appreciation',
       description: 'Recognizing the amazing teamwork and collaboration across departments.',
       status: 'draft',
       date: 'Draft saved: Jun 18, 2026',
@@ -199,7 +199,7 @@ export default function RewardsAndRecognitionPage() {
       {/* Recognition Cards List - Full Width */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {recognitions
-          .filter(r => r.status === tab && (!search || r.tagName.toLowerCase().includes(search.toLowerCase()) || r.title.toLowerCase().includes(search.toLowerCase())))
+          .filter(r => r.status === tab && (!search || r.tagName.toLowerCase().includes(search.toLowerCase())))
           .length === 0 ? (
           <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 200 }}>
             <Trophy size={32} strokeWidth={1.2} style={{ color: '#D0D3E4', marginBottom: 12 }} />
@@ -207,7 +207,7 @@ export default function RewardsAndRecognitionPage() {
             <div style={{ fontSize: 13, color: C.muted, marginTop: 4 }}>Try a different filter or create a new recognition</div>
           </div>
         ) : recognitions
-          .filter(r => r.status === tab && (!search || r.tagName.toLowerCase().includes(search.toLowerCase()) || r.title.toLowerCase().includes(search.toLowerCase())))
+          .filter(r => r.status === tab && (!search || r.tagName.toLowerCase().includes(search.toLowerCase())))
           .map(recognition => {
             const statusConfig = recognition.status === 'sent' ? { bg: 'rgba(14,168,106,0.10)', color: '#0A8A58', label: '✓ Sent', border: 'rgba(14,168,106,0.22)' } : recognition.status === 'scheduled' ? { bg: 'rgba(99,102,241,0.10)', color: '#6366F1', label: '📅 Scheduled', border: 'rgba(99,102,241,0.22)' } : { bg: 'rgba(139,144,167,0.12)', color: '#8B90A7', label: '📝 Draft', border: 'rgba(139,144,167,0.22)' }
             return (
@@ -229,7 +229,6 @@ export default function RewardsAndRecognitionPage() {
                     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 6 }}>
                       <div style={{ minWidth: 0 }}>
                         <div style={{ fontSize: 12, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>{recognition.tagName}</div>
-                        <div style={{ fontSize: 14.5, fontWeight: 800, color: C.navy, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{recognition.title}</div>
                       </div>
                       <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 6, background: statusConfig.bg, color: statusConfig.color, border: `1px solid ${statusConfig.border}`, flexShrink: 0 }}>{statusConfig.label}</span>
                     </div>
@@ -240,7 +239,7 @@ export default function RewardsAndRecognitionPage() {
                     {/* Info Row */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
                       <button
-                        onClick={() => { setViewingImages({ id: recognition.id, count: recognition.imageCount, images: recognition.images }); setCurrentImageIdx(0) }}
+                        onClick={() => setViewingImages(recognition.images)}
                         style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, padding: '4px 10px', borderRadius: 8, background: 'rgba(99,102,241,0.10)', color: '#6366F1', border: 'none', cursor: 'pointer', transition: 'all 0.14s' }}
                         onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.18)' }}
                         onMouseLeave={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.10)' }}
@@ -272,113 +271,8 @@ export default function RewardsAndRecognitionPage() {
           })}
       </div>
 
-      {/* Images Carousel Modal - Full Image Display */}
-      {viewingImages && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 9999,
-            background: 'rgba(10,12,28,0.85)',
-            backdropFilter: 'blur(8px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 20,
-          }}
-          onClick={() => { setViewingImages(null); setCurrentImageIdx(0) }}
-        >
-          <div
-            style={{
-              position: 'relative',
-              width: '90vw',
-              height: '92vh',
-              borderRadius: 16,
-              overflow: 'hidden',
-              background: '#fff',
-              boxShadow: '0 20px 60px rgba(10,12,28,0.30)',
-              display: 'flex',
-              flexDirection: 'column',
-            }}
-            onClick={e => e.stopPropagation()}
-          >
-            {/* Image Container - Fixed Size with Padding */}
-            <div style={{
-              position: 'relative',
-              flex: 1,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: '#f5f5f5',
-              overflow: 'hidden',
-              padding: '24px',
-            }}>
-              <img
-                src={viewingImages.images[currentImageIdx]}
-                alt={`Image ${currentImageIdx + 1}`}
-                style={{
-                  maxWidth: '100%',
-                  maxHeight: '100%',
-                  width: 'auto',
-                  height: 'auto',
-                  objectFit: 'contain',
-                  display: 'block',
-                }}
-              />
-
-              {/* Close Button - Overlay */}
-              <button
-                onClick={() => { setViewingImages(null); setCurrentImageIdx(0) }}
-                style={{
-                  position: 'absolute',
-                  top: 12,
-                  right: 12,
-                  width: 40,
-                  height: 40,
-                  borderRadius: 10,
-                  border: 'none',
-                  background: 'rgba(0,0,0,0.50)',
-                  color: '#fff',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'background 0.2s',
-                  fontSize: 24,
-                  fontWeight: 600,
-                  zIndex: 10,
-                }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.75)' }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.50)' }}
-              >
-                ×
-              </button>
-            </div>
-
-            {/* Dots Navigation - Bottom */}
-            {viewingImages.count > 1 && (
-              <div style={{ padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, borderTop: `1px solid ${C.border}`, background: '#fff', flexShrink: 0 }}>
-                {Array.from({ length: viewingImages.count }).map((_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setCurrentImageIdx(idx)}
-                    style={{
-                      width: currentImageIdx === idx ? 28 : 10,
-                      height: 10,
-                      borderRadius: 5,
-                      border: 'none',
-                      background: currentImageIdx === idx ? '#6366F1' : '#D0D3E4',
-                      cursor: 'pointer',
-                      transition: 'all 0.25s',
-                    }}
-                    title={`Image ${idx + 1}`}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Images Carousel Modal */}
+      {viewingImages && <ImageCarouselModal images={viewingImages} onClose={() => setViewingImages(null)} />}
     </div>
   )
 }

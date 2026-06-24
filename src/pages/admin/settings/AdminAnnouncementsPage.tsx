@@ -1,10 +1,12 @@
-import { useState, useRef } from 'react'
+import React, { useState, useRef } from 'react'
 import {
   Megaphone, Send, Clock, FileText, Paperclip, User,
   Search, Plus, X, ChevronDown, Calendar, Trash2, Eye,
   CheckCircle, Download, Bell, Image as ImageIcon, ArrowLeft,
   AlertTriangle, Info, Tag, Building2, Edit2,
 } from 'lucide-react'
+import ImageUploadCard from '../../../components/ImageUploadCard'
+import ImageCarouselModal from '../../../components/ImageCarouselModal'
 
 /* ── Types ── */
 type AudienceType = 'all' | 'project' | 'individual'
@@ -63,9 +65,11 @@ function ComposePage({ onBack, onPublish }: { onBack: () => void; onPublish: (a:
   const [selEmps, setSelEmps]     = useState<string[]>([])
   const [priority, setPriority]   = useState<Priority>('Normal')
   const [scheduled, setScheduled] = useState(false)
-  const [schedAt, setSchedAt]     = useState('')
-  const [files, setFiles]         = useState<{ name: string; size: string; ftype: 'image'|'pdf'|'doc' }[]>([])
+  const [schedDate, setSchedDate] = useState('')
+  const [schedTime, setSchedTime] = useState('')
+  const [files, setFiles]         = useState<{ name: string; size: string; ftype: 'image'|'pdf'|'doc'; preview?: string }[]>([])
   const [sending, setSending]     = useState(false)
+  const [viewingImages, setViewingImages] = useState<string[] | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const empList = EMPLOYEES.filter(e => e.toLowerCase().includes(empSearch.toLowerCase()) && !selEmps.includes(e))
@@ -79,11 +83,27 @@ function ComposePage({ onBack, onPublish }: { onBack: () => void; onPublish: (a:
 
   function handleFiles(e: React.ChangeEvent<HTMLInputElement>) {
     const picked = Array.from(e.target.files ?? [])
-    setFiles(prev => [...prev, ...picked.map(f => ({
-      name: f.name,
-      size: f.size > 1024*1024 ? `${(f.size/1024/1024).toFixed(1)} MB` : `${Math.round(f.size/1024)} KB`,
-      ftype: (f.type.startsWith('image') ? 'image' : f.name.endsWith('.pdf') ? 'pdf' : 'doc') as 'image'|'pdf'|'doc',
-    }))])
+    picked.forEach(f => {
+      const ftype = (f.type.startsWith('image') ? 'image' : f.name.endsWith('.pdf') ? 'pdf' : 'doc') as 'image'|'pdf'|'doc'
+      if (ftype === 'image') {
+        const reader = new FileReader()
+        reader.onload = (event) => {
+          setFiles(prev => [...prev, {
+            name: f.name,
+            size: f.size > 1024*1024 ? `${(f.size/1024/1024).toFixed(1)} MB` : `${Math.round(f.size/1024)} KB`,
+            ftype: 'image',
+            preview: event.target?.result as string,
+          }])
+        }
+        reader.readAsDataURL(f)
+      } else {
+        setFiles(prev => [...prev, {
+          name: f.name,
+          size: f.size > 1024*1024 ? `${(f.size/1024/1024).toFixed(1)} MB` : `${Math.round(f.size/1024)} KB`,
+          ftype,
+        }])
+      }
+    })
     e.target.value = ''
   }
 
@@ -98,8 +118,8 @@ function ComposePage({ onBack, onPublish }: { onBack: () => void; onPublish: (a:
       status: asDraft ? 'draft' : scheduled ? 'scheduled' : 'sent',
       timeLabel: asDraft
         ? `Draft saved: ${new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`
-        : scheduled && schedAt
-        ? `Scheduled: ${new Date(schedAt).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'})}`
+        : scheduled && schedDate && schedTime
+        ? `Scheduled: ${new Date(schedDate).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})} · ${schedTime}`
         : `${new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})} · ${new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}`,
       recipients: asDraft ? 0 : audience === 'all' ? 42 : audience === 'project' ? 8 : selEmps.length,
       attachments: files.map(f => ({ name: f.name, type: f.ftype, size: f.size })),
@@ -199,39 +219,105 @@ function ComposePage({ onBack, onPublish }: { onBack: () => void; onPublish: (a:
               />
             </div>
 
-            <div style={{ borderTop: `1px solid ${C.border}`, padding: '16px 32px' }}>
+            <div style={{ borderTop: `1px solid ${C.border}`, padding: '20px 32px' }}>
               <input ref={fileRef} type="file" multiple style={{ display: 'none' }} onChange={handleFiles} accept="image/*,.pdf,.doc,.docx" />
 
-              {files.length > 0 && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
-                  {files.map((f, i) => {
-                    const fc = FILE_ICON[f.ftype]
-                    return (
-                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px 6px 8px', borderRadius: 9, border: `1px solid ${C.border}`, background: C.surface }}>
-                        <div style={{ width: 26, height: 26, borderRadius: 7, background: fc.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          {f.ftype === 'image' ? <ImageIcon size={13} style={{ color: fc.color }} /> : <FileText size={13} style={{ color: fc.color }} />}
-                        </div>
-                        <div style={{ minWidth: 0 }}>
-                          <div style={{ fontSize: 12, fontWeight: 600, color: C.navy, maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</div>
-                          <div style={{ fontSize: 10.5, color: C.muted }}>{f.size}</div>
-                        </div>
-                        <button onClick={() => setFiles(p => p.filter((_, j) => j !== i))} style={{ width: 18, height: 18, borderRadius: 5, border: 'none', background: 'rgba(232,72,85,0.10)', color: '#E84855', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          <X size={10} strokeWidth={2.5} />
-                        </button>
+              {files.length === 0 ? (
+                <div
+                  onClick={() => fileRef.current?.click()}
+                  style={{
+                    border: `2px dashed #D0D3E4`,
+                    borderRadius: 12,
+                    padding: '28px 20px',
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    background: '#F8F9FB',
+                    transition: 'all 0.15s',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  onMouseEnter={e => {
+                    (e.currentTarget as HTMLElement).style.background = 'rgba(99,102,241,0.08)'
+                    ;(e.currentTarget as HTMLElement).style.borderColor = '#6366F1'
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLElement).style.background = '#F8F9FB'
+                    ;(e.currentTarget as HTMLElement).style.borderColor = '#D0D3E4'
+                  }}
+                >
+                  <Paperclip size={32} style={{ color: '#8B90A7', marginBottom: 10 }} />
+                  <p style={{ fontSize: 13, fontWeight: 700, color: C.navy, margin: '0 0 4px' }}>Drop files here or click to browse</p>
+                  <p style={{ fontSize: 11.5, color: C.muted, margin: 0 }}>Images, PDF or Documents up to 10MB each</p>
+                </div>
+              ) : (
+                <div>
+                  {/* Images Section */}
+                  {files.filter(f => f.ftype === 'image').length > 0 && (
+                    <div style={{ marginBottom: files.filter(f => f.ftype !== 'image').length > 0 ? 20 : 0 }}>
+                      <p style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0, marginBottom: 12 }}>Images ({files.filter(f => f.ftype === 'image').length})</p>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+                        {files.filter(f => f.ftype === 'image').map((f) => (
+                          <ImageUploadCard
+                            key={`${f.name}-${f.preview}`}
+                            name={f.name}
+                            size={f.size}
+                            preview={f.preview || ''}
+                            onDelete={() => setFiles(p => p.filter(file => file.preview !== f.preview || file.name !== f.name || file.ftype !== 'image'))}
+                            onView={() => setViewingImages(files.filter(x => x.ftype === 'image' && x.preview).map(x => x.preview!))}
+                          />
+                        ))}
                       </div>
-                    )
-                  })}
+                    </div>
+                  )}
+
+                  {/* Other Files Section */}
+                  {files.filter(f => f.ftype !== 'image').length > 0 && (
+                    <div style={{ marginBottom: 12 }}>
+                      <p style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0, marginBottom: 12 }}>Other Files ({files.filter(f => f.ftype !== 'image').length})</p>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 12 }}>
+                        {files.filter(f => f.ftype !== 'image').map((f) => {
+                          const fc = FILE_ICON[f.ftype]
+                          const actualIdx = files.indexOf(f)
+                          return (
+                            <div key={actualIdx} style={{ position: 'relative', borderRadius: 12, overflow: 'hidden', border: `1px solid ${C.border}`, background: '#fff' }}>
+                              <div style={{ position: 'relative', height: 140, overflow: 'hidden', background: fc.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
+                                  <FileText size={48} style={{ color: fc.color }} />
+                                </div>
+                              </div>
+
+                              <div style={{ padding: '10px' }}>
+                                <p style={{ fontSize: 10, fontWeight: 600, color: C.navy, margin: '0 0 3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{f.name}</p>
+                                <p style={{ fontSize: 9, color: C.muted, margin: 0 }}>{f.size}</p>
+                              </div>
+
+                              <button
+                                onClick={() => setFiles(p => p.filter((_, i) => i !== actualIdx))}
+                                style={{ position: 'absolute', top: 6, right: 6, width: 28, height: 28, borderRadius: 6, border: 'none', background: 'rgba(0,0,0,0.6)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.15s', fontSize: 14, zIndex: 10 }}
+                                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.85)' }}
+                                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.6)' }}
+                              >
+                                ×
+                              </button>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={() => fileRef.current?.click()}
+                    style={{ marginTop: 12, width: '100%', padding: '10px 12px', borderRadius: 10, border: `1px solid ${C.border}`, background: '#fff', color: C.navy, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = C.surface; e.currentTarget.style.borderColor = '#C8CCE0' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = C.border }}
+                  >
+                    + Add More Files
+                  </button>
                 </div>
               )}
-
-              <button
-                onClick={() => fileRef.current?.click()}
-                style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, fontWeight: 600, color: C.muted, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0, transition: 'color 0.14s' }}
-                onMouseEnter={e => { e.currentTarget.style.color = '#6366F1' }}
-                onMouseLeave={e => { e.currentTarget.style.color = C.muted }}
-              >
-                <Paperclip size={14} strokeWidth={1.8} /> Attach files — Image, PDF or Document
-              </button>
             </div>
           </div>
         </div>
@@ -367,33 +453,32 @@ function ComposePage({ onBack, onPublish }: { onBack: () => void; onPublish: (a:
               </button>
             </div>
             {scheduled && (
-              <input type="datetime-local" value={schedAt} onChange={e => setSchedAt(e.target.value)}
-                style={{ width: '100%', height: 38, padding: '0 10px', border: `1px solid ${C.border}`, borderRadius: 9, fontSize: 13, color: C.navy, background: C.surface, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
-                onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.background = '#fff' }}
-                onBlur={e => { e.target.style.borderColor = C.border; e.target.style.background = C.surface }}
-              />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: C.muted, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Date</label>
+                  <input type="date" value={schedDate} onChange={e => setSchedDate(e.target.value)}
+                    style={{ width: '100%', height: 38, padding: '0 10px', border: `1px solid ${C.border}`, borderRadius: 9, fontSize: 13, color: C.navy, background: C.surface, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
+                    onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.background = '#fff' }}
+                    onBlur={e => { e.target.style.borderColor = C.border; e.target.style.background = C.surface }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: C.muted, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Time</label>
+                  <input type="time" value={schedTime} onChange={e => setSchedTime(e.target.value)}
+                    style={{ width: '100%', height: 38, padding: '0 10px', border: `1px solid ${C.border}`, borderRadius: 9, fontSize: 13, color: C.navy, background: C.surface, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
+                    onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.background = '#fff' }}
+                    onBlur={e => { e.target.style.borderColor = C.border; e.target.style.background = C.surface }}
+                  />
+                </div>
+              </div>
             )}
           </div>
 
-          {/* Summary */}
-          <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 16, padding: '16px 20px' }}>
-            {sectionLabel('Summary')}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
-              {[
-                { label: 'Audience',    value: audienceLabel },
-                { label: 'Priority',    value: priority },
-                { label: 'Delivery',    value: scheduled && schedAt ? 'Scheduled' : 'Send Now' },
-                { label: 'Attachments', value: files.length > 0 ? `${files.length} file${files.length > 1 ? 's' : ''}` : 'None' },
-              ].map(({ label, value }) => (
-                <div key={label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: 12, color: C.muted, fontWeight: 500 }}>{label}</span>
-                  <span style={{ fontSize: 12.5, fontWeight: 700, color: C.navy }}>{value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
+
+      {/* Images Carousel Modal */}
+      {viewingImages && <ImageCarouselModal images={viewingImages} onClose={() => setViewingImages(null)} />}
 
       <style>{`@keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }`}</style>
     </div>
