@@ -517,7 +517,7 @@ function CompensationPanel() {
           style={{
             display: 'grid', gridTemplateColumns: SAL_COLS,
             padding: '12px 18px',
-            background: 'rgba(59,130,246,0.05)',
+            background: '#f7f8fc',
             borderBottom: `1px solid ${C.border}`,
           }}
         >
@@ -584,7 +584,7 @@ function CompensationPanel() {
           style={{
             display: 'grid', gridTemplateColumns: '1fr 160px',
             padding: '12px 18px',
-            background: 'rgba(124,58,237,0.05)',
+            background: '#f7f8fc',
             borderBottom: `1px solid ${C.border}`,
           }}
         >
@@ -631,7 +631,7 @@ function CompensationPanel() {
           style={{
             display: 'grid', gridTemplateColumns: '1fr 100px 160px',
             padding: '12px 18px',
-            background: 'rgba(232,72,85,0.05)',
+            background: '#f7f8fc',
             borderBottom: `1px solid ${C.border}`,
           }}
         >
@@ -959,7 +959,7 @@ function IncrementPanel() {
         <div style={{
           display: 'grid', gridTemplateColumns: COLS,
           padding: '11px 18px',
-          background: '#FAFBFF',
+          background: '#f7f8fc',
           borderBottom: `1px solid ${C.border}`,
         }}>
           {['Status', 'Cost To Company', 'From Date', 'To Date', 'Growth', 'Processed On'].map((h, i) => (

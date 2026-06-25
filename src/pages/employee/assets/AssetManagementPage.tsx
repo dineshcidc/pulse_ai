@@ -23,63 +23,48 @@ interface Asset {
   }
 }
 
-type Priority = 'Critical' | 'High' | 'Medium' | 'Low'
-type AssetRequestStatus = 'Pending' | 'Approved' | 'Rejected' | 'Received'
-
 interface AssetRequest {
   id: string
   requestId: string
   assetName: string
+  assetCode: string
   category: string
-  status: AssetRequestStatus
-  priority: Priority
+  status: 'Allocated' | 'Pending'
+  employeeName: string
+  employeeCode: string
   requestedDate: string
-  assignedTo: string
-  updatedDate: string
 }
 
-const STATUS_STYLE: Record<AssetRequestStatus, { bg: string; color: string; dot: string }> = {
-  'Pending': { bg: 'rgba(139,92,246,0.10)', color: '#7C3AED', dot: '#8B5CF6' },
-  'Approved': { bg: 'rgba(59,130,246,0.10)', color: '#1D4ED8', dot: '#3B82F6' },
-  'Received': { bg: 'rgba(14,168,106,0.12)', color: '#0A7040', dot: '#0EA86A' },
-  'Rejected': { bg: 'rgba(232,72,85,0.10)', color: '#C0202E', dot: '#E84855' },
+const STATUS_STYLE: Record<string, { bg: string; color: string; dot: string }> = {
+  'Pending': { bg: 'rgba(245,158,11,0.10)', color: '#B45309', dot: '#F59E0B' },
+  'Allocated': { bg: 'rgba(14,168,106,0.12)', color: '#0A7040', dot: '#0EA86A' },
 }
 
-const PRIORITY_STYLE: Record<Priority, { bg: string; color: string; dot: string; border: string }> = {
-  Critical: { bg: 'rgba(232,72,85,0.10)', color: '#C0202E', dot: '#E84855', border: 'rgba(232,72,85,0.35)' },
-  High: { bg: 'rgba(249,115,22,0.10)', color: '#C2410C', dot: '#F97316', border: 'rgba(249,115,22,0.35)' },
-  Medium: { bg: 'rgba(245,158,11,0.10)', color: '#B45309', dot: '#F59E0B', border: 'rgba(245,158,11,0.35)' },
-  Low: { bg: 'rgba(14,168,106,0.10)', color: '#0A7040', dot: '#0EA86A', border: 'rgba(14,168,106,0.35)' },
-}
 
-const CAT_BADGE: Record<string, { bg: string; color: string }> = {
-  'System Support': { bg: 'rgba(99,102,241,0.10)', color: '#5B5FDE' },
-}
+const COL_GRID = '1.1fr 0.85fr 0.95fr 1fr 1.8fr 1.3fr 1.1fr 0.95fr 0.8fr'
 
-const COL_GRID = '1fr 1.4fr 1fr 0.9fr 1.1fr 1.3fr 1fr 0.5fr'
-
-const ASSET_REQUESTS: AssetRequest[] = [
+const INITIAL_ASSET_REQUESTS: AssetRequest[] = [
   {
     id: 'ar-001',
     requestId: 'AR-2026-0451',
     assetName: 'Dell 27" 4K Monitor',
-    category: 'System Support',
-    status: 'Received',
-    priority: 'High',
+    assetCode: 'MN-2024-0089',
+    category: 'IT Hardware',
+    status: 'Allocated',
+    employeeName: 'John Doe',
+    employeeCode: 'CC001',
     requestedDate: '2026-05-10',
-    assignedTo: 'Arjun Menon',
-    updatedDate: '2026-05-15',
   },
   {
     id: 'ar-003',
     requestId: 'AR-2026-0453',
     assetName: 'Wireless Mouse & Keyboard',
-    category: 'System Support',
-    status: 'Pending',
-    priority: 'Low',
+    assetCode: 'AC-2024-0156',
+    category: 'Monitor',
+    status: 'Allocated',
+    employeeName: 'John Doe',
+    employeeCode: 'CC001',
     requestedDate: '2026-06-01',
-    assignedTo: 'Dev Team',
-    updatedDate: '2026-06-05',
   },
 ]
 
@@ -121,6 +106,35 @@ export default function AssetManagementPage() {
   const [viewPopup, setViewPopup] = useState<Asset | null>(null)
   const [returnPopup, setReturnPopup] = useState<Asset | null>(null)
   const [returnReason, setReturnReason] = useState('')
+  const [assetRequests, setAssetRequests] = useState<AssetRequest[]>(INITIAL_ASSET_REQUESTS)
+  const [currentAssets, setCurrentAssets] = useState<Asset[]>(ASSETS)
+  const [rejectPopup, setRejectPopup] = useState<AssetRequest | null>(null)
+  const [rejectReason, setRejectReason] = useState('')
+
+  function handleAcceptRequest(requestId: string) {
+    const request = assetRequests.find(ar => ar.id === requestId)
+    if (!request) return
+
+    const newAsset: Asset = {
+      id: `ast-${Date.now()}`,
+      code: request.assetCode,
+      category: request.category === 'Monitor' ? 'Monitor' : 'Laptop',
+      description: request.assetName,
+      dateFrom: fmtDate(new Date().toISOString().split('T')[0]),
+    }
+
+    setCurrentAssets([...currentAssets, newAsset])
+    setAssetRequests(assetRequests.filter(ar => ar.id !== requestId))
+    setActiveTab('current')
+  }
+
+  function handleRejectConfirm() {
+    if (rejectPopup) {
+      setAssetRequests(assetRequests.filter(ar => ar.id !== rejectPopup.id))
+      setRejectPopup(null)
+      setRejectReason('')
+    }
+  }
 
   return (
     <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
@@ -217,7 +231,7 @@ export default function AssetManagementPage() {
       {/* ── TAB: My Current Assets ──────────────────────────────────────── */}
       {activeTab === 'current' && (
         <div>
-          {ASSETS.length === 0 ? (
+          {currentAssets.length === 0 ? (
             <div
               className="rounded-xl flex flex-col items-center justify-center"
               style={{
@@ -257,7 +271,7 @@ export default function AssetManagementPage() {
                   gridTemplateColumns: '1.2fr 1.2fr 1.8fr 1.2fr 0.6fr',
                   gap: 20,
                   padding: '14px 20px',
-                  background: C.bg,
+                  background: '#f7f8fc',
                   borderBottom: `1px solid ${C.border}`,
                 }}
               >
@@ -278,7 +292,7 @@ export default function AssetManagementPage() {
               </div>
 
               {/* Table Rows */}
-              {ASSETS.map((asset, idx) => (
+              {currentAssets.map((asset, idx) => (
                 <div
                   key={asset.id}
                   className="ast-row"
@@ -287,7 +301,7 @@ export default function AssetManagementPage() {
                     gridTemplateColumns: '1.2fr 1.2fr 1.8fr 1.2fr 0.6fr',
                     gap: 20,
                     padding: '16px 20px',
-                    borderBottom: idx < ASSETS.length - 1 ? `1px solid ${C.border}` : 'none',
+                    borderBottom: idx < currentAssets.length - 1 ? `1px solid ${C.border}` : 'none',
                     alignItems: 'center',
                     transition: 'background 0.15s',
                   }}
@@ -389,68 +403,92 @@ export default function AssetManagementPage() {
 
       {/* ── TAB: Asset Requests ──────────────────────────────────────────── */}
       {activeTab === 'request' && (
-        <div className="grid" style={{ gridTemplateColumns: COL_GRID, padding: '13px 20px', background: '#F7F8FC', borderBottom: `1px solid ${C.border}` }}>
-          {['Request ID', 'Asset Name', 'Created', 'Priority', 'Status', 'Assigned To', 'Updated', 'Action'].map(h => (
-            <span key={h} style={{ fontSize: 10.5, fontWeight: 700, color: '#B0B4C8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</span>
-          ))}
-        </div>
-      )}
+        <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, overflow: 'hidden' }}>
+          <div className="grid" style={{ gridTemplateColumns: COL_GRID, padding: '14px 20px', background: '#f7f8fc', borderBottom: `1px solid ${C.border}` }}>
+            {['Request ID', 'Date', 'Category', 'Asset Code', 'Description', 'Employee', 'Pending With', 'Status', 'Action'].map(h => (
+              <span key={h} style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</span>
+            ))}
+          </div>
 
-      {activeTab === 'request' && (
-        <>
-          {ASSET_REQUESTS.filter(ar => ar.category === 'System Support').length === 0 ? (
+          {assetRequests.length === 0 ? (
             <div className="flex flex-col items-center justify-center" style={{ padding: '60px 20px' }}>
               <div className="flex items-center justify-center rounded-2xl mb-4" style={{ width: 54, height: 54, background: '#F0F2F8' }}>
                 <Package size={22} strokeWidth={1.5} style={{ color: '#B0B4C8' }} />
               </div>
               <p style={{ fontSize: 14, fontWeight: 600, color: C.navy, marginBottom: 5 }}>No asset requests found</p>
-              <p style={{ fontSize: 13, color: C.muted }}>Try adjusting your search or category filter</p>
+              <p style={{ fontSize: 13, color: C.muted }}>You haven't requested any assets yet</p>
             </div>
           ) : (
-            ASSET_REQUESTS.filter(ar => ar.category === 'System Support').map((ar, idx) => {
+            assetRequests.map((ar, idx) => {
               const ss     = STATUS_STYLE[ar.status]
-              const ps     = PRIORITY_STYLE[ar.priority]
-              const cb     = CAT_BADGE[ar.category] ?? { bg: '#F0F2F8', color: C.muted }
-              const isLast = idx === ASSET_REQUESTS.filter(a => a.category === 'System Support').length - 1
+              const isLast = idx === assetRequests.length - 1
+              const pendingWithBg = 'rgba(245,158,11,0.10)'
+              const pendingWithColor = '#B45309'
+              const pendingWithLabel = ar.status === 'Pending' ? 'System Admin' : 'Employee'
+
+              let catIcon = null
+              if (ar.category === 'IT Hardware') {
+                catIcon = <Laptop size={14} style={{ color: '#6366F1' }} />
+              } else if (ar.category === 'Monitor') {
+                catIcon = <Monitor size={14} style={{ color: '#3B82F6' }} />
+              }
+
               return (
-                <div key={ar.id} className="tkt-row grid items-center"
-                  style={{ gridTemplateColumns: COL_GRID, padding: '18px 20px', borderBottom: isLast ? 'none' : `1px solid #F0F2F8`, background: '#fff', transition: 'background 0.12s' }}>
+                <div key={ar.id} className="ast-row grid items-center"
+                  style={{ gridTemplateColumns: COL_GRID, padding: '16px 20px', borderBottom: isLast ? 'none' : `1px solid ${C.border}`, background: '#fff', transition: 'background 0.12s' }}>
                   <span style={{ fontSize: 12.5, fontWeight: 700, color: C.navy, fontVariantNumeric: 'tabular-nums' }}>{ar.requestId}</span>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 9px', borderRadius: 8, background: cb.bg, color: cb.color, fontSize: 11.5, fontWeight: 600, width: 'fit-content', whiteSpace: 'nowrap' }}>{ar.category}</span>
                   <span style={{ fontSize: 12, color: '#5A6080', fontWeight: 500 }}>{fmtDate(ar.requestedDate)}</span>
-                  <span className="inline-flex items-center gap-1.5 rounded-full"
-                    style={{ padding: '4px 10px', background: ps.bg, color: ps.color, fontSize: 11.5, fontWeight: 600, width: 'fit-content', whiteSpace: 'nowrap', border: `1px solid ${ps.border}` }}>
-                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: ps.dot, display: 'inline-block', flexShrink: 0 }} />
-                    {ar.priority}
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 500, color: C.navy }}>
+                    {catIcon}
+                    {ar.category}
                   </span>
+                  <span style={{ fontSize: 12.5, fontWeight: 600, color: C.navy, fontFamily: 'monospace' }}>{ar.assetCode}</span>
+                  <span style={{ fontSize: 12, color: '#5A6080', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ar.assetName}</span>
+                  <div style={{ fontSize: 12.5, fontWeight: 600, color: C.navy }}>
+                    {ar.employeeName}
+                    <div style={{ fontSize: 11, color: C.muted, fontWeight: 500 }}>{ar.employeeCode}</div>
+                  </div>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 9px', borderRadius: 8, background: pendingWithBg, color: pendingWithColor, fontSize: 11.5, fontWeight: 600, width: 'fit-content', whiteSpace: 'nowrap' }}>{pendingWithLabel}</span>
                   <span className="inline-flex items-center gap-1.5 rounded-full"
                     style={{ padding: '4px 10px', background: ss.bg, color: ss.color, fontSize: 11.5, fontWeight: 600, width: 'fit-content', whiteSpace: 'nowrap', border: `1px solid ${ss.dot}40` }}>
                     <span style={{ width: 5, height: 5, borderRadius: '50%', background: ss.dot, display: 'inline-block', flexShrink: 0 }} />
                     {ar.status}
                   </span>
-                  <span className="truncate" style={{ fontSize: 12.5, color: '#5A6080', fontWeight: 500 }}>{ar.assignedTo}</span>
-                  <span style={{ fontSize: 12, color: '#5A6080', fontWeight: 500 }}>{fmtDate(ar.updatedDate)}</span>
-                  <button
-                    title="View asset request details"
-                    style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${C.border}`, background: '#fff', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.14s' }}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.08)'; e.currentTarget.style.borderColor = 'rgba(99,102,241,0.30)'; e.currentTarget.style.color = '#6366F1' }}
-                    onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted }}
-                  >
-                    <Eye size={14} strokeWidth={1.8} style={{ color: C.muted }} />
-                  </button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <button
+                      onClick={() => ar.status === 'Pending' ? null : handleAcceptRequest(ar.id)}
+                      disabled={ar.status === 'Pending'}
+                      title={ar.status === 'Pending' ? 'Awaiting System Admin approval' : 'Accept request'}
+                      style={{ width: 28, height: 28, borderRadius: 6, border: 'none', background: ar.status === 'Pending' ? 'rgba(14,168,106,0.06)' : 'rgba(14,168,106,0.10)', color: ar.status === 'Pending' ? '#B0B4C8' : '#0A7040', cursor: ar.status === 'Pending' ? 'not-allowed' : 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.14s', fontSize: 11, fontWeight: 600, opacity: ar.status === 'Pending' ? 0.5 : 1 }}
+                      onMouseEnter={e => { if (ar.status !== 'Pending') e.currentTarget.style.background = 'rgba(14,168,106,0.18)' }}
+                      onMouseLeave={e => { if (ar.status !== 'Pending') e.currentTarget.style.background = 'rgba(14,168,106,0.10)' }}
+                    >
+                      ✓
+                    </button>
+                    <button
+                      onClick={() => ar.status === 'Allocated' && setRejectPopup(ar)}
+                      disabled={ar.status === 'Pending'}
+                      title={ar.status === 'Pending' ? 'Awaiting System Admin approval' : 'Reject request'}
+                      style={{ width: 28, height: 28, borderRadius: 6, border: 'none', background: ar.status === 'Pending' ? 'rgba(232,72,85,0.06)' : 'rgba(232,72,85,0.10)', color: ar.status === 'Pending' ? '#B0B4C8' : '#C0202E', cursor: ar.status === 'Pending' ? 'not-allowed' : 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.14s', fontSize: 11, fontWeight: 600, opacity: ar.status === 'Pending' ? 0.5 : 1 }}
+                      onMouseEnter={e => { if (ar.status !== 'Pending') e.currentTarget.style.background = 'rgba(232,72,85,0.18)' }}
+                      onMouseLeave={e => { if (ar.status !== 'Pending') e.currentTarget.style.background = 'rgba(232,72,85,0.10)' }}
+                    >
+                      ✕
+                    </button>
+                  </div>
                 </div>
               )
             })
           )}
 
-          {ASSET_REQUESTS.filter(ar => ar.category === 'System Support').length > 0 && (
+          {assetRequests.length > 0 && (
             <div style={{ padding: '11px 20px', borderTop: `1px solid ${C.border}`, background: '#FAFBFE' }}>
               <span style={{ fontSize: 12, color: C.muted, fontWeight: 500 }}>
-                Showing <strong style={{ color: C.navy }}>{ASSET_REQUESTS.filter(ar => ar.category === 'System Support').length}</strong> of <strong style={{ color: C.navy }}>{ASSET_REQUESTS.length}</strong> asset requests
+                Showing <strong style={{ color: C.navy }}>{assetRequests.length}</strong> asset request{assetRequests.length !== 1 ? 's' : ''}
               </span>
             </div>
           )}
-        </>
+        </div>
       )}
 
       {/* ── View Details Popup ──────────────────────────────────────────── */}
@@ -649,6 +687,135 @@ export default function AssetManagementPage() {
                 onMouseLeave={(e) => { e.currentTarget.style.opacity = '1' }}
               >
                 Submit Return
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Reject Asset Request Popup ──────────────────────────────────────── */}
+      {rejectPopup && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+        }} onClick={() => { setRejectPopup(null); setRejectReason(''); }}>
+          <div style={{
+            background: '#fff',
+            borderRadius: 16,
+            maxWidth: 500,
+            width: '90%',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+          }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ padding: '24px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: `1px solid ${C.border}` }}>
+              <div>
+                <h2 style={{ fontSize: 18, fontWeight: 700, color: C.navy, margin: '0 0 4px 0' }}>Reject Asset Request</h2>
+                <p style={{ fontSize: 12, color: C.muted, margin: 0 }}>Please provide reason for rejection</p>
+              </div>
+              <button
+                onClick={() => { setRejectPopup(null); setRejectReason(''); }}
+                style={{
+                  width: 32,
+                  height: 32,
+                  background: C.bg,
+                  border: 'none',
+                  borderRadius: 6,
+                  fontSize: 20,
+                  color: C.muted,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'background 0.15s',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = '#E4E6EF' }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = C.bg }}
+              >
+                ×
+              </button>
+            </div>
+            <div style={{ padding: '24px' }}>
+              <div style={{ background: C.bg, padding: 14, borderRadius: 8, marginBottom: 20 }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>
+                  Asset Request
+                </p>
+                <p style={{ fontSize: 14, fontWeight: 600, color: C.navy, margin: 0 }}>
+                  {rejectPopup.assetName}
+                </p>
+                <p style={{ fontSize: 12, color: C.muted, marginTop: 6 }}>
+                  Request ID: <strong>{rejectPopup.requestId}</strong>
+                </p>
+              </div>
+
+              <label style={{ fontSize: 12, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>
+                Reason for Rejection
+              </label>
+              <textarea
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                placeholder="Enter reason for rejecting this asset request..."
+                style={{
+                  width: '100%',
+                  padding: 12,
+                  fontSize: 13,
+                  color: C.navy,
+                  border: `1px solid ${C.border}`,
+                  borderRadius: 8,
+                  fontFamily: 'inherit',
+                  resize: 'vertical',
+                  minHeight: 100,
+                  boxSizing: 'border-box',
+                }}
+              />
+            </div>
+            <div style={{ padding: '4px 24px 24px', display: 'flex', gap: 12 }}>
+              <button
+                onClick={() => { setRejectPopup(null); setRejectReason(''); }}
+                style={{
+                  flex: 1,
+                  padding: '10px 16px',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: C.navy,
+                  background: C.bg,
+                  border: 'none',
+                  borderRadius: 8,
+                  cursor: 'pointer',
+                  transition: 'background 0.15s',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = '#E4E6EF' }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = C.bg }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  alert(`Asset request rejected: ${rejectPopup.assetName}\nReason: ${rejectReason}`);
+                  handleRejectConfirm();
+                }}
+                style={{
+                  flex: 1,
+                  padding: '10px 16px',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: '#fff',
+                  background: 'linear-gradient(135deg, #E84855 0%, #C0202E 100%)',
+                  border: 'none',
+                  borderRadius: 8,
+                  cursor: 'pointer',
+                  transition: 'opacity 0.15s',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.9' }}
+                onMouseLeave={(e) => { e.currentTarget.style.opacity = '1' }}
+              >
+                Reject Request
               </button>
             </div>
           </div>

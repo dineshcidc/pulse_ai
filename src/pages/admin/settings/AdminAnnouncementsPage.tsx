@@ -1,9 +1,9 @@
 import React, { useState, useRef } from 'react'
 import {
   Megaphone, Send, Clock, FileText, Paperclip, User,
-  Search, Plus, X, ChevronDown, Calendar, Trash2, Eye,
+  Search, Plus, X, ChevronDown, Calendar, Trash2,
   CheckCircle, Download, Bell, Image as ImageIcon, ArrowLeft,
-  AlertTriangle, Info, Tag, Building2, Edit2,
+  AlertTriangle, Info, Tag, Building2, Trophy, Layers, Users, Link2, Eye,
 } from 'lucide-react'
 import ImageUploadCard from '../../../components/ImageUploadCard'
 import ImageCarouselModal from '../../../components/ImageCarouselModal'
@@ -12,35 +12,42 @@ import ImageCarouselModal from '../../../components/ImageCarouselModal'
 type AudienceType = 'all' | 'project' | 'individual'
 type Priority     = 'Normal' | 'Important' | 'Urgent'
 type AnnStatus    = 'sent' | 'scheduled' | 'draft'
+type ContentType  = 'announcement' | 'reward' | 'poster'
 
-interface AnnFile { name: string; type: 'image' | 'pdf' | 'doc'; size: string }
+interface AnnFile { name: string; type: 'image' | 'pdf' | 'doc' | 'link'; size: string; url?: string }
 interface Announcement {
   id: number; title: string; subject: string; message: string
   audience: AudienceType; audienceLabel: string; priority: Priority
   status: AnnStatus; timeLabel: string; recipients: number; attachments: AnnFile[]
+  contentType: ContentType; images?: string[]; duration?: string
 }
 
 /* ── Mock data ── */
 const ANNOUNCEMENTS: Announcement[] = [
-  { id: 1, title: 'Company-Wide Holiday — June 19, 2026', subject: 'Public Holiday Notification for All Employees', message: 'This is to notify all employees that June 19, 2026 is a declared public holiday. All offices will remain closed. Employees on active project deadlines are requested to plan accordingly and inform their respective managers in advance.', audience: 'all', audienceLabel: 'All Employees', priority: 'Important', status: 'sent', timeLabel: 'Jun 1, 2026 · 9:00 AM', recipients: 42, attachments: [] },
-  { id: 2, title: 'New HR Policy — Remote Work Guidelines', subject: 'Updated Work-From-Home Policy Effective July 1', message: 'The management has approved an updated remote work policy effective July 1, 2026. All employees are requested to review the attached policy document. Key changes include updated attendance tracking for WFH days and revised approval workflows.', audience: 'all', audienceLabel: 'All Employees', priority: 'Normal', status: 'sent', timeLabel: 'May 28, 2026 · 11:00 AM', recipients: 42, attachments: [{ name: 'WFH_Policy_2026.pdf', type: 'pdf', size: '1.4 MB' }] },
-  { id: 3, title: 'Pulse.AI v2 — Q3 Roadmap Kickoff', subject: 'Project Kickoff Meeting — June 5, 2026', message: 'The Q3 roadmap for Pulse.AI v2 has been finalized. All team members assigned to this project are required to attend the kickoff meeting on June 5 at 10 AM IST. The agenda and pre-read materials are attached.', audience: 'project', audienceLabel: 'Pulse.AI v2 Team', priority: 'Important', status: 'scheduled', timeLabel: 'Scheduled: Jun 5, 2026 · 10:00 AM', recipients: 0, attachments: [{ name: 'Q3_Roadmap.pdf', type: 'pdf', size: '2.1 MB' }, { name: 'Kickoff_Agenda.docx', type: 'doc', size: '320 KB' }] },
-  { id: 4, title: 'Annual Performance Reviews — July 2026', subject: 'Self-Assessment Forms Now Open', message: 'Annual performance review forms are now open on the HR portal. All employees must complete their self-assessment by June 30, 2026. Managers will schedule one-on-one review sessions in the first two weeks of July.', audience: 'all', audienceLabel: 'All Employees', priority: 'Normal', status: 'draft', timeLabel: 'Draft saved: May 30, 2026', recipients: 0, attachments: [{ name: 'Self_Assessment_Form.pdf', type: 'pdf', size: '560 KB' }] },
-  { id: 5, title: 'Office Relocation — Bengaluru Team', subject: 'New Office Address Effective June 10', message: 'The Bengaluru office will relocate to a new address effective June 10, 2026. All Bengaluru-based employees are requested to update their emergency contact records and inform their clients/vendors of the new address. Transportation support will be provided for the first week.', audience: 'individual', audienceLabel: 'Bengaluru Office Team', priority: 'Urgent', status: 'sent', timeLabel: 'May 25, 2026 · 3:00 PM', recipients: 14, attachments: [] },
+  { id: 1, title: 'Company-Wide Holiday — June 19, 2026', subject: 'Public Holiday Notification for All Employees', message: 'This is to notify all employees that June 19, 2026 is a declared public holiday. All offices will remain closed. Employees on active project deadlines are requested to plan accordingly and inform their respective managers in advance.', audience: 'all', audienceLabel: 'All Employees', priority: 'Important', status: 'sent', timeLabel: 'Jun 1, 2026 · 9:00 AM', recipients: 42, attachments: [{ name: 'Holiday_Notice.jpg', type: 'image', size: '2.8 MB' }], contentType: 'announcement' },
+  { id: 2, title: 'New HR Policy — Remote Work Guidelines', subject: 'Updated Work-From-Home Policy Effective July 1', message: 'The management has approved an updated remote work policy effective July 1, 2026. All employees are requested to review the attached policy document. Key changes include updated attendance tracking for WFH days and revised approval workflows.', audience: 'all', audienceLabel: 'All Employees', priority: 'Normal', status: 'sent', timeLabel: 'May 28, 2026 · 11:00 AM', recipients: 42, attachments: [{ name: 'WFH_Policy_2026.pdf', type: 'pdf', size: '1.4 MB' }], contentType: 'announcement' },
+  { id: 3, title: 'Office Relocation — Bengaluru Team', subject: 'New Office Address Effective June 10', message: 'The Bengaluru office will relocate to a new address effective June 10, 2026. All Bengaluru-based employees are requested to update their emergency contact records and inform their clients/vendors of the new address. Transportation support will be provided for the first week.', audience: 'all', audienceLabel: 'All Employees', priority: 'Urgent', status: 'sent', timeLabel: 'May 25, 2026 · 3:00 PM', recipients: 42, attachments: [{ name: 'Office Details & Map', type: 'link', size: 'External', url: 'https://maps.example.com/bengaluru-office' }], contentType: 'announcement' },
+  { id: 4, title: 'June Month Winners', subject: 'Recognition for Outstanding Performance', message: 'Recognition for outstanding performance in June 2026. Celebrating employees who exceeded expectations.', audience: 'all', audienceLabel: 'All Employees', priority: 'Important', status: 'sent', timeLabel: 'Jun 15, 2026 · 10:30 AM', recipients: 42, attachments: [], contentType: 'reward', images: ['reward-image-1.jpg', 'reward-image-2.jpg'], duration: '20 days' },
+  { id: 4.5, title: 'Q2 Excellence Award', subject: 'Team Performance Recognition', message: 'Recognizing exceptional contributions and team excellence in Q2 2026. Outstanding work across all departments.', audience: 'all', audienceLabel: 'All Employees', priority: 'Important', status: 'sent', timeLabel: 'Jun 10, 2026 · 2:15 PM', recipients: 42, attachments: [], contentType: 'reward', images: ['award-image-1.jpg', 'award-image-2.jpg', 'award-image-3.jpg'], duration: '15 days' },
+  { id: 4.6, title: 'Employee of the Month - May', subject: 'Special Recognition', message: 'Celebrating our Employee of the Month for May 2026. Exceptional dedication and outstanding performance throughout the month.', audience: 'all', audienceLabel: 'All Employees', priority: 'Normal', status: 'sent', timeLabel: 'Jun 1, 2026 · 9:45 AM', recipients: 42, attachments: [], contentType: 'reward', images: ['employee-month-1.jpg'], duration: '10 days' },
+  { id: 5, title: 'Mother\'s Day Celebration 2026', subject: 'Special Event Poster', message: 'Join us for a special Mother\'s Day celebration. We\'re honoring all mothers in our organization with special gifts and recognition.', audience: 'all', audienceLabel: 'All Employees', priority: 'Normal', status: 'sent', timeLabel: 'May 20, 2026 · 2:00 PM', recipients: 42, attachments: [], contentType: 'poster', images: ['mothers-day-poster-1.jpg', 'mothers-day-poster-2.jpg', 'mothers-day-poster-3.jpg'], duration: '18 days' },
+  { id: 6, title: 'Annual Performance Reviews — July 2026', subject: 'Self-Assessment Forms Now Open', message: 'Annual performance review forms are now open on the HR portal. All employees must complete their self-assessment by June 30, 2026. Managers will schedule one-on-one review sessions in the first two weeks of July.', audience: 'all', audienceLabel: 'All Employees', priority: 'Normal', status: 'draft', timeLabel: 'Draft saved: May 30, 2026', recipients: 0, attachments: [{ name: 'Self_Assessment_Form.pdf', type: 'pdf', size: '560 KB' }], contentType: 'announcement' },
+  { id: 7, title: 'Pulse.AI v2 — Q3 Roadmap Kickoff', subject: 'Project Kickoff Meeting — June 5, 2026', message: 'The Q3 roadmap for Pulse.AI v2 has been finalized. All team members assigned to this project are required to attend the kickoff meeting. Check the external documentation link for the full agenda and resources.', audience: 'project', audienceLabel: 'Pulse.AI v2 Team', priority: 'Important', status: 'scheduled', timeLabel: 'Scheduled: Jun 5, 2026 · 10:00 AM', recipients: 0, attachments: [{ name: 'Project Documentation', type: 'link', size: 'External', url: 'https://docs.example.com/pulse-ai-v2' }], contentType: 'announcement' },
+  { id: 8, title: 'Yoga Day Event 2026', subject: 'International Yoga Day Poster', message: 'Celebrating International Yoga Day with free yoga classes and wellness sessions. Register now to join us.', audience: 'all', audienceLabel: 'All Employees', priority: 'Normal', status: 'scheduled', timeLabel: 'Scheduled: Jun 21, 2026 · 8:00 AM', recipients: 0, attachments: [], contentType: 'poster', images: [] },
 ]
 
 const PROJECTS  = ['Pulse.AI v2', 'HDFC Portal', 'TechCorp ERP', 'SwiftPay App', 'RetailEdge Platform']
 const EMPLOYEES = ['Sarah Johnson','Mike Chen','Emma Wilson','David Brown','Lisa Garcia','Tom Davis','Priya Sharma','James Wilson','Anjali Singh','Karthik Nair','Ravi Kumar','Nisha Patel','Arjun Mehta','Divya Rao','Sanjay Gupta']
 
 const PRIORITY_CFG: Record<Priority, { color: string; bg: string; border: string; icon: React.ElementType }> = {
-  Normal:    { color: '#6366F1', bg: 'rgba(99,102,241,0.10)',  border: 'rgba(99,102,241,0.22)',  icon: Info          },
+  Normal:    { color: '#0A8A58', bg: 'rgba(14,168,106,0.10)',  border: 'rgba(14,168,106,0.22)',  icon: Info          },
   Important: { color: '#D97706', bg: 'rgba(245,158,11,0.10)',  border: 'rgba(245,158,11,0.22)',  icon: AlertTriangle },
   Urgent:    { color: '#E84855', bg: 'rgba(232,72,85,0.09)',   border: 'rgba(232,72,85,0.20)',   icon: Tag           },
 }
-const STATUS_CFG: Record<AnnStatus, { label: string; color: string; bg: string }> = {
-  sent:      { label: 'Sent',      color: '#0A8A58', bg: 'rgba(14,168,106,0.10)'  },
-  scheduled: { label: 'Scheduled', color: '#6366F1', bg: 'rgba(99,102,241,0.10)'  },
-  draft:     { label: 'Draft',     color: '#8B90A7', bg: 'rgba(139,144,167,0.12)' },
+const STATUS_CFG: Record<AnnStatus, { label: string; color: string; bg: string; border?: string }> = {
+  sent:      { label: 'Sent',      color: '#0A8A58', bg: 'rgba(14,168,106,0.10)', border: 'rgba(14,168,106,0.22)' },
+  scheduled: { label: 'Scheduled', color: '#6366F1', bg: 'rgba(99,102,241,0.10)', border: 'rgba(99,102,241,0.22)' },
+  draft:     { label: 'Draft',     color: '#8B90A7', bg: 'rgba(139,144,167,0.12)', border: 'rgba(139,144,167,0.22)' },
 }
 const FILE_ICON: Record<string, { color: string; bg: string }> = {
   pdf:   { color: '#E84855', bg: 'rgba(232,72,85,0.10)'  },
@@ -56,6 +63,9 @@ const ANN_TABS: { id: AnnStatus; label: string }[] = [
    Compose Page
 ══════════════════════════════════════════ */
 function ComposePage({ onBack, onPublish }: { onBack: () => void; onPublish: (a: Announcement) => void }) {
+  const [activeTab, setActiveTab] = useState<ContentType>('announcement')
+
+  // Announcement form state
   const [title, setTitle]         = useState('')
   const [subject, setSubject]     = useState('')
   const [message, setMessage]     = useState('')
@@ -68,12 +78,23 @@ function ComposePage({ onBack, onPublish }: { onBack: () => void; onPublish: (a:
   const [schedDate, setSchedDate] = useState('')
   const [schedTime, setSchedTime] = useState('')
   const [files, setFiles]         = useState<{ name: string; size: string; ftype: 'image'|'pdf'|'doc'; preview?: string }[]>([])
+
+  // Reward/Poster form state
+  const [rewardData, setRewardData] = useState({
+    tagName: '',
+    description: '',
+    images: [] as { name: string; size: string; preview: string }[],
+    visibilityDays: '7',
+    scheduled: false,
+    scheduleDate: '',
+    scheduleTime: '',
+  })
+
   const [sending, setSending]     = useState(false)
   const [viewingImages, setViewingImages] = useState<string[] | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const empList = EMPLOYEES.filter(e => e.toLowerCase().includes(empSearch.toLowerCase()) && !selEmps.includes(e))
-  const canSend = title.trim().length > 0
 
   const audienceLabel =
     audience === 'all'     ? 'All Employees' :
@@ -107,23 +128,69 @@ function ComposePage({ onBack, onPublish }: { onBack: () => void; onPublish: (a:
     e.target.value = ''
   }
 
+  function handleRewardImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? [])
+    files.forEach(file => {
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        setRewardData(p => ({
+          ...p,
+          images: [...p.images, {
+            name: file.name,
+            size: file.size > 1024 * 1024 ? `${(file.size / 1024 / 1024).toFixed(1)} MB` : `${Math.round(file.size / 1024)} KB`,
+            preview: event.target?.result as string,
+          }]
+        }))
+      }
+      reader.readAsDataURL(file)
+    })
+    e.target.value = ''
+  }
+
+
   async function handleSend(asDraft = false) {
     setSending(true)
     await new Promise(r => setTimeout(r, 1100))
-    onPublish({
-      id: Date.now(),
-      title: title || 'Untitled Announcement',
-      subject: subject || '(no subject)',
-      message, audience, audienceLabel, priority,
-      status: asDraft ? 'draft' : scheduled ? 'scheduled' : 'sent',
-      timeLabel: asDraft
-        ? `Draft saved: ${new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`
-        : scheduled && schedDate && schedTime
-        ? `Scheduled: ${new Date(schedDate).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})} · ${schedTime}`
-        : `${new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})} · ${new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}`,
-      recipients: asDraft ? 0 : audience === 'all' ? 42 : audience === 'project' ? 8 : selEmps.length,
-      attachments: files.map(f => ({ name: f.name, type: f.ftype, size: f.size })),
-    })
+
+    if (activeTab === 'announcement') {
+      onPublish({
+        id: Date.now(),
+        title: title || 'Untitled Announcement',
+        subject: subject || '(no subject)',
+        message, audience, audienceLabel, priority,
+        status: asDraft ? 'draft' : scheduled ? 'scheduled' : 'sent',
+        timeLabel: asDraft
+          ? `Draft saved: ${new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`
+          : scheduled && schedDate && schedTime
+          ? `Scheduled: ${new Date(schedDate).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})} · ${schedTime}`
+          : `${new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})} · ${new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}`,
+        recipients: asDraft ? 0 : audience === 'all' ? 42 : audience === 'project' ? 8 : selEmps.length,
+        attachments: files.map(f => ({ name: f.name, type: f.ftype, size: f.size })),
+        contentType: 'announcement',
+        images: [],
+      })
+    } else {
+      onPublish({
+        id: Date.now(),
+        title: rewardData.tagName || 'Untitled',
+        subject: '',
+        message: rewardData.description,
+        audience: 'all',
+        audienceLabel: 'All Employees',
+        priority: 'Normal',
+        status: asDraft ? 'draft' : rewardData.scheduled ? 'scheduled' : 'sent',
+        timeLabel: asDraft
+          ? `Draft saved: ${new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`
+          : rewardData.scheduled && rewardData.scheduleDate && rewardData.scheduleTime
+          ? `Scheduled: ${new Date(rewardData.scheduleDate).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})} · ${rewardData.scheduleTime}`
+          : `${new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})} · ${new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}`,
+        recipients: asDraft ? 0 : 42,
+        attachments: [],
+        contentType: activeTab,
+        images: rewardData.images.map(img => img.preview),
+        duration: `${rewardData.visibilityDays} days`,
+      })
+    }
     setSending(false)
     onBack()
   }
@@ -132,31 +199,68 @@ function ComposePage({ onBack, onPublish }: { onBack: () => void; onPublish: (a:
     <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase' as const, letterSpacing: '0.07em', marginBottom: 10 }}>{text}</div>
   )
 
+  const canSend = activeTab === 'announcement'
+    ? title.trim().length > 0
+    : rewardData.tagName.trim().length > 0 && rewardData.images.length > 0
+
+  const tabConfig = [
+    { id: 'announcement' as ContentType, label: 'Announcement' },
+    { id: 'reward' as ContentType, label: 'Rewards & Recognition' },
+    { id: 'poster' as ContentType, label: 'Poster' },
+  ]
+
   return (
     <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+      <style>{`@keyframes spin { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }`}</style>
 
-      {/* ── Page Header ── */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={onBack}
-            style={{ width: 36, height: 36, borderRadius: 10, border: `1px solid ${C.border}`, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, transition: 'all 0.14s' }}
-            onMouseEnter={e => { e.currentTarget.style.background = C.hover; e.currentTarget.style.borderColor = '#C8CCE0' }}
-            onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = C.border }}
-          >
-            <ArrowLeft size={16} strokeWidth={2} style={{ color: C.navy }} />
-          </button>
-          <div>
-            <div style={{ fontSize: 11.5, color: C.muted, fontWeight: 500, marginBottom: 2 }}>System Settings · Announcements</div>
-            <h1 style={{ fontSize: 19, fontWeight: 800, color: C.navy, margin: 0 }}>New Announcement</h1>
-          </div>
+      {/* ── Breadcrumb ── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24 }}>
+        <button
+          onClick={onBack}
+          style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${C.border}`, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.14s', flexShrink: 0 }}
+          onMouseEnter={e => { e.currentTarget.style.background = C.hover; e.currentTarget.style.borderColor = '#C8CCE0' }}
+          onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = C.border }}
+        >
+          <ArrowLeft size={16} strokeWidth={2} style={{ color: C.navy }} />
+        </button>
+        <span style={{ fontSize: 13, color: C.muted, fontWeight: 400 }}>/</span>
+        <span style={{ fontSize: 13, color: C.muted, fontWeight: 400 }}>Announcements</span>
+        <span style={{ fontSize: 13, color: C.muted, fontWeight: 400 }}>/</span>
+        <span style={{ fontSize: 13, color: C.navy, fontWeight: 600 }}>New Announcement</span>
+      </div>
+
+      {/* ── Tabs Section with White Card ── */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, gap: 20, width: '100%' }}>
+        <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, padding: '0 16px', display: 'flex', gap: 0, width: 'fit-content' }}>
+          {tabConfig.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              style={{
+                padding: '12px 16px',
+                background: 'transparent',
+                border: 'none',
+                borderBottom: activeTab === tab.id ? '2px solid #6366F1' : 'none',
+                color: activeTab === tab.id ? '#6366F1' : C.muted,
+                fontSize: 13.5,
+                fontWeight: activeTab === tab.id ? 700 : 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                fontFamily: 'inherit',
+              }}
+              onMouseEnter={e => { if (activeTab !== tab.id) (e.currentTarget as HTMLElement).style.color = C.navy }}
+              onMouseLeave={e => { if (activeTab !== tab.id) (e.currentTarget as HTMLElement).style.color = C.muted }}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
         <div style={{ display: 'flex', gap: 10 }}>
           <button
             onClick={() => handleSend(true)}
             disabled={sending || !canSend}
-            style={{ height: 40, padding: '0 20px', borderRadius: 10, border: `1px solid ${C.border}`, background: '#fff', color: canSend ? C.navy : C.muted, fontSize: 13.5, fontWeight: 600, cursor: canSend ? 'pointer' : 'not-allowed', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 7, transition: 'all 0.15s' }}
+            style={{ height: 40, padding: '0 20px', borderRadius: 10, border: `1px solid ${C.border}`, background: '#fff', color: canSend ? C.navy : C.muted, fontSize: 13.5, fontWeight: 600, cursor: canSend ? 'pointer' : 'not-allowed', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 7, transition: 'all 0.15s', flexShrink: 0 }}
             onMouseEnter={e => { if (canSend && !sending) { e.currentTarget.style.background = C.surface; e.currentTarget.style.borderColor = '#C8CCE0' } }}
             onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = C.border }}
           >
@@ -165,7 +269,7 @@ function ComposePage({ onBack, onPublish }: { onBack: () => void; onPublish: (a:
           <button
             onClick={() => handleSend(false)}
             disabled={sending || !canSend}
-            style={{ height: 40, padding: '0 22px', borderRadius: 10, border: 'none', background: canSend && !sending ? '#6366F1' : 'rgba(99,102,241,0.35)', color: '#fff', fontSize: 13.5, fontWeight: 700, cursor: canSend && !sending ? 'pointer' : 'not-allowed', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 8, transition: 'background 0.15s' }}
+            style={{ height: 40, padding: '0 22px', borderRadius: 10, border: 'none', background: canSend && !sending ? '#6366F1' : 'rgba(99,102,241,0.35)', color: '#fff', fontSize: 13.5, fontWeight: 700, cursor: canSend && !sending ? 'pointer' : 'not-allowed', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 8, transition: 'background 0.15s', flexShrink: 0 }}
             onMouseEnter={e => { if (canSend && !sending) e.currentTarget.style.background = '#4F52C8' }}
             onMouseLeave={e => { if (canSend && !sending) e.currentTarget.style.background = '#6366F1' }}
           >
@@ -177,13 +281,17 @@ function ComposePage({ onBack, onPublish }: { onBack: () => void; onPublish: (a:
                 Sending...
               </>
             ) : (
-              <>{scheduled ? <Calendar size={14} strokeWidth={1.8} /> : <Send size={14} strokeWidth={1.8} />} {scheduled ? 'Schedule Send' : 'Send Now'}</>
+              <>
+                {scheduled ? <Calendar size={14} strokeWidth={1.8} /> : <Send size={14} strokeWidth={1.8} />}
+                {scheduled ? 'Schedule Send' : 'Send Now'}
+              </>
             )}
           </button>
         </div>
       </div>
 
-      {/* ── Two-column layout ── */}
+      {/* ── Announcement Form ── */}
+      {activeTab === 'announcement' && (
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 20, alignItems: 'start' }}>
 
         {/* ── LEFT — Compose ── */}
@@ -214,7 +322,7 @@ function ComposePage({ onBack, onPublish }: { onBack: () => void; onPublish: (a:
                 value={message}
                 onChange={e => setMessage(e.target.value)}
                 placeholder="Write your announcement message here...&#10;&#10;You can include any updates, reminders, or company-wide communications for your selected audience."
-                rows={14}
+                rows={9}
                 style={{ width: '100%', border: 'none', outline: 'none', resize: 'none', fontSize: 14.5, color: '#3D4266', lineHeight: 1.8, background: 'transparent', fontFamily: "'DM Sans', system-ui, sans-serif", boxSizing: 'border-box', caretColor: '#6366F1' }}
               />
             </div>
@@ -476,6 +584,239 @@ function ComposePage({ onBack, onPublish }: { onBack: () => void; onPublish: (a:
 
         </div>
       </div>
+      )}
+
+      {/* ── Reward/Poster Form ── */}
+      {activeTab !== 'announcement' && (
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 20, alignItems: 'start' }}>
+
+        {/* ── LEFT — Compose ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+          <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 18, overflow: 'hidden' }}>
+
+            {/* Color bar - Theme Blue */}
+            <div style={{ height: 3, background: '#6366F1', transition: 'background 0.2s' }} />
+
+            <div style={{ padding: '28px 32px' }}>
+              {/* Tag Name */}
+              <input
+                value={rewardData.tagName}
+                onChange={e => setRewardData({ ...rewardData, tagName: e.target.value })}
+                placeholder={activeTab === 'reward' ? 'Recognition tag (e.g., June Month Winners)...' : 'Poster title (e.g., Team Event, Holiday Announcement)...'}
+                style={{ width: '100%', border: 'none', outline: 'none', fontSize: 24, fontWeight: 800, color: C.navy, background: 'transparent', fontFamily: "'DM Sans', system-ui, sans-serif", marginBottom: 14, boxSizing: 'border-box', caretColor: '#6366F1' }}
+              />
+
+              {/* Description */}
+              <textarea
+                value={rewardData.description}
+                onChange={e => setRewardData({ ...rewardData, description: e.target.value })}
+                placeholder={activeTab === 'reward' ? 'Write a description about this recognition...' : 'Write a description about this poster...'}
+                rows={6}
+                style={{ width: '100%', border: 'none', outline: 'none', resize: 'none', fontSize: 14.5, color: '#3D4266', lineHeight: 1.8, background: 'transparent', fontFamily: "'DM Sans', system-ui, sans-serif", boxSizing: 'border-box', caretColor: '#6366F1' }}
+              />
+            </div>
+
+            {/* File Upload Section */}
+            <div style={{ borderTop: `1px solid ${C.border}`, padding: '20px 32px' }}>
+              <input ref={fileRef} type="file" multiple accept="image/*" onChange={handleRewardImageUpload} style={{ display: 'none' }} />
+
+              {rewardData.images.length === 0 ? (
+                <div
+                  onClick={() => fileRef.current?.click()}
+                  style={{
+                    border: `2px dashed #D0D3E4`,
+                    borderRadius: 12,
+                    padding: '28px 20px',
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    background: '#F8F9FB',
+                    transition: 'all 0.15s',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  onMouseEnter={e => {
+                    (e.currentTarget as HTMLElement).style.background = 'rgba(99,102,241,0.08)'
+                    ;(e.currentTarget as HTMLElement).style.borderColor = '#6366F1'
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLElement).style.background = '#F8F9FB'
+                    ;(e.currentTarget as HTMLElement).style.borderColor = '#D0D3E4'
+                  }}
+                >
+                  <ImageIcon size={32} style={{ color: '#8B90A7', marginBottom: 10 }} />
+                  <p style={{ fontSize: 13, fontWeight: 700, color: C.navy, margin: '0 0 4px' }}>Drop images here or click to browse</p>
+                  <p style={{ fontSize: 11.5, color: C.muted, margin: 0 }}>PNG, JPG, GIF up to 10MB each</p>
+                </div>
+              ) : (
+                <div>
+                  <div style={{ marginBottom: 12 }}>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0, marginBottom: 8 }}>Uploaded Images ({rewardData.images.length})</p>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+                    {rewardData.images.map((img, idx) => (
+                      <ImageUploadCard
+                        key={idx}
+                        name={img.name}
+                        size={img.size}
+                        preview={img.preview}
+                        onDelete={() => setRewardData(p => ({ ...p, images: p.images.filter((_, i) => i !== idx) }))}
+                        onView={() => setViewingImages(rewardData.images.map(img => img.preview))}
+                      />
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => fileRef.current?.click()}
+                    style={{ marginTop: 12, width: '100%', padding: '10px 12px', borderRadius: 10, border: `1px solid ${C.border}`, background: '#fff', color: C.navy, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = C.surface; e.currentTarget.style.borderColor = '#C8CCE0' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = C.border }}
+                  >
+                    + Add More Images
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* ── RIGHT — Sidebar ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+          {/* Send To */}
+          <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 20px' }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 12 }}>Send To</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 12px', borderRadius: 10, border: `1px solid #6366F1`, background: 'rgba(99,102,241,0.06)', cursor: 'default', fontFamily: 'inherit' }}>
+              <div style={{ width: 34, height: 34, borderRadius: 9, background: 'rgba(99,102,241,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Users size={15} strokeWidth={1.8} style={{ color: '#6366F1' }} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: '#6366F1' }}>All Employees</div>
+                <div style={{ fontSize: 11, color: C.muted, marginTop: 1 }}>Entire organization</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Visibility Period */}
+          <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 20px' }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 12 }}>Visibility</div>
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10 }}>
+              <div style={{ flex: 1 }}>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: C.navy, marginBottom: 8 }}>How many days should this be visible?</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <input
+                    type="number"
+                    min="1"
+                    max="365"
+                    value={rewardData.visibilityDays}
+                    onChange={e => setRewardData({ ...rewardData, visibilityDays: e.target.value })}
+                    style={{
+                      flex: 1,
+                      height: 38,
+                      padding: '0 10px',
+                      border: `1px solid ${C.border}`,
+                      borderRadius: 9,
+                      fontSize: 13,
+                      color: C.navy,
+                      background: C.surface,
+                      outline: 'none',
+                      fontFamily: 'inherit',
+                      boxSizing: 'border-box',
+                    }}
+                    onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.background = '#fff' }}
+                    onBlur={e => { e.target.style.borderColor = C.border; e.target.style.background = C.surface }}
+                  />
+                  <span style={{ fontSize: 13, fontWeight: 600, color: C.navy, whiteSpace: 'nowrap' }}>days</span>
+                </div>
+              </div>
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(99,102,241,0.10)', border: `1px solid rgba(99,102,241,0.20)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Clock size={20} strokeWidth={1.8} style={{ color: '#6366F1' }} />
+              </div>
+            </div>
+            <div style={{ fontSize: 11, color: C.muted, marginTop: 8 }}>
+              Will be hidden after {rewardData.visibilityDays} day{rewardData.visibilityDays !== '1' ? 's' : ''}
+            </div>
+          </div>
+
+          {/* Schedule */}
+          <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, padding: '20px 20px' }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 12 }}>Schedule</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: rewardData.scheduled ? 12 : 0 }}>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: C.navy }}>Schedule Send</div>
+                <div style={{ fontSize: 11.5, color: C.muted, marginTop: 2 }}>Send at a specific time</div>
+              </div>
+              <button
+                onClick={() => setRewardData(p => ({ ...p, scheduled: !p.scheduled }))}
+                style={{
+                  width: 42,
+                  height: 23,
+                  borderRadius: 12,
+                  border: 'none',
+                  background: rewardData.scheduled ? '#6366F1' : '#D0D3E4',
+                  cursor: 'pointer',
+                  position: 'relative',
+                  transition: 'background 0.2s',
+                  flexShrink: 0,
+                }}
+              >
+                <div style={{ width: 17, height: 17, borderRadius: '50%', background: '#fff', position: 'absolute', top: 3, left: rewardData.scheduled ? 22 : 3, transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.18)' }} />
+              </button>
+            </div>
+            {rewardData.scheduled && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: C.muted, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Date</label>
+                  <input
+                    type="date"
+                    value={rewardData.scheduleDate}
+                    onChange={e => setRewardData({ ...rewardData, scheduleDate: e.target.value })}
+                    style={{
+                      width: '100%',
+                      height: 38,
+                      padding: '0 10px',
+                      border: `1px solid ${C.border}`,
+                      borderRadius: 9,
+                      fontSize: 13,
+                      color: C.navy,
+                      background: C.surface,
+                      outline: 'none',
+                      fontFamily: 'inherit',
+                      boxSizing: 'border-box',
+                    }}
+                    onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.background = '#fff' }}
+                    onBlur={e => { e.target.style.borderColor = C.border; e.target.style.background = C.surface }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: C.muted, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Time</label>
+                  <input
+                    type="time"
+                    value={rewardData.scheduleTime}
+                    onChange={e => setRewardData({ ...rewardData, scheduleTime: e.target.value })}
+                    style={{
+                      width: '100%',
+                      height: 38,
+                      padding: '0 10px',
+                      border: `1px solid ${C.border}`,
+                      borderRadius: 9,
+                      fontSize: 13,
+                      color: C.navy,
+                      background: C.surface,
+                      outline: 'none',
+                      fontFamily: 'inherit',
+                      boxSizing: 'border-box',
+                    }}
+                    onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.background = '#fff' }}
+                    onBlur={e => { e.target.style.borderColor = C.border; e.target.style.background = C.surface }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      )}
 
       {/* Images Carousel Modal */}
       {viewingImages && <ImageCarouselModal images={viewingImages} onClose={() => setViewingImages(null)} />}
@@ -571,6 +912,7 @@ export default function AdminAnnouncementsPage() {
   const [search, setSearch]               = useState('')
   const [viewAnn, setViewAnn]             = useState<Announcement | null>(null)
   const [deleteId, setDeleteId]           = useState<number | null>(null)
+  const [contentType, setContentType]     = useState<'all' | ContentType>('all')
 
   const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
   const currentMonth = new Date().getMonth()
@@ -588,12 +930,15 @@ export default function AdminAnnouncementsPage() {
   const filtered = announcements.filter(a => {
     const q = search.toLowerCase()
     const matchSearch = !q || a.title.toLowerCase().includes(q) || a.audienceLabel.toLowerCase().includes(q) || a.subject.toLowerCase().includes(q)
-    return matchSearch && a.status === tab
+    const matchType = contentType === 'all' || a.contentType === contentType
+    return matchSearch && a.status === tab && matchType
   })
 
-  const sentCount      = announcements.filter(a => a.status === 'sent').length
+  const totalSent = announcements.filter(a => a.status === 'sent').length
+  const announcementCount = announcements.filter(a => a.contentType === 'announcement').length
+  const rewardCount = announcements.filter(a => a.contentType === 'reward').length
+  const posterCount = announcements.filter(a => a.contentType === 'poster').length
   const scheduledCount = announcements.filter(a => a.status === 'scheduled').length
-  const draftCount     = announcements.filter(a => a.status === 'draft').length
 
   function handleDelete(id: number) { setAnnouncements(p => p.filter(a => a.id !== id)); setDeleteId(null) }
 
@@ -622,11 +967,12 @@ export default function AdminAnnouncementsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-5">
+      <div className="grid grid-cols-4 gap-4 mb-5">
         {[
-          { label: 'Total Sent',   value: sentCount,        color: '#0A8A58', bg: 'rgba(14,168,106,0.08)',   hoverBg: 'rgba(14,168,106,0.14)',  icon: Send       },
-          { label: 'Scheduled',    value: scheduledCount,   color: '#6366F1', bg: 'rgba(99,102,241,0.08)',  hoverBg: 'rgba(99,102,241,0.14)',  icon: Clock      },
-          { label: 'Drafts',       value: draftCount,       color: '#8B90A7', bg: 'rgba(139,144,167,0.10)', hoverBg: 'rgba(139,144,167,0.18)', icon: FileText   },
+          { label: 'Total Sent',              value: totalSent,         color: '#0A8A58', bg: 'rgba(14,168,106,0.08)',   hoverBg: 'rgba(14,168,106,0.14)',  icon: Send       },
+          { label: 'Announcements',           value: announcementCount, color: '#6366F1', bg: 'rgba(99,102,241,0.08)',  hoverBg: 'rgba(99,102,241,0.14)',  icon: Megaphone  },
+          { label: 'Rewards & Recognition',   value: rewardCount,       color: '#D97706', bg: 'rgba(217,119,6,0.08)',   hoverBg: 'rgba(217,119,6,0.14)',   icon: Trophy     },
+          { label: 'Posters',                 value: posterCount,       color: '#0891B2', bg: 'rgba(8,145,178,0.08)',   hoverBg: 'rgba(8,145,178,0.14)',   icon: Layers     },
         ].map(({ label, value, color, bg, hoverBg, icon: Icon }) => (
           <div key={label}
             style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, padding: '20px 20px', display: 'flex', alignItems: 'center', gap: 14, cursor: 'default', transition: 'box-shadow 0.15s, border-color 0.15s' }}
@@ -665,6 +1011,19 @@ export default function AdminAnnouncementsPage() {
             </select>
             <ChevronDown size={13} style={{ position: 'absolute', right: 9, top: '50%', transform: 'translateY(-50%)', color: '#B0B4C8', pointerEvents: 'none' }} />
           </div>
+          <div style={{ position: 'relative', flexShrink: 0 }}>
+            <select value={contentType} onChange={e => setContentType(e.target.value as 'all' | ContentType)}
+              style={{ height: 38, paddingLeft: 12, paddingRight: 32, borderRadius: 9, border: `1px solid ${C.border}`, fontSize: 13, color: C.navy, background: C.surface, fontFamily: "'DM Sans', system-ui, sans-serif", cursor: 'pointer', appearance: 'none', outline: 'none', transition: 'border-color 0.15s, background 0.15s' }}
+              onFocus={e => { e.currentTarget.style.borderColor = '#6366F1'; e.currentTarget.style.background = '#fff' }}
+              onBlur={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.background = C.surface }}
+            >
+              <option value="all">All Types</option>
+              <option value="announcement">Announcements</option>
+              <option value="reward">Rewards & Recognition</option>
+              <option value="poster">Posters</option>
+            </select>
+            <ChevronDown size={13} style={{ position: 'absolute', right: 9, top: '50%', transform: 'translateY(-50%)', color: '#B0B4C8', pointerEvents: 'none' }} />
+          </div>
           <div className="flex items-center gap-1.5 ml-auto">
             {ANN_TABS.map(t => (
               <button key={t.id} onClick={() => setTab(t.id)}
@@ -686,48 +1045,170 @@ export default function AdminAnnouncementsPage() {
             <div style={{ fontSize: 13, color: C.muted, marginTop: 4 }}>Try a different filter or create a new announcement</div>
           </div>
         ) : filtered.map(ann => {
-          const pc = PRIORITY_CFG[ann.priority]
-          const sc = STATUS_CFG[ann.status]
-          const StatusIcon = ann.status === 'sent' ? CheckCircle : ann.status === 'scheduled' ? Clock : FileText
-          const AudienceIcon = ann.audience === 'all' ? Building2 : ann.audience === 'project' ? Megaphone : User
+          const statusConfig = ann.status === 'sent' ? { bg: 'rgba(14,168,106,0.10)', color: '#0A8A58', label: '✓ Sent', border: 'rgba(14,168,106,0.22)' } : ann.status === 'scheduled' ? { bg: 'rgba(99,102,241,0.10)', color: '#6366F1', label: '📅 Scheduled', border: 'rgba(99,102,241,0.22)' } : { bg: 'rgba(139,144,167,0.12)', color: '#8B90A7', label: '📝 Draft', border: 'rgba(139,144,167,0.22)' }
+
+          // ANNOUNCEMENT CARD
+          if (ann.contentType === 'announcement') {
+            const pc = PRIORITY_CFG[ann.priority]
+            const sc = STATUS_CFG[ann.status]
+            const StatusIcon = ann.status === 'sent' ? CheckCircle : ann.status === 'scheduled' ? Clock : FileText
+            // Light yellow for announcement icons (consistent across all)
+            const annIconBg = 'rgba(245,158,11,0.10)'
+            const annIconColor = '#D97706'
+
+            return (
+              <div key={ann.id}
+                style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden', transition: 'box-shadow 0.15s, border-color 0.15s' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 20px rgba(28,32,53,0.08)'; (e.currentTarget as HTMLDivElement).style.borderColor = '#D8DAEC' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = 'none'; (e.currentTarget as HTMLDivElement).style.borderColor = C.border }}
+              >
+                <div style={{ height: 1, background: '#F59E0B' }} />
+                <div style={{ padding: '16px 20px', display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+                  <div style={{ width: 42, height: 42, borderRadius: 12, background: annIconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
+                    <Megaphone size={18} strokeWidth={1.8} style={{ color: annIconColor }} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 6 }}>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: 14.5, fontWeight: 800, color: C.navy, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ann.title}</div>
+                        <div style={{ fontSize: 12.5, color: C.muted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ann.subject}</div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 6, background: pc.bg, color: pc.color, border: `1px solid ${pc.border}` }}>{ann.priority}</span>
+                        <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 6, background: sc.bg, color: sc.color, display: 'flex', alignItems: 'center', gap: 4 }}><StatusIcon size={10} strokeWidth={2} />{sc.label}</span>
+                      </div>
+                    </div>
+                    <p style={{ fontSize: 12.5, color: '#5A6080', margin: '0 0 10px', lineHeight: 1.6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ann.message}</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600, color: '#3D4266' }}>
+                        <Users size={12} strokeWidth={1.8} style={{ color: C.muted }} />
+                        {ann.audienceLabel}
+                      </span>
+                      {ann.attachments && ann.attachments.length > 0 && ann.attachments.map((att, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => att.url && window.open(att.url, '_blank')}
+                          style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, padding: '4px 10px', borderRadius: 8, background: 'rgba(139,144,167,0.10)', color: '#6B7280', border: 'none', cursor: att.url ? 'pointer' : 'default', transition: 'all 0.14s' }}
+                          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(139,144,167,0.18)' }}
+                          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(139,144,167,0.10)' }}
+                        >
+                          {att.type === 'image' && (
+                            <>
+                              <ImageIcon size={12} strokeWidth={1.8} />
+                              Image
+                            </>
+                          )}
+                          {att.type === 'pdf' && (
+                            <>
+                              <FileText size={12} strokeWidth={1.8} />
+                              PDF
+                            </>
+                          )}
+                          {att.type === 'link' && (
+                            <>
+                              <Link2 size={12} strokeWidth={1.8} />
+                              Link
+                            </>
+                          )}
+                          {att.type === 'doc' && (
+                            <>
+                              <FileText size={12} strokeWidth={1.8} />
+                              Document
+                            </>
+                          )}
+                        </button>
+                      ))}
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: C.muted }}>
+                        <Clock size={11} strokeWidth={1.8} />
+                        {ann.timeLabel}
+                      </span>
+                      <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
+                        <button title="View" style={{ width: 32, height: 32, borderRadius: 9, border: 'none', background: 'rgba(139,144,167,0.10)', color: '#6B7280', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.14s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(139,144,167,0.18)' }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(139,144,167,0.10)' }}>
+                          <Eye size={14} strokeWidth={1.8} />
+                        </button>
+                        <button onClick={() => setDeleteId(ann.id)} title="Delete" style={{ width: 32, height: 32, borderRadius: 9, border: 'none', background: 'rgba(139,144,167,0.10)', color: '#6B7280', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.14s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(139,144,167,0.18)' }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(139,144,167,0.10)' }}>
+                          <Trash2 size={14} strokeWidth={1.8} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )
+          }
+
+          // REWARD & POSTER CARD (Using Rewards & Recognition design)
+          let iconBg, iconColor, topBorderColor
+
+          if (ann.contentType === 'reward') {
+            iconBg = statusConfig.bg
+            iconColor = statusConfig.color
+            topBorderColor = '#0A8A58'
+          } else { // poster
+            iconBg = 'rgba(8,145,178,0.10)'
+            iconColor = '#0891B2'
+            topBorderColor = '#0891B2'
+          }
+
           return (
             <div key={ann.id}
               style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden', transition: 'box-shadow 0.15s, border-color 0.15s' }}
               onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 20px rgba(28,32,53,0.08)'; (e.currentTarget as HTMLDivElement).style.borderColor = '#D8DAEC' }}
               onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = 'none'; (e.currentTarget as HTMLDivElement).style.borderColor = C.border }}
             >
-              <div style={{ height: 1, background: ann.priority === 'Urgent' ? '#E84855' : ann.priority === 'Important' ? '#F59E0B' : '#6366F1' }} />
+              <div style={{ height: 1, background: topBorderColor }} />
               <div style={{ padding: '16px 20px', display: 'flex', alignItems: 'flex-start', gap: 16 }}>
-                <div style={{ width: 42, height: 42, borderRadius: 12, background: pc.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
-                  <Megaphone size={18} strokeWidth={1.8} style={{ color: pc.color }} />
+                <div style={{ width: 42, height: 42, borderRadius: 12, background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
+                  {ann.contentType === 'reward' && <Trophy size={18} strokeWidth={1.8} style={{ color: iconColor }} />}
+                  {ann.contentType === 'poster' && <Layers size={18} strokeWidth={1.8} style={{ color: iconColor }} />}
                 </div>
+
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 6 }}>
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: 14.5, fontWeight: 800, color: C.navy, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ann.title}</div>
-                      <div style={{ fontSize: 12.5, color: C.muted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ann.subject}</div>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>{ann.title}</div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                      <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 6, background: pc.bg, color: pc.color, border: `1px solid ${pc.border}` }}>{ann.priority}</span>
-                      <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 6, background: sc.bg, color: sc.color, display: 'flex', alignItems: 'center', gap: 4 }}><StatusIcon size={10} strokeWidth={2} />{sc.label}</span>
-                    </div>
+                    <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 6, background: statusConfig.bg, color: statusConfig.color, border: `1px solid ${statusConfig.border}`, flexShrink: 0 }}>{statusConfig.label}</span>
                   </div>
+
                   <p style={{ fontSize: 12.5, color: '#5A6080', margin: '0 0 10px', lineHeight: 1.6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ann.message}</p>
+
                   <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: C.muted }}>
-                      <AudienceIcon size={12} strokeWidth={1.8} />
-                      <span style={{ fontWeight: 600, color: '#3D4266' }}>{ann.audienceLabel}</span>
+                    {/* Sent To for Rewards/Posters */}
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600, color: '#3D4266' }}>
+                      <Users size={12} strokeWidth={1.8} style={{ color: C.muted }} />
+                      {ann.audienceLabel}
                     </span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: C.muted }}><Clock size={11} strokeWidth={1.8} />{ann.timeLabel}</span>
-                    {ann.attachments.length > 0 && <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: C.muted }}><Paperclip size={11} strokeWidth={1.8} />{ann.attachments.length} file{ann.attachments.length > 1 ? 's' : ''}</span>}
-                    <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
-                      {(ann.status === 'scheduled' || ann.status === 'draft') && (
-                        <button title="Edit" style={{ width: 32, height: 32, borderRadius: 9, border: 'none', background: 'rgba(124,58,237,0.09)', color: '#7C3AED', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.14s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.18)' }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.09)' }}>
-                          <Edit2 size={14} strokeWidth={1.8} />
-                        </button>
-                      )}
-                      <button onClick={() => setViewAnn(ann)} title="View" style={{ width: 32, height: 32, borderRadius: 9, border: 'none', background: 'rgba(99,102,241,0.09)', color: '#6366F1', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.14s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.18)' }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.09)' }}><Eye size={14} strokeWidth={1.8} /></button>
-                      <button onClick={() => setDeleteId(ann.id)} title="Delete" style={{ width: 32, height: 32, borderRadius: 9, border: 'none', background: 'rgba(232,72,85,0.09)', color: '#E84855', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.14s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(232,72,85,0.18)' }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(232,72,85,0.09)' }}><Trash2 size={14} strokeWidth={1.8} /></button>
+
+                    {/* Images Badge */}
+                    {ann.images && ann.images.length > 0 && (
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, padding: '4px 10px', borderRadius: 8, background: 'rgba(139,144,167,0.10)', color: '#6B7280' }}>
+                        <ImageIcon size={12} strokeWidth={1.8} />
+                        {ann.images.length} image{ann.images.length > 1 ? 's' : ''}
+                      </span>
+                    )}
+
+                    {/* Date & Time */}
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: C.muted }}>
+                      <Clock size={11} strokeWidth={1.8} />
+                      {ann.timeLabel}
+                    </span>
+
+                    {/* Duration */}
+                    {ann.duration && (
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: C.muted }}>
+                        <Calendar size={11} strokeWidth={1.8} />
+                        {ann.duration}
+                      </span>
+                    )}
+
+                    <div style={{ marginLeft: 'auto', display: 'flex', gap: 6, flexShrink: 0 }}>
+                      <button title="View" style={{ width: 32, height: 32, borderRadius: 9, border: 'none', background: 'rgba(139,144,167,0.10)', color: '#6B7280', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.14s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(139,144,167,0.18)' }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(139,144,167,0.10)' }}>
+                        <Eye size={14} strokeWidth={1.8} />
+                      </button>
+                      <button title="Delete" style={{ width: 32, height: 32, borderRadius: 9, border: 'none', background: 'rgba(139,144,167,0.10)', color: '#6B7280', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.14s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(139,144,167,0.18)' }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(139,144,167,0.10)' }} onClick={() => setDeleteId(ann.id)}>
+                        <Trash2 size={14} strokeWidth={1.8} />
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -747,7 +1228,7 @@ export default function AdminAnnouncementsPage() {
               <Trash2 size={24} strokeWidth={1.8} style={{ color: '#E84855' }} />
             </div>
             <div style={{ fontSize: 18, fontWeight: 800, color: C.navy, marginBottom: 8 }}>Delete Announcement</div>
-            <p style={{ fontSize: 13.5, color: C.muted, lineHeight: 1.65, marginBottom: 24 }}>Are you sure you want to delete this announcement?<br />This action cannot be undone.</p>
+            <p style={{ fontSize: 13.5, color: C.muted, lineHeight: 1.65, marginBottom: 24, whiteSpace: 'nowrap' }}>Are you sure you want to delete this announcement?</p>
             <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={() => setDeleteId(null)} style={{ flex: 1, height: 44, borderRadius: 12, border: `1px solid ${C.border}`, background: '#fff', color: C.muted, fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }} onMouseEnter={e => { e.currentTarget.style.borderColor = '#C8CCE0'; e.currentTarget.style.color = C.navy }} onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted }}>Cancel</button>
               <button onClick={() => handleDelete(deleteId)} style={{ flex: 1, height: 44, borderRadius: 12, border: 'none', background: '#E84855', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }} onMouseEnter={e => { e.currentTarget.style.background = '#D43F4B' }} onMouseLeave={e => { e.currentTarget.style.background = '#E84855' }}>Delete</button>
@@ -755,6 +1236,7 @@ export default function AdminAnnouncementsPage() {
           </div>
         </div>
       )}
+
     </div>
   )
 }

@@ -76,7 +76,16 @@ function buildNav(role: 'employee' | 'manager'): NavSection[] {
             { id: 'tickets',       label: 'Tickets'       },
           ],
         },
-        { id: 'assets', label: 'Assets', Icon: Package },
+        ...(role === 'manager'
+          ? [{
+              id: 'assets-management', label: 'Assets Management', Icon: Package,
+              children: [
+                { id: 'my-assets',            label: 'My Assets'            },
+                { id: 'team-asset-requests',  label: 'Team Asset Requests'  },
+              ],
+            }]
+          : [{ id: 'assets', label: 'Assets', Icon: Package }]
+        ),
         { id: 'expense', label: 'Expense', Icon: Receipt },
         { id: 'payroll', label: 'Payroll', Icon: Wallet    },
         { id: 'reports', label: 'Reports', Icon: BarChart3 },
@@ -150,6 +159,20 @@ function buildAdminNav(): NavSection[] {
       ],
     },
     {
+      label: 'SYSTEM',
+      items: [
+        {
+          id: 'system-settings', label: 'System Settings', Icon: Settings,
+          children: [
+            { id: 'org-profile',          label: 'Organization Profile'      },
+            { id: 'working-hours',        label: 'Working Hours & Holidays'  },
+            { id: 'announcements',        label: 'Announcements'             },
+            // { id: 'rewards-recognition',  label: 'Rewards and Recognition'   }, // hidden for now
+          ],
+        },
+      ],
+    },
+    {
       label: 'INSIGHTS',
       items: [
         {
@@ -159,20 +182,6 @@ function buildAdminNav(): NavSection[] {
             { id: 'leave-report',      label: 'Leave Report'      },
             { id: 'all-timesheets',    label: 'Timesheet Report'  },
             { id: 'audit-trail',       label: 'Audit Trail'       },
-          ],
-        },
-      ],
-    },
-    {
-      label: 'SYSTEM',
-      items: [
-        {
-          id: 'system-settings', label: 'System Settings', Icon: Settings,
-          children: [
-            { id: 'org-profile',          label: 'Organization Profile'      },
-            { id: 'working-hours',        label: 'Working Hours & Holidays'  },
-            { id: 'announcements',        label: 'Announcements'             },
-            { id: 'rewards-recognition',  label: 'Rewards and Recognition'   },
           ],
         },
       ],
