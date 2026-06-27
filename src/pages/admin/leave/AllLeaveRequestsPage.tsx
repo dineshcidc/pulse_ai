@@ -207,19 +207,14 @@ function ViewModal({ item, onClose }: { item: LeaveRequest; onClose: () => void 
             <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: C.navy }}>{item.employee}</p>
             <p style={{ margin: '3px 0 0', fontSize: 12, color: C.muted }}>{item.empId} · {item.department} · {item.project}</p>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{
-              padding: '4px 12px', borderRadius: 7, fontSize: 12.5, fontWeight: 700,
-              color: sc.color, background: sc.bg, border: `1px solid ${sc.border}`,
-              display: 'inline-flex', alignItems: 'center', gap: 6,
-            }}>
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: sc.dot }} />
-              {item.status}
-            </span>
-            <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.muted, display: 'flex', padding: 4 }}>
-              <X size={16} />
-            </button>
-          </div>
+          <span style={{
+            padding: '4px 12px', borderRadius: 7, fontSize: 12.5, fontWeight: 700,
+            color: sc.color, background: sc.bg, border: `1px solid ${sc.border}`,
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+          }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: sc.dot }} />
+            {item.status}
+          </span>
         </div>
 
         <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -227,7 +222,7 @@ function ViewModal({ item, onClose }: { item: LeaveRequest; onClose: () => void 
           {/* Leave Details */}
           <div style={{ background: C.surface, borderRadius: 12, padding: '16px 18px' }}>
             <p style={{ margin: '0 0 12px', fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Leave Details</p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 20px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px 20px' }}>
               {[
                 { label: 'Leave Type',  value: <span style={{ padding: '2px 9px', borderRadius: 5, fontSize: 12.5, fontWeight: 600, color: tc.color, background: tc.bg, border: `1px solid ${tc.border}` }}>{item.leaveType}</span> },
                 { label: 'Duration',    value: `${item.days} day${item.days !== 1 ? 's' : ''}` },
@@ -334,42 +329,44 @@ export default function AllLeaveRequestsPage() {
       `}</style>
 
       {/* Page header */}
-      <div style={{ marginBottom: 22 }}>
-        <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: C.navy }}>All Leave Requests</h1>
-        <p style={{ margin: '5px 0 0', fontSize: 13.5, color: '#787878', fontWeight: 500, lineHeight: 1.65 }}>
-          View and monitor all employee leave requests across the organisation. Filter by project, leave type, or date. Click any request to review the full details and manager remarks.
-        </p>
-      </div>
+      <div style={{ marginBottom: 22, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20 }}>
+        <div>
+          <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: C.navy }}>All Leave Requests</h1>
+          <p style={{ margin: '5px 0 0', fontSize: 13.5, color: '#787878', fontWeight: 500, lineHeight: 1.65 }}>
+            View and monitor all employee leave requests across the organisation.
+          </p>
+        </div>
 
-      {/* Status tabs */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-        {TABS.map(t => {
-          const isActive = tab === t.id
-          const sc = STATUS_CFG[t.id]
-          return (
-            <button key={t.id} onClick={() => setTab(t.id)}
-              style={{
-                height: 36, padding: '0 16px', borderRadius: 9, cursor: 'pointer',
-                fontSize: 13, fontWeight: 600,
-                border: `1px solid ${isActive ? sc.border : C.border}`,
-                background: isActive ? sc.bg : '#fff',
-                color: isActive ? sc.color : C.muted,
-                display: 'flex', alignItems: 'center', gap: 7,
-                transition: 'all 0.15s',
-              }}
-            >
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: isActive ? sc.dot : C.muted, flexShrink: 0 }} />
-              {t.label}
-              <span style={{
-                minWidth: 20, height: 18, borderRadius: 5, padding: '0 5px',
-                fontSize: 11, fontWeight: 700,
-                background: isActive ? 'rgba(255,255,255,0.22)' : C.hover,
-                color: isActive ? sc.color : C.muted,
-                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-              }}>{counts[t.id]}</span>
-            </button>
-          )
-        })}
+        {/* Status badges */}
+        <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+          {TABS.map(t => {
+            const isActive = tab === t.id
+            const sc = STATUS_CFG[t.id]
+            return (
+              <button key={t.id} onClick={() => setTab(t.id)}
+                style={{
+                  height: 36, padding: '0 16px', borderRadius: 9, cursor: 'pointer',
+                  fontSize: 13, fontWeight: 600,
+                  border: `1px solid ${isActive ? sc.border : C.border}`,
+                  background: isActive ? sc.bg : '#fff',
+                  color: isActive ? sc.color : C.muted,
+                  display: 'flex', alignItems: 'center', gap: 7,
+                  transition: 'all 0.15s',
+                }}
+              >
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: isActive ? sc.dot : C.muted, flexShrink: 0 }} />
+                {t.label}
+                <span style={{
+                  minWidth: 20, height: 18, borderRadius: 5, padding: '0 5px',
+                  fontSize: 11, fontWeight: 700,
+                  background: isActive ? 'rgba(255,255,255,0.22)' : C.hover,
+                  color: isActive ? sc.color : C.muted,
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                }}>{counts[t.id]}</span>
+              </button>
+            )
+          })}
+        </div>
       </div>
 
       {/* Filter bar */}
@@ -392,7 +389,6 @@ export default function AllLeaveRequestsPage() {
 
           <Dropdown value={project}   options={PROJECTS} onChange={setProject}   minW={138} />
           <Dropdown value={manager}   options={MANAGERS} onChange={setManager}   minW={152} />
-          <DateInput value={fromDate} onChange={setFromDate} placeholder="Leave date" />
 
           {anyFilter && (
             <button onClick={clearAll}
@@ -425,7 +421,7 @@ export default function AllLeaveRequestsPage() {
                 display: 'flex',
               }}>
 
-                <div style={{ flex: 1, padding: '16px 20px', display: 'flex', alignItems: 'center', minWidth: 0 }}>
+                <div style={{ flex: 1, padding: '20px 24px', display: 'flex', alignItems: 'center', minWidth: 0, gap: 28 }}>
 
                   {/* Employee */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: '0 0 210px' }}>
@@ -433,19 +429,20 @@ export default function AllLeaveRequestsPage() {
                       style={{ width: 38, height: 38, borderRadius: '50%', flexShrink: 0, objectFit: 'cover' }} />
                     <div style={{ minWidth: 0 }}>
                       <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: C.navy, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.employee}</p>
-                      <p style={{ margin: '2px 0 0', fontSize: 11.5, color: C.muted }}>{r.department}</p>
+                      <p style={{ margin: '2px 0 0', fontSize: 11.5, color: C.muted }}>{r.empId}</p>
                     </div>
                   </div>
 
-                  <div style={{ width: 1, height: 36, background: C.border, flexShrink: 0, margin: '0 24px' }} />
+                  <div style={{ width: 1, height: 44, background: C.border, flexShrink: 0 }} />
 
                   {/* Leave type + dates */}
-                  <div style={{ flex: '0 0 180px' }}>
+                  <div style={{ flex: '0 0 180px', display: 'flex', flexDirection: 'column', gap: 10 }}>
                     <span style={{
                       display: 'inline-flex', alignItems: 'center', gap: 5,
-                      padding: '2px 9px', borderRadius: 5, marginBottom: 5,
+                      padding: '2px 9px', borderRadius: 5,
                       fontSize: 11.5, fontWeight: 700,
                       color: tc.color, background: tc.bg, border: `1px solid ${tc.border}`,
+                      width: 'fit-content',
                     }}>
                       <span style={{ fontSize: 10, fontWeight: 800 }}>{tc.short}</span>
                       {r.leaveType}
@@ -453,22 +450,22 @@ export default function AllLeaveRequestsPage() {
                     <p style={{ margin: 0, fontSize: 12.5, fontWeight: 600, color: C.navy }}>
                       {fmt(r.fromDate)}{r.days > 1 ? ` → ${fmt(r.toDate)}` : ''}
                     </p>
-                    <p style={{ margin: '2px 0 0', fontSize: 11.5, color: C.muted }}>{r.days} day{r.days !== 1 ? 's' : ''}</p>
+                    <p style={{ margin: 0, fontSize: 11.5, color: C.muted }}>{r.days} day{r.days !== 1 ? 's' : ''}</p>
                   </div>
 
-                  <div style={{ width: 1, height: 36, background: C.border, flexShrink: 0, margin: '0 24px' }} />
+                  <div style={{ width: 1, height: 44, background: C.border, flexShrink: 0 }} />
 
                   {/* Project */}
-                  <div style={{ flex: '0 0 140px' }}>
-                    <p style={{ margin: '0 0 3px', fontSize: 10.5, fontWeight: 600, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Project</p>
+                  <div style={{ flex: '0 0 140px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <p style={{ margin: 0, fontSize: 10.5, fontWeight: 600, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Project</p>
                     <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: C.navy }}>{r.project}</p>
                   </div>
 
-                  <div style={{ width: 1, height: 36, background: C.border, flexShrink: 0, margin: '0 24px' }} />
+                  <div style={{ width: 1, height: 44, background: C.border, flexShrink: 0 }} />
 
                   {/* Reporting Manager */}
-                  <div style={{ flex: '0 0 150px' }}>
-                    <p style={{ margin: '0 0 4px', fontSize: 10.5, fontWeight: 600, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Manager</p>
+                  <div style={{ flex: '0 0 150px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <p style={{ margin: 0, fontSize: 10.5, fontWeight: 600, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Manager</p>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                       <img src={`https://i.pravatar.cc/22?img=${r.managerAvatar}`} alt={r.reportingManager}
                         style={{ width: 22, height: 22, borderRadius: '50%', flexShrink: 0 }} />
@@ -476,11 +473,11 @@ export default function AllLeaveRequestsPage() {
                     </div>
                   </div>
 
-                  <div style={{ width: 1, height: 36, background: C.border, flexShrink: 0, margin: '0 24px' }} />
+                  <div style={{ width: 1, height: 44, background: C.border, flexShrink: 0 }} />
 
                   {/* Applied date */}
-                  <div style={{ flex: '0 0 110px' }}>
-                    <p style={{ margin: '0 0 3px', fontSize: 10.5, fontWeight: 600, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Applied</p>
+                  <div style={{ flex: '0 0 110px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <p style={{ margin: 0, fontSize: 10.5, fontWeight: 600, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Applied</p>
                     <p style={{ margin: 0, fontSize: 12.5, color: C.navy }}>{r.appliedDate}</p>
                   </div>
 
@@ -506,7 +503,7 @@ export default function AllLeaveRequestsPage() {
                         transition: 'all 0.15s',
                       }}
                       onMouseEnter={e => { e.currentTarget.style.borderColor = '#7C3AED'; e.currentTarget.style.color = '#7C3AED' }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = C.border;  e.currentTarget.style.color = C.navy  }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.navy }}
                     >
                       <Eye size={13} /> View
                     </button>

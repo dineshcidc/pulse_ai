@@ -517,7 +517,7 @@ export default function AddEmployeePage() {
                   <FInput label="Date of Birth" placeholder="" value={dob} onChange={setDob} type="date" />
                   <FInput label="National ID"   placeholder="e.g. IND-2024-JD-0042"       value={nationalId}    onChange={setNationalId} />
                   <FInput label="Mobile Number" required placeholder="+91 98765 43210"     value={phone}         onChange={setPhone} type="tel" />
-                  <FInput label="Email Address" required placeholder="john@concertidc.com" value={email}         onChange={setEmail} type="email" />
+                  <FInput label="Email Address" required placeholder="john@gmail.com" value={email}         onChange={setEmail} type="email" />
                 </div>
               </FormSection>
 
@@ -932,15 +932,13 @@ export default function AddEmployeePage() {
               <FormSection icon={<Briefcase size={15} color={C.indigo} />} title="Employment Details" subtitle="Job role, department, reporting structure and tenure" accent={C.indigo}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px 20px' }}>
                   <FSelect label="Employee Type"     required options={['Regular', 'Contract', 'Intern', 'Part-time', 'Consultant']} value={empType}      onChange={setEmpType} />
-                  <FSelect label="Employment Status"          options={['Working', 'Notice Period', 'On Leave', 'Probation']}         value={empStatus}    onChange={setEmpStatus} />
+                  <FInput  label="Email Address"     required placeholder="john@gmail.com" value={email} onChange={setEmail} type="email" />
                   <FInput  label="Designation"       required placeholder="e.g. UI/UX Designer"    value={designation}  onChange={setDesignation} />
-                  <FSelect label="Level"                      options={['Junior', 'Mid-level', 'Senior Executive', 'Lead', 'Manager', 'Director', 'VP']} value={level} onChange={setLevel} />
                   <FSelect label="Department"        required options={['Engineering', 'Design', 'QA & Testing', 'DevOps', 'Product', 'IT Operations', 'HR', 'Finance']} value={department} onChange={setDepartment} />
+                  <FSelect label="Level"                      options={['Junior', 'Mid-level', 'Senior Executive', 'Lead', 'Manager', 'Director', 'VP']} value={level} onChange={setLevel} />
                   <FSelect label="Reporting Manager"          options={['David Brown', 'Priya Sharma', 'Rohan Mehta', 'Nina Volkov']} value={manager}     onChange={setManager} />
-                  <FSelect label="Work Nature"                options={['Full-Time', 'Part-Time', 'Contract']} value={workNature}   onChange={setWorkNature} />
                   <FInput  label="Date of Joining"   required placeholder=""  value={joinDate}     onChange={setJoinDate}    type="date" />
                   <FInput  label="Confirmation Date"          placeholder=""  value={confirmDate}  onChange={setConfirmDate} type="date" />
-                  <FSelect label="Notice Period"              options={['30 days', '45 days', '60 days', '90 days']} value={noticePeriod} onChange={setNoticePeriod} />
                 </div>
                 <div style={{ marginTop: 16 }}>
                   <FTextarea label="Job Description" placeholder="Briefly describe the role responsibilities…" value={jobDesc} onChange={setJobDesc} rows={2} />
@@ -954,7 +952,6 @@ export default function AddEmployeePage() {
                   <FSelect label="Work Location"         options={['On-site', 'Remote', 'Hybrid']}              value={workLocation}  onChange={setWorkLocation} />
                   <FSelect label="Shift"                 options={['General', 'Morning', 'Evening', 'Night', 'Flexible']} value={shift}    onChange={setShift} />
                   <FSelect label="Attendance Recording"  options={['Mobile + Web', 'Biometric', 'Web Only', 'Manual']}   value={attendanceRec} onChange={setAttendanceRec} />
-                  <FInput  label="Calendar"              placeholder="e.g. Calendar-2026"   value={calendar}      onChange={setCalendar} />
                   <FInput  label="Desk Number"           placeholder="e.g. D-204"           value={deskNumber}    onChange={setDeskNumber} />
                 </div>
               </FormSection>
@@ -1001,9 +998,6 @@ export default function AddEmployeePage() {
                       </span>
                     </div>
                   )}
-                  <button style={{ height: 40, padding: '0 18px', borderRadius: 10, border: `1px solid ${C.border}`, background: C.surface, color: C.navy, fontSize: 13.5, fontWeight: 600, cursor: 'pointer', fontFamily: "'DM Sans', system-ui, sans-serif" }}>
-                    Save as Draft
-                  </button>
                   <button
                     onClick={handleAddClick}
                     disabled={!canSubmit || btnLoading}

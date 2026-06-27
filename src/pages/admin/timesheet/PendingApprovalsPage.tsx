@@ -311,7 +311,7 @@ export default function PendingApprovalsPage() {
               onFocus={() => setShowSuggestions(true)}
               onKeyDown={e => { if (e.key === 'Escape') setShowSuggestions(false) }}
               placeholder={allSelected ? 'All managers selected' : selectedManagers.length > 0 ? 'Add another manager…' : 'Search manager…'}
-              style={{ width:'100%', height:44, paddingLeft:38, paddingRight: searchQuery ? 34 : 12, border:'1px solid #ECEEF6', borderRadius:11, fontSize:13.5, color:C.navy, background:C.surface, outline:'none', fontFamily:'inherit', boxSizing:'border-box', transition:'border-color 0.15s' }}
+              style={{ width:'100%', height:38, paddingLeft:38, paddingRight: searchQuery ? 34 : 12, border:'1px solid #ECEEF6', borderRadius:11, fontSize:13.5, color:C.navy, background:'#fff', outline:'none', fontFamily:'inherit', boxSizing:'border-box', transition:'border-color 0.15s' }}
               onFocusCapture={e => { e.currentTarget.style.borderColor = '#B0B5CC' }}
               onBlurCapture={e => { e.currentTarget.style.borderColor = '#ECEEF6' }}
             />
@@ -354,7 +354,7 @@ export default function PendingApprovalsPage() {
             <select
               value={selectedProject}
               onChange={e => setSelectedProject(e.target.value)}
-              style={{ width:'100%', height:44, padding:'0 32px 0 12px', border:'1px solid #ECEEF6', borderRadius:11, fontSize:13.5, color:C.muted, background:C.surface, outline:'none', cursor:'pointer', fontFamily:'inherit', appearance:'none', transition:'border-color 0.15s' }}
+              style={{ width:'100%', height:38, padding:'0 32px 0 12px', border:'1px solid #ECEEF6', borderRadius:11, fontSize:13.5, color:C.muted, background:'#fff', outline:'none', cursor:'pointer', fontFamily:'inherit', appearance:'none', transition:'border-color 0.15s' }}
               onFocus={e => { e.currentTarget.style.borderColor = '#B0B5CC' }}
               onBlur={e => { e.currentTarget.style.borderColor = '#ECEEF6' }}
             >
@@ -368,12 +368,12 @@ export default function PendingApprovalsPage() {
           <div style={{ display:'flex', alignItems:'center', gap:8, flexShrink:0 }}>
             <span style={{ fontSize:12.5, fontWeight:600, color:C.muted, whiteSpace:'nowrap' }}>From</span>
             <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)}
-              style={{ height:44, padding:'0 12px', border:'1px solid #ECEEF6', borderRadius:11, fontSize:13, color: fromDate ? C.navy : C.muted, background:C.surface, outline:'none', cursor:'pointer', fontFamily:'inherit', transition:'border-color 0.15s', width:150 }}
+              style={{ height:38, padding:'0 12px', border:'1px solid #ECEEF6', borderRadius:11, fontSize:13, color: fromDate ? C.navy : C.muted, background:C.surface, outline:'none', cursor:'pointer', fontFamily:'inherit', transition:'border-color 0.15s', width:150 }}
               onFocus={e => { e.target.style.borderColor = '#B0B5CC' }}
               onBlur={e => { e.target.style.borderColor = '#ECEEF6' }} />
             <span style={{ fontSize:12.5, fontWeight:600, color:C.muted, whiteSpace:'nowrap' }}>To</span>
             <input type="date" value={toDate} onChange={e => setToDate(e.target.value)}
-              style={{ height:44, padding:'0 12px', border:'1px solid #ECEEF6', borderRadius:11, fontSize:13, color: toDate ? C.navy : C.muted, background:C.surface, outline:'none', cursor:'pointer', fontFamily:'inherit', transition:'border-color 0.15s', width:150 }}
+              style={{ height:38, padding:'0 12px', border:'1px solid #ECEEF6', borderRadius:11, fontSize:13, color: toDate ? C.navy : C.muted, background:C.surface, outline:'none', cursor:'pointer', fontFamily:'inherit', transition:'border-color 0.15s', width:150 }}
               onFocus={e => { e.target.style.borderColor = '#B0B5CC' }}
               onBlur={e => { e.target.style.borderColor = '#ECEEF6' }} />
           </div>

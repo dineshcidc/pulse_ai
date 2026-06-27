@@ -53,7 +53,7 @@ const inputBase: React.CSSProperties = {
   boxSizing: 'border-box',
 }
 
-export default function LeaveCreatePage() {
+export default function LeaveCreatePage({ onNavigate }: { onNavigate?: (id: string) => void } = {}) {
   const [leaveType,    setLeaveType]    = useState('')
   const [startDate,    setStartDate]    = useState('')
   const [endDate,      setEndDate]      = useState('')
@@ -394,6 +394,7 @@ export default function LeaveCreatePage() {
               style={{ borderTop: `1px solid ${C.border}`, paddingTop: 22 }}
             >
               <button
+                onClick={() => onNavigate?.('dashboard')}
                 style={{
                   height: 44, padding: '0 22px', borderRadius: 10, fontSize: 13.5, fontWeight: 600,
                   border: `1px solid ${C.border}`, background: '#fff', color: C.muted,

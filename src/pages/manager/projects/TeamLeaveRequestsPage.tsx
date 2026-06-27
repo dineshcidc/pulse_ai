@@ -56,6 +56,33 @@ const TABS: { id: LeaveStatus; label: string }[] = [
   { id: 'rejected', label: 'Rejected' },
 ]
 
+const PROJECT_OPTIONS = ['All Projects', 'Pulse.AI v2', 'HDFC Portal', 'TechCorp ERP']
+
+function Dropdown({ value, options, onChange, width }: { value: string; options: string[]; onChange: (v: string) => void; width?: number }) {
+  return (
+    <div style={{ position: 'relative', flexShrink: 0 }}>
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        style={{
+          height: 38, padding: '0 30px 0 12px',
+          border: `1px solid ${C.border}`, borderRadius: 9,
+          fontSize: 13, fontWeight: 500, color: value.startsWith('All') ? C.muted : C.navy,
+          background: '#fff', outline: 'none',
+          cursor: 'pointer', appearance: 'none',
+          fontFamily: "'DM Sans', system-ui, sans-serif",
+          width: width ?? 'auto', minWidth: 130,
+        }}
+        onFocus={e => { e.target.style.borderColor = '#6366F1' }}
+        onBlur={e => { e.target.style.borderColor = C.border }}
+      >
+        {options.map(o => <option key={o}>{o}</option>)}
+      </select>
+      <svg style={{ position: 'absolute', right: 9, top: '50%', transform: 'translateY(-50%)', color: C.muted, pointerEvents: 'none', width: 12, height: 12 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+    </div>
+  )
+}
+
 interface RemarksModal {
   id: number | null
   action: 'approve' | 'reject' | null
@@ -227,6 +254,7 @@ function LeaveDetailModal({
 export default function TeamLeaveRequestsPage() {
   const [tab, setTab]         = useState<LeaveStatus>('pending')
   const [search, setSearch]   = useState('')
+  const [projectFilter, setProjectFilter] = useState('All Projects')
   const [dateFilter, setDateFilter] = useState('')
   const [rows, setRows]       = useState(LEAVE_ROWS)
   const [modal, setModal]     = useState<RemarksModal>({ id: null, action: null, remarks: '' })
@@ -255,14 +283,15 @@ export default function TeamLeaveRequestsPage() {
     const q = search.toLowerCase()
     const matchSearch = !q || r.employee.toLowerCase().includes(q) || r.project.toLowerCase().includes(q)
     const matchStatus = r.status === tab
+    const matchProject = projectFilter === 'All Projects' || r.project === projectFilter
     const matchDate   = !dateFilter || r.fromISO === dateFilter
-    return matchSearch && matchStatus && matchDate
+    return matchSearch && matchStatus && matchProject && matchDate
   })
 
   const pendingCount  = rows.filter(r => r.status === 'pending').length
-  const hasActiveFilter = search || dateFilter
+  const hasActiveFilter = search || dateFilter || projectFilter !== 'All Projects'
 
-  const COLS = '2fr 1fr 1.2fr 1.2fr 0.6fr 2fr 1fr 1.1fr'
+  const COLS = '1.5fr 1.2fr 1fr 1.2fr 1.2fr 0.6fr 1fr 1.1fr'
 
   return (
     <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
@@ -294,11 +323,13 @@ export default function TeamLeaveRequestsPage() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search employee or project..."
-              style={{ width: '100%', height: 38, paddingLeft: 34, paddingRight: 12, border: `1px solid ${C.border}`, borderRadius: 9, fontSize: 13, color: C.navy, background: C.surface, fontFamily: "'DM Sans', system-ui, sans-serif", outline: 'none', boxSizing: 'border-box' as const, transition: 'border-color 0.15s, background 0.15s' }}
-              onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.background = '#fff' }}
-              onBlur={e => { e.target.style.borderColor = C.border; e.target.style.background = C.surface }}
+              style={{ width: '100%', height: 38, paddingLeft: 34, paddingRight: 12, border: `1px solid ${C.border}`, borderRadius: 9, fontSize: 13, color: C.navy, background: '#fff', fontFamily: "'DM Sans', system-ui, sans-serif", outline: 'none', boxSizing: 'border-box' as const, transition: 'border-color 0.15s' }}
+              onFocus={e => { e.target.style.borderColor = '#6366F1' }}
+              onBlur={e => { e.target.style.borderColor = C.border }}
             />
           </div>
+
+          <Dropdown value={projectFilter} options={PROJECT_OPTIONS} onChange={setProjectFilter} />
 
           <div style={{ position: 'relative', flexShrink: 0 }}>
             <Calendar size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: C.muted, pointerEvents: 'none', zIndex: 1 }} />
@@ -312,7 +343,7 @@ export default function TeamLeaveRequestsPage() {
 
           {hasActiveFilter && (
             <button
-              onClick={() => { setSearch(''); setDateFilter('') }}
+              onClick={() => { setSearch(''); setProjectFilter('All Projects'); setDateFilter('') }}
               style={{ height: 38, padding: '0 12px', borderRadius: 9, border: `1px solid ${C.border}`, background: '#fff', fontSize: 12.5, color: C.muted, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = '#C8CCE0'; e.currentTarget.style.color = C.navy }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted }}
@@ -338,7 +369,7 @@ export default function TeamLeaveRequestsPage() {
 
         {/* Column headers */}
         <div className="grid" style={{ gridTemplateColumns: COLS, padding: '12px 20px', background: C.surface, borderBottom: `1px solid ${C.border}` }}>
-          {['Employee', 'Type', 'From', 'To', 'Days', 'Reason', 'Status', 'Action'].map(h => (
+          {['Employee', 'Project', 'Type', 'From', 'To', 'Days', 'Status', 'Action'].map(h => (
             <span key={h} style={{ fontSize: 11, fontWeight: 700, color: '#B0B4C8', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>{h}</span>
           ))}
         </div>
@@ -371,6 +402,9 @@ export default function TeamLeaveRequestsPage() {
                   </div>
                 </div>
 
+                {/* Project */}
+                <span style={{ fontSize: 12.5, color: '#5A6080', fontWeight: 500 }}>{row.project}</span>
+
                 {/* Type */}
                 <span style={{ fontSize: 11.5, fontWeight: 700, padding: '4px 9px', borderRadius: 7, background: tc.bg, color: tc.color, width: 'fit-content', whiteSpace: 'nowrap' as const }}>{row.type}</span>
 
@@ -382,13 +416,6 @@ export default function TeamLeaveRequestsPage() {
 
                 {/* Days */}
                 <span style={{ fontSize: 13, fontWeight: 700, color: C.navy }}>{row.days}d</span>
-
-                {/* Reason — truncated, full text in popup */}
-                <div style={{ minWidth: 0, overflow: 'hidden', paddingRight: 8 }}>
-                  <span style={{ fontSize: 12.5, color: '#5A6080', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block' }}>
-                    {row.reason}
-                  </span>
-                </div>
 
                 {/* Status */}
                 <span style={{ fontSize: 11.5, fontWeight: 700, padding: '4px 9px', borderRadius: 7, background: st.bg, color: st.color, border: `1px solid ${st.border}`, whiteSpace: 'nowrap' as const, width: 'fit-content' }}>{st.label}</span>

@@ -311,47 +311,20 @@ function TimesheetDetailView({
 
                   {/* Entry card */}
                   <div style={{ flex: 1, background: C.surface, borderRadius: 12, padding: '14px 16px', border: `1px solid ${C.border}` }}>
-                    {/* Badges row */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap' as const, marginBottom: 9 }}>
-                      {/* Project */}
-                      <div style={{
-                        display: 'flex', alignItems: 'center', gap: 5,
-                        background: `${entry.projectColor}14`, padding: '3px 10px',
-                        borderRadius: 16, border: `1px solid ${entry.projectColor}28`,
-                      }}>
-                        <div style={{ width: 6, height: 6, borderRadius: '50%', background: entry.projectColor }} />
-                        <span style={{ fontSize: 12, fontWeight: 700, color: entry.projectColor }}>{entry.projectName}</span>
-                      </div>
-
-                      {/* Task label */}
-                      <div style={{
-                        display: 'flex', alignItems: 'center', gap: 5,
-                        background: '#fff', padding: '3px 10px',
-                        borderRadius: 16, border: `1px solid ${C.border}`,
-                      }}>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: C.navy }}>{entry.taskLabel}</span>
-                      </div>
-
-                      {/* Duration */}
-                      <div style={{
-                        display: 'flex', alignItems: 'center', gap: 4,
-                        background: 'rgba(28,32,53,0.07)', padding: '3px 10px', borderRadius: 8,
-                      }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexWrap: 'wrap' as const, marginBottom: 9 }}>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: C.navy }}>{entry.projectName}</span>
+                      <span style={{ margin: '0 10px', color: C.border }}>|</span>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: C.navy }}>{entry.taskLabel}</span>
+                      <span style={{ margin: '0 10px', color: C.border }}>|</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                         <Clock size={10} style={{ color: C.muted }} />
-                        <span style={{ fontSize: 12, fontWeight: 700, color: C.navy }}>{entry.duration}</span>
-                      </div>
-
-                      {/* Time added — pushed right */}
-                      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <Clock size={10} style={{ color: C.muted }} />
-                        <span style={{ fontSize: 11.5, color: C.muted, fontWeight: 500 }}>Added {entry.timeAdded}</span>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: C.navy }}>{entry.duration}</span>
                       </div>
                     </div>
-
-                    {/* Comment */}
                     {entry.comment && (
-                      <div style={{ fontSize: 12.5, color: C.muted, lineHeight: 1.65 }}>{entry.comment}</div>
+                      <div style={{ fontSize: 12.5, color: C.muted, lineHeight: 1.65, marginTop: 8 }}>{entry.comment}</div>
                     )}
+                    <div style={{ marginTop: 8, fontSize: 11.5, color: C.muted }}>Added {entry.timeAdded}</div>
                   </div>
                 </div>
               )
@@ -609,9 +582,9 @@ export default function TeamTimesheetsPage() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search project or member..."
-              style={{ width: '100%', height: 38, paddingLeft: 34, paddingRight: 12, border: `1px solid ${C.border}`, borderRadius: 9, fontSize: 13, color: C.navy, background: C.surface, fontFamily: "'DM Sans', system-ui, sans-serif", outline: 'none', boxSizing: 'border-box' as const, transition: 'border-color 0.15s, background 0.15s' }}
-              onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.background = '#fff' }}
-              onBlur={e => { e.target.style.borderColor = C.border; e.target.style.background = C.surface }}
+              style={{ width: '100%', height: 38, paddingLeft: 34, paddingRight: 12, border: `1px solid ${C.border}`, borderRadius: 9, fontSize: 13, color: C.navy, background: '#fff', fontFamily: "'DM Sans', system-ui, sans-serif", outline: 'none', boxSizing: 'border-box' as const, transition: 'border-color 0.15s' }}
+              onFocus={e => { e.target.style.borderColor = '#6366F1' }}
+              onBlur={e => { e.target.style.borderColor = C.border }}
             />
           </div>
 
@@ -786,26 +759,20 @@ export default function TeamTimesheetsPage() {
                             </div>
                             {/* Entry card */}
                             <div style={{ flex: 1, background: C.surface, borderRadius: 12, padding: '14px 16px', border: `1px solid ${C.border}` }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap' as const, marginBottom: 9 }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: `${entry.projectColor}14`, padding: '3px 10px', borderRadius: 16, border: `1px solid ${entry.projectColor}28` }}>
-                                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: entry.projectColor }} />
-                                  <span style={{ fontSize: 12, fontWeight: 700, color: entry.projectColor }}>{entry.projectName}</span>
-                                </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#fff', padding: '3px 10px', borderRadius: 16, border: `1px solid ${C.border}` }}>
-                                  <span style={{ fontSize: 12, fontWeight: 600, color: C.navy }}>{entry.taskLabel}</span>
-                                </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(28,32,53,0.07)', padding: '3px 10px', borderRadius: 8 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexWrap: 'wrap' as const, marginBottom: 9 }}>
+                                <span style={{ fontSize: 12, fontWeight: 600, color: C.navy }}>{entry.projectName}</span>
+                                <span style={{ margin: '0 10px', color: C.border }}>|</span>
+                                <span style={{ fontSize: 12, fontWeight: 600, color: C.navy }}>{entry.taskLabel}</span>
+                                <span style={{ margin: '0 10px', color: C.border }}>|</span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                                   <Clock size={10} style={{ color: C.muted }} />
-                                  <span style={{ fontSize: 12, fontWeight: 700, color: C.navy }}>{entry.duration}</span>
-                                </div>
-                                <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4 }}>
-                                  <Clock size={10} style={{ color: C.muted }} />
-                                  <span style={{ fontSize: 11.5, color: C.muted, fontWeight: 500 }}>Added {entry.timeAdded}</span>
+                                  <span style={{ fontSize: 12, fontWeight: 600, color: C.navy }}>{entry.duration}</span>
                                 </div>
                               </div>
                               {entry.comment && (
-                                <div style={{ fontSize: 12.5, color: C.muted, lineHeight: 1.65 }}>{entry.comment}</div>
+                                <div style={{ fontSize: 12.5, color: C.muted, lineHeight: 1.65, marginTop: 8 }}>{entry.comment}</div>
                               )}
+                              <div style={{ marginTop: 8, fontSize: 11.5, color: C.muted }}>Added {entry.timeAdded}</div>
                             </div>
                           </div>
                         )

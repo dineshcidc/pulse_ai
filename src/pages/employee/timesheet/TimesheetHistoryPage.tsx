@@ -316,68 +316,79 @@ function SubmittedPanel({ iso }: { iso: string }) {
           This timesheet is awaiting approval. No changes can be made at this time.
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {record.entries.map((entry, i) => (
-            <div key={entry.id} style={{
-              background: C.surface, borderRadius: 12,
-              padding: '14px 16px', border: `1px solid ${C.border}`,
-            }}>
-              {/* Top row: index + badges + time added */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 9 }}>
-                {/* Index */}
-                <div style={{
-                  width: 26, height: 26, borderRadius: 8, flexShrink: 0,
-                  background: '#fff', border: `1px solid ${C.border}`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 11, fontWeight: 700, color: C.muted,
-                }}>
-                  {String(i + 1).padStart(2, '0')}
+        <div style={{ position: 'relative' }}>
+          {/* Vertical connector line */}
+          <div style={{
+            position: 'absolute', left: 19, top: 14,
+            width: 2,
+            height: `calc(100% - 28px)`,
+            background: 'linear-gradient(to bottom, rgba(217,119,6,0.35), rgba(217,119,6,0.04))',
+            borderRadius: 2,
+          }} />
+
+          {record.entries.map((entry, i) => {
+            const isLast = i === record.entries.length - 1
+            return (
+              <div key={entry.id} style={{
+                display: 'flex', gap: 20,
+                marginBottom: isLast ? 0 : 20,
+                position: 'relative',
+              }}>
+                {/* Node dot */}
+                <div style={{ width: 40, flexShrink: 0, display: 'flex', justifyContent: 'center', paddingTop: 3 }}>
+                  <div style={{
+                    width: 16, height: 16, borderRadius: '50%',
+                    background: '#fff', border: '2.5px solid #D97706',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    zIndex: 1, position: 'relative',
+                  }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#D97706' }} />
+                  </div>
                 </div>
 
-                {/* Project */}
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: 5,
-                  background: `${entry.projectColor}14`, padding: '3px 10px',
-                  borderRadius: 16, border: `1px solid ${entry.projectColor}28`,
+                {/* Entry card */}
+                <div key={entry.id} style={{
+                  background: C.surface, borderRadius: 12,
+                  padding: '14px 16px', border: `1px solid ${C.border}`,
+                  flex: 1,
                 }}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: entry.projectColor }} />
-                  <span style={{ fontSize: 12, fontWeight: 700, color: entry.projectColor }}>{entry.projectName}</span>
-                </div>
+                  {/* Top row: project | activity | time + time added */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 9 }}>
+                    {/* Project - text only */}
+                    <span style={{ fontSize: 12, fontWeight: 700, color: C.navy }}>{entry.projectName}</span>
 
-                {/* Task type */}
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: 5,
-                  background: '#fff', padding: '3px 10px',
-                  borderRadius: 16, border: `1px solid ${C.border}`,
-                }}>
-                  <span style={{ fontSize: 12 }}>{entry.taskIcon}</span>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: C.navy }}>{entry.taskLabel}</span>
-                </div>
+                    {/* Separator */}
+                    <div style={{ width: 1, height: 16, background: C.border }} />
 
-                {/* Duration */}
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: 4,
-                  background: 'rgba(28,32,53,0.07)', padding: '3px 10px', borderRadius: 8,
-                }}>
-                  <Clock size={10} style={{ color: C.muted }} />
-                  <span style={{ fontSize: 12, fontWeight: 700, color: C.navy }}>{entry.duration}</span>
-                </div>
+                    {/* Activity - text only, no emoji */}
+                    <span style={{ fontSize: 12, fontWeight: 600, color: C.navy }}>{entry.taskLabel}</span>
 
-                {/* Time added — pushed right */}
-                <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <Clock size={10} style={{ color: C.muted }} />
-                  <span style={{ fontSize: 11.5, color: C.muted, fontWeight: 500 }}>Added {entry.timeAdded}</span>
+                    {/* Separator */}
+                    <div style={{ width: 1, height: 16, background: C.border }} />
+
+                    {/* Time - text only */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <Clock size={10} style={{ color: C.muted }} />
+                      <span style={{ fontSize: 12, fontWeight: 700, color: C.navy }}>{entry.duration}</span>
+                    </div>
+
+                    {/* Time added — pushed right */}
+                    <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <Clock size={10} style={{ color: C.muted }} />
+                      <span style={{ fontSize: 11.5, color: C.muted, fontWeight: 500 }}>Added {entry.timeAdded}</span>
+                    </div>
+                  </div>
+
+                  {/* Comment */}
+                  {entry.comment && (
+                    <div style={{ fontSize: 12.5, color: C.muted, lineHeight: 1.65 }}>
+                      {entry.comment}
+                    </div>
+                  )}
                 </div>
               </div>
-
-              {/* Comment */}
-              {entry.comment && (
-                <div style={{ fontSize: 12.5, color: C.muted, lineHeight: 1.65 }}>
-                  {entry.comment}
-                </div>
-              )}
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </div>
@@ -540,67 +551,78 @@ function ReturnedPanel({ iso, onNavigate }: { iso: string; onNavigate: (id: stri
           Review the entries below, make corrections, and resubmit your timesheet.
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {record.entries.map((entry, i) => (
-            <div key={entry.id} style={{
-              background: C.surface, borderRadius: 12,
-              padding: '14px 16px', border: `1px solid ${C.border}`,
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 9 }}>
-                {/* Index */}
-                <div style={{
-                  width: 26, height: 26, borderRadius: 8, flexShrink: 0,
-                  background: '#fff', border: `1px solid ${C.border}`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 11, fontWeight: 700, color: C.muted,
-                }}>
-                  {String(i + 1).padStart(2, '0')}
+        <div style={{ position: 'relative' }}>
+          {/* Vertical connector line */}
+          <div style={{
+            position: 'absolute', left: 19, top: 14,
+            width: 2,
+            height: `calc(100% - 28px)`,
+            background: 'linear-gradient(to bottom, rgba(249,115,22,0.35), rgba(249,115,22,0.04))',
+            borderRadius: 2,
+          }} />
+
+          {record.entries.map((entry, i) => {
+            const isLast = i === record.entries.length - 1
+            return (
+              <div key={entry.id} style={{
+                display: 'flex', gap: 20,
+                marginBottom: isLast ? 0 : 20,
+                position: 'relative',
+              }}>
+                {/* Node dot */}
+                <div style={{ width: 40, flexShrink: 0, display: 'flex', justifyContent: 'center', paddingTop: 3 }}>
+                  <div style={{
+                    width: 16, height: 16, borderRadius: '50%',
+                    background: '#fff', border: '2.5px solid #F97316',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    zIndex: 1, position: 'relative',
+                  }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#F97316' }} />
+                  </div>
                 </div>
 
-                {/* Project */}
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: 5,
-                  background: `${entry.projectColor}14`, padding: '3px 10px',
-                  borderRadius: 16, border: `1px solid ${entry.projectColor}28`,
+                {/* Entry card */}
+                <div key={entry.id} style={{
+                  background: C.surface, borderRadius: 12,
+                  padding: '14px 16px', border: `1px solid ${C.border}`,
+                  flex: 1,
                 }}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: entry.projectColor }} />
-                  <span style={{ fontSize: 12, fontWeight: 700, color: entry.projectColor }}>{entry.projectName}</span>
-                </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 9 }}>
+                    {/* Project - text only */}
+                    <span style={{ fontSize: 12, fontWeight: 700, color: C.navy }}>{entry.projectName}</span>
 
-                {/* Task type */}
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: 5,
-                  background: '#fff', padding: '3px 10px',
-                  borderRadius: 16, border: `1px solid ${C.border}`,
-                }}>
-                  <span style={{ fontSize: 12 }}>{entry.taskIcon}</span>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: C.navy }}>{entry.taskLabel}</span>
-                </div>
+                    {/* Separator */}
+                    <div style={{ width: 1, height: 16, background: C.border }} />
 
-                {/* Duration */}
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: 4,
-                  background: 'rgba(28,32,53,0.07)', padding: '3px 10px', borderRadius: 8,
-                }}>
-                  <Clock size={10} style={{ color: C.muted }} />
-                  <span style={{ fontSize: 12, fontWeight: 700, color: C.navy }}>{entry.duration}</span>
-                </div>
+                    {/* Activity - text only, no emoji */}
+                    <span style={{ fontSize: 12, fontWeight: 600, color: C.navy }}>{entry.taskLabel}</span>
 
-                {/* Time added — pushed right */}
-                <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <Clock size={10} style={{ color: C.muted }} />
-                  <span style={{ fontSize: 11.5, color: C.muted, fontWeight: 500 }}>Added {entry.timeAdded}</span>
+                    {/* Separator */}
+                    <div style={{ width: 1, height: 16, background: C.border }} />
+
+                    {/* Time - text only */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <Clock size={10} style={{ color: C.muted }} />
+                      <span style={{ fontSize: 12, fontWeight: 700, color: C.navy }}>{entry.duration}</span>
+                    </div>
+
+                    {/* Time added — pushed right */}
+                    <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <Clock size={10} style={{ color: C.muted }} />
+                      <span style={{ fontSize: 11.5, color: C.muted, fontWeight: 500 }}>Added {entry.timeAdded}</span>
+                    </div>
+                  </div>
+
+                  {/* Comment */}
+                  {entry.comment && (
+                    <div style={{ fontSize: 12.5, color: C.muted, lineHeight: 1.65 }}>
+                      {entry.comment}
+                    </div>
+                  )}
                 </div>
               </div>
-
-              {/* Comment */}
-              {entry.comment && (
-                <div style={{ fontSize: 12.5, color: C.muted, lineHeight: 1.65 }}>
-                  {entry.comment}
-                </div>
-              )}
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </div>
@@ -784,33 +806,22 @@ function ApprovedDetail({ iso, onClose }: { iso: string; onClose: () => void }) 
                   flex: 1, background: C.surface, borderRadius: 12,
                   padding: '14px 16px', border: `1px solid ${C.border}`,
                 }}>
-                  {/* Badges row */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', marginBottom: 9 }}>
-                    {/* Project */}
-                    <div style={{
-                      display: 'flex', alignItems: 'center', gap: 5,
-                      background: `${entry.projectColor}14`, padding: '3px 10px',
-                      borderRadius: 16, border: `1px solid ${entry.projectColor}28`,
-                    }}>
-                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: entry.projectColor }} />
-                      <span style={{ fontSize: 12, fontWeight: 700, color: entry.projectColor }}>{entry.projectName}</span>
-                    </div>
+                  {/* Project | Activity | Time row */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 9 }}>
+                    {/* Project - text only */}
+                    <span style={{ fontSize: 12, fontWeight: 700, color: C.navy }}>{entry.projectName}</span>
 
-                    {/* Task type */}
-                    <div style={{
-                      display: 'flex', alignItems: 'center', gap: 5,
-                      background: '#fff', padding: '3px 10px',
-                      borderRadius: 16, border: `1px solid ${C.border}`,
-                    }}>
-                      <span style={{ fontSize: 12 }}>{entry.taskIcon}</span>
-                      <span style={{ fontSize: 12, fontWeight: 600, color: C.navy }}>{entry.taskLabel}</span>
-                    </div>
+                    {/* Separator */}
+                    <div style={{ width: 1, height: 16, background: C.border }} />
 
-                    {/* Duration */}
-                    <div style={{
-                      display: 'flex', alignItems: 'center', gap: 4,
-                      background: 'rgba(28,32,53,0.07)', padding: '3px 10px', borderRadius: 8,
-                    }}>
+                    {/* Activity - text only, no emoji */}
+                    <span style={{ fontSize: 12, fontWeight: 600, color: C.navy }}>{entry.taskLabel}</span>
+
+                    {/* Separator */}
+                    <div style={{ width: 1, height: 16, background: C.border }} />
+
+                    {/* Time - text only */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                       <Clock size={10} style={{ color: C.muted }} />
                       <span style={{ fontSize: 12, fontWeight: 700, color: C.navy }}>{entry.duration}</span>
                     </div>
@@ -864,6 +875,7 @@ export default function TimesheetHistoryPage({ onNavigate }: { onNavigate: (id: 
   const pendingDays   = monthEntries.filter(([, v]) => v.status === 'pending').length
   const draftDays     = monthEntries.filter(([, v]) => v.status === 'draft').length
   const returnedDays  = monthEntries.filter(([, v]) => v.status === 'returned').length
+  const submittedDays = monthEntries.filter(([, v]) => v.status === 'submitted').length
   const totalMonthH   = monthEntries.reduce((s, [, v]) => s + totalHoursForDay(v), 0)
 
   function prevMonth() {
@@ -916,14 +928,6 @@ export default function TimesheetHistoryPage({ onNavigate }: { onNavigate: (id: 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{
             display: 'flex', alignItems: 'center', gap: 6,
-            background: 'rgba(16,185,129,0.08)', padding: '7px 14px',
-            borderRadius: 10, border: '1px solid rgba(16,185,129,0.18)',
-          }}>
-            <CheckCircle2 size={13} style={{ color: '#10B981' }} />
-            <span style={{ fontSize: 12.5, fontWeight: 700, color: '#10B981' }}>{approvedDays} Approved</span>
-          </div>
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 6,
             background: 'rgba(59,130,246,0.08)', padding: '7px 14px',
             borderRadius: 10, border: '1px solid rgba(59,130,246,0.2)',
           }}>
@@ -932,11 +936,11 @@ export default function TimesheetHistoryPage({ onNavigate }: { onNavigate: (id: 
           </div>
           <div style={{
             display: 'flex', alignItems: 'center', gap: 6,
-            background: 'rgba(168,85,247,0.08)', padding: '7px 14px',
-            borderRadius: 10, border: '1px solid rgba(168,85,247,0.2)',
+            background: 'rgba(217,119,6,0.08)', padding: '7px 14px',
+            borderRadius: 10, border: '1px solid rgba(217,119,6,0.2)',
           }}>
-            <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#A855F7' }} />
-            <span style={{ fontSize: 12.5, fontWeight: 700, color: '#A855F7' }}>{draftDays} Draft</span>
+            <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#D97706' }} />
+            <span style={{ fontSize: 12.5, fontWeight: 700, color: '#D97706' }}>{submittedDays} Submitted</span>
           </div>
           <div style={{
             display: 'flex', alignItems: 'center', gap: 6,
@@ -948,11 +952,19 @@ export default function TimesheetHistoryPage({ onNavigate }: { onNavigate: (id: 
           </div>
           <div style={{
             display: 'flex', alignItems: 'center', gap: 6,
-            background: 'rgba(28,32,53,0.06)', padding: '7px 14px',
-            borderRadius: 10, border: `1px solid ${C.border}`,
+            background: 'rgba(168,85,247,0.08)', padding: '7px 14px',
+            borderRadius: 10, border: '1px solid rgba(168,85,247,0.2)',
           }}>
-            <Clock size={13} style={{ color: C.navy }} />
-            <span style={{ fontSize: 12.5, fontWeight: 700, color: C.navy }}>{fmtHours(totalMonthH)} Logged</span>
+            <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#A855F7' }} />
+            <span style={{ fontSize: 12.5, fontWeight: 700, color: '#A855F7' }}>{draftDays} Draft</span>
+          </div>
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            background: 'rgba(16,185,129,0.08)', padding: '7px 14px',
+            borderRadius: 10, border: '1px solid rgba(16,185,129,0.18)',
+          }}>
+            <CheckCircle2 size={13} style={{ color: '#10B981' }} />
+            <span style={{ fontSize: 12.5, fontWeight: 700, color: '#10B981' }}>{approvedDays} Approved</span>
           </div>
         </div>
       </div>

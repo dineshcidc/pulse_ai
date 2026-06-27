@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import {
   Ticket, Search, X, Eye, ArrowLeft,
-  Monitor, FolderOpen, User, Users, Laptop, DollarSign, LayoutGrid,
+  Monitor, FolderOpen, Users, Laptop, DollarSign, LayoutGrid,
   CheckCircle, ChevronDown, Send,
   Download, FileText, Paperclip, RefreshCw,
   UserCircle, Calendar, MessageSquare, AlertCircle, Clock,
@@ -23,8 +23,11 @@ interface TicketComment {
 interface AdminTicketRecord {
   id: string
   employee: string
+  employeeCode: string
   employeeAvatar: string
   department: string
+  role: string
+  type: string
   category: string
   subject: string
   description: string
@@ -38,28 +41,28 @@ interface AdminTicketRecord {
 }
 
 // ── Static data ────────────────────────────────────────────────────────────────
-const CATEGORIES = [
-  { id: 'All',             label: 'All Tickets',    Icon: LayoutGrid, color: '#5B5FDE', bg: 'rgba(99,102,241,0.10)'  },
-  { id: 'System Support',  label: 'System Support', Icon: Monitor,    color: '#3B82F6', bg: 'rgba(59,130,246,0.10)'  },
-  { id: 'Project Request', label: 'Project Request',Icon: FolderOpen, color: '#7C3AED', bg: 'rgba(124,58,237,0.10)' },
-  { id: 'Personal',        label: 'Personal',       Icon: User,       color: '#0D9488', bg: 'rgba(13,148,136,0.10)'  },
-  { id: 'HR Request',      label: 'HR Request',     Icon: Users,      color: '#0EA86A', bg: 'rgba(14,168,106,0.10)'  },
-  { id: 'IT Support',      label: 'IT Support',     Icon: Laptop,     color: '#6366F1', bg: 'rgba(99,102,241,0.10)'  },
-  { id: 'Finance',         label: 'Finance',        Icon: DollarSign, color: '#D97706', bg: 'rgba(245,158,11,0.10)'  },
+const TYPES = [
+  { id: 'All',                  label: 'All Types',           Icon: LayoutGrid },
+  { id: 'HR',                   label: 'HR',                  Icon: Users      },
+  { id: 'IT & Admin',           label: 'IT & Admin',          Icon: Laptop     },
+  { id: 'System Admin',         label: 'System Admin',        Icon: Monitor    },
+  { id: 'Finance Manager',      label: 'Finance Manager',     Icon: DollarSign },
+  { id: 'Project Allocation',   label: 'Project Allocation',  Icon: FolderOpen },
 ] as const
+
 
 const TICKETS: AdminTicketRecord[] = [
   {
-    id: 'TKT-2401', employee: 'Sarah Johnson', employeeAvatar: 'SJ', department: 'Engineering',
-    category: 'IT Support', subject: 'Laptop not connecting to corporate VPN',
+    id: 'TKT-2401', employee: 'Sarah Johnson', employeeCode: 'EMP001', employeeAvatar: 'SJ', department: 'Engineering', role: 'Senior Developer', type: 'IT & Admin',
+    category: 'IT - Hardware related queries', subject: 'Laptop not connecting to corporate VPN',
     description: 'My laptop has been unable to connect to the corporate VPN for the past 3 days. I have tried reinstalling the Cisco AnyConnect client and resetting credentials, but the issue persists. Error code: VPN_AUTH_FAILED. This is blocking access to all internal tools and repositories.',
-    createdDate: '2026-05-20', priority: 'High', status: 'Open',
+    createdDate: '2026-05-20', priority: 'High', status: 'Pending',
     assignedTo: 'Arjun Menon', lastUpdated: '2026-05-21', hasAttachment: true,
     comments: [],
   },
   {
-    id: 'TKT-2398', employee: 'Ravi Kumar', employeeAvatar: 'RK', department: 'HR',
-    category: 'HR Request', subject: 'Update emergency contact details in HRMS system',
+    id: 'TKT-2398', employee: 'Ravi Kumar', employeeCode: 'EMP002', employeeAvatar: 'RK', department: 'HR', role: 'HR Specialist', type: 'HR',
+    category: 'HR - Profile update', subject: 'Update emergency contact details in HRMS system',
     description: 'I need to update my emergency contact details in the HRMS portal. My previous contact has changed her phone number and I would also like to add my spouse as a secondary emergency contact. Please assist with updating both entries at the earliest.',
     createdDate: '2026-05-18', priority: 'Medium', status: 'Resolved',
     assignedTo: 'Priya Mehta', lastUpdated: '2026-05-20', hasAttachment: false,
@@ -69,8 +72,8 @@ const TICKETS: AdminTicketRecord[] = [
     ],
   },
   {
-    id: 'TKT-2395', employee: 'Meera Pillai', employeeAvatar: 'MP', department: 'Finance',
-    category: 'System Support', subject: 'Unable to access HRMS portal — persistent login error',
+    id: 'TKT-2395', employee: 'Meera Pillai', employeeCode: 'EMP003', employeeAvatar: 'MP', department: 'Finance', role: 'Finance Manager', type: 'IT & Admin',
+    category: 'IT - Software related queries', subject: 'Unable to access HRMS portal — persistent login error',
     description: 'I have been unable to log into the HRMS portal since 16 May 2026. After entering credentials the system shows a loading spinner for approximately 30 seconds and then displays a blank white screen. I have reproduced the issue on Chrome, Firefox and Edge browsers across both my laptop and mobile. Clearing cache and cookies has not resolved it.',
     createdDate: '2026-05-16', priority: 'Critical', status: 'Pending',
     assignedTo: 'Dev Team', lastUpdated: '2026-05-21', hasAttachment: true,
@@ -79,8 +82,8 @@ const TICKETS: AdminTicketRecord[] = [
     ],
   },
   {
-    id: 'TKT-2389', employee: 'Deepak Nair', employeeAvatar: 'DN', department: 'Operations',
-    category: 'Finance', subject: 'Reimbursement claim for April 2026 not processed',
+    id: 'TKT-2389', employee: 'Deepak Nair', employeeCode: 'EMP004', employeeAvatar: 'DN', department: 'Operations', role: 'Operations Lead', type: 'Finance Manager',
+    category: 'Fin - Salary A/c opening/conversion', subject: 'Reimbursement claim for April 2026 not processed',
     description: 'My expense reimbursement claim for April 2026 totalling ₹4,850 (travel and accommodation for the Pune client visit on Apr 12–13) has not been processed. The claim was submitted via the expense portal on April 18 with all receipts attached. Request you to check the status and process the payment at the earliest.',
     createdDate: '2026-05-12', priority: 'High', status: 'Pending',
     assignedTo: 'Sunita Rao', lastUpdated: '2026-05-15', hasAttachment: true,
@@ -89,16 +92,16 @@ const TICKETS: AdminTicketRecord[] = [
     ],
   },
   {
-    id: 'TKT-2382', employee: 'Ananya Singh', employeeAvatar: 'AS', department: 'Engineering',
-    category: 'Project Request', subject: 'Access request to new project repository — AMS-v3',
+    id: 'TKT-2382', employee: 'Ananya Singh', employeeCode: 'EMP005', employeeAvatar: 'AS', department: 'Engineering', role: 'Software Developer', type: 'Project Allocation',
+    category: 'PA–Addition/Deletion of Resource', subject: 'Access request to new project repository — AMS-v3',
     description: 'I have been assigned to the AMS-v3 project starting May 12 but I do not yet have access to the project repository on Bitbucket. The project manager Raj Kumar is aware and has approved the request. Please provision the required read/write access to the AMS-v3 codebase at the earliest so I can begin onboarding tasks.',
-    createdDate: '2026-05-09', priority: 'Medium', status: 'Open',
+    createdDate: '2026-05-09', priority: 'Medium', status: 'Pending',
     assignedTo: 'Raj Kumar', lastUpdated: '2026-05-09', hasAttachment: false,
     comments: [],
   },
   {
-    id: 'TKT-2375', employee: 'Vikram Sharma', employeeAvatar: 'VS', department: 'Marketing',
-    category: 'Personal', subject: 'Work-from-home extension request for June 2026',
+    id: 'TKT-2375', employee: 'Vikram Sharma', employeeCode: 'EMP006', employeeAvatar: 'VS', department: 'Marketing', role: 'Marketing Manager', type: 'HR',
+    category: 'HR - Leave related queries', subject: 'Work-from-home extension request for June 2026',
     description: 'I would like to request a work-from-home extension for June 2026 due to a family medical situation at home. My current WFH approval is valid until May 31. I will maintain full availability during standard working hours, attend all meetings online, and ensure there is no impact on deliverables.',
     createdDate: '2026-05-05', priority: 'Low', status: 'Resolved',
     assignedTo: 'Priya Mehta', lastUpdated: '2026-05-07', hasAttachment: false,
@@ -108,8 +111,8 @@ const TICKETS: AdminTicketRecord[] = [
     ],
   },
   {
-    id: 'TKT-2368', employee: 'Sarah Johnson', employeeAvatar: 'SJ', department: 'Engineering',
-    category: 'IT Support', subject: 'Request for additional 27-inch monitor for workstation',
+    id: 'TKT-2368', employee: 'Sarah Johnson', employeeCode: 'EMP001', employeeAvatar: 'SJ', department: 'Engineering', role: 'Senior Developer', type: 'IT & Admin',
+    category: 'IT - Hardware related queries', subject: 'Request for additional 27-inch monitor for workstation',
     description: 'My current workstation has a single 24-inch display which significantly limits productivity when working across multiple applications simultaneously. I would like to request an additional 27-inch monitor to improve my workflow efficiency.',
     createdDate: '2026-04-28', priority: 'Low', status: 'Closed',
     assignedTo: 'Arjun Menon', lastUpdated: '2026-05-02', hasAttachment: false,
@@ -119,8 +122,8 @@ const TICKETS: AdminTicketRecord[] = [
     ],
   },
   {
-    id: 'TKT-2361', employee: 'Kiran Babu', employeeAvatar: 'KB', department: 'Finance',
-    category: 'HR Request', subject: 'April 2026 salary slip not received via email',
+    id: 'TKT-2361', employee: 'Kiran Babu', employeeCode: 'EMP007', employeeAvatar: 'KB', department: 'Finance', role: 'Finance Analyst', type: 'HR',
+    category: 'HR - Leave related queries', subject: 'April 2026 salary slip not received via email',
     description: 'I have not received my April 2026 salary slip via email. The slip is typically dispatched on the 5th of the following month but as of April 22 it has not arrived. I have checked my spam and junk folders thoroughly with no result. Please resend the April 2026 salary slip to my registered email address.',
     createdDate: '2026-04-22', priority: 'Medium', status: 'Resolved',
     assignedTo: 'Sunita Rao', lastUpdated: '2026-04-24', hasAttachment: false,
@@ -129,8 +132,8 @@ const TICKETS: AdminTicketRecord[] = [
     ],
   },
   {
-    id: 'TKT-2354', employee: 'Pooja Iyer', employeeAvatar: 'PI', department: 'Operations',
-    category: 'System Support', subject: 'Attendance not syncing — biometric data missing for 3 days',
+    id: 'TKT-2354', employee: 'Pooja Iyer', employeeCode: 'EMP008', employeeAvatar: 'PI', department: 'Operations', role: 'Operations Coordinator', type: 'IT & Admin',
+    category: 'IT - Hardware related queries', subject: 'Attendance not syncing — biometric data missing for 3 days',
     description: 'My attendance for May 14, 15, and 16 has not been recorded in the HRMS portal despite using the biometric scanner each day. I have the physical tokens as proof. This may affect my leave balance and payroll calculations.',
     createdDate: '2026-05-17', priority: 'High', status: 'Pending',
     assignedTo: 'Dev Team', lastUpdated: '2026-05-20', hasAttachment: true,
@@ -155,20 +158,12 @@ const PRIORITY_STYLE: Record<Priority, { bg: string; color: string; dot: string;
 }
 
 const CAT_BADGE: Record<string, { bg: string; color: string }> = {
-  'IT Support':      { bg: 'rgba(99,102,241,0.10)',  color: '#5B5FDE' },
-  'HR Request':      { bg: 'rgba(14,168,106,0.10)',  color: '#0A7040' },
-  'System Support':  { bg: 'rgba(59,130,246,0.10)',  color: '#1D4ED8' },
-  'Finance':         { bg: 'rgba(245,158,11,0.10)',  color: '#B45309' },
-  'Project Request': { bg: 'rgba(124,58,237,0.10)',  color: '#7C3AED' },
-  'Personal':        { bg: 'rgba(13,148,136,0.10)',  color: '#0D9488' },
-}
-
-const DEPT_COLOR: Record<string, { bg: string; color: string }> = {
-  Engineering: { bg: 'rgba(99,102,241,0.10)',  color: '#5B5FDE' },
-  HR:          { bg: 'rgba(14,168,106,0.10)',  color: '#0A7040' },
-  Finance:     { bg: 'rgba(245,158,11,0.10)',  color: '#B45309' },
-  Operations:  { bg: 'rgba(59,130,246,0.10)',  color: '#1D4ED8' },
-  Marketing:   { bg: 'rgba(236,72,153,0.10)',  color: '#BE185D' },
+  'IT - Hardware related queries':      { bg: 'rgba(99,102,241,0.10)',  color: '#5B5FDE' },
+  'IT - Software related queries':      { bg: 'rgba(99,102,241,0.10)',  color: '#5B5FDE' },
+  'HR - Profile update':                { bg: 'rgba(14,168,106,0.10)',  color: '#0A7040' },
+  'HR - Leave related queries':         { bg: 'rgba(14,168,106,0.10)',  color: '#0A7040' },
+  'Fin - Salary A/c opening/conversion': { bg: 'rgba(245,158,11,0.10)', color: '#B45309' },
+  'PA–Addition/Deletion of Resource':   { bg: 'rgba(124,58,237,0.10)',  color: '#7C3AED' },
 }
 
 const AVATAR_URL: Record<string, string> = {
@@ -182,10 +177,10 @@ const AVATAR_URL: Record<string, string> = {
   'Pooja Iyer':    'https://i.pravatar.cc/40?img=15',
 }
 
-const ALL_STATUSES: TStatus[] = ['Open', 'Pending', 'Resolved', 'Closed']
+const ALL_STATUSES: TStatus[] = ['Pending', 'Resolved', 'Closed']
 
 const C   = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7' }
-const COL = '1fr 1.3fr 1fr 1fr 0.9fr 1.1fr 1.2fr 1fr 0.5fr'
+const COL = '0.8fr 1.2fr 0.85fr 1.4fr 0.9fr 1.1fr 0.5fr'
 
 function fmtDate(d: string) {
   return new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
@@ -224,7 +219,7 @@ function EmployeeAvatar({ name, size = 32 }: { name: string; size?: number }) {
 export default function AdminTicketsPage() {
   // ── List state ──
   const [view,           setView]           = useState<View>('list')
-  const [activeCategory, setActiveCategory] = useState('All')
+  const [activeType, setActiveType] = useState('All')
   const [searchQuery,    setSearchQuery]    = useState('')
   const [statusFilter,   setStatusFilter]   = useState<TStatus | 'All'>('All')
   const [selectedTicket, setSelectedTicket] = useState<AdminTicketRecord | null>(null)
@@ -244,19 +239,19 @@ export default function AdminTicketsPage() {
   const responseRef = useRef<HTMLTextAreaElement>(null)
 
   // ── Derived ──
-  const catCount = (id: string) =>
-    id === 'All' ? tickets.length : tickets.filter(t => t.category === id).length
+  const typeCount = (id: string) =>
+    id === 'All' ? tickets.length : tickets.filter(t => t.type === id).length
 
 
   const baseFiltered = tickets.filter(t => {
-    const matchCat    = activeCategory === 'All' || t.category === activeCategory
+    const matchType    = activeType === 'All' || t.type === activeType
     const q           = searchQuery.toLowerCase()
     const matchSearch = !q || t.subject.toLowerCase().includes(q)
                            || t.id.toLowerCase().includes(q)
                            || t.category.toLowerCase().includes(q)
                            || t.employee.toLowerCase().includes(q)
                            || t.assignedTo.toLowerCase().includes(q)
-    return matchCat && matchSearch
+    return matchType && matchSearch
   })
   const filtered = baseFiltered.filter(t => statusFilter === 'All' || t.status === statusFilter)
 
@@ -377,7 +372,7 @@ export default function AdminTicketsPage() {
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Search tickets…"
-                style={{ width: '100%', height: 44, borderRadius: 11, padding: '0 36px 0 40px', fontSize: 13.5, fontWeight: 500, color: C.navy, outline: 'none', border: '1px solid #ECEEF6', background: '#F7F8FC', fontFamily: "'DM Sans', system-ui, sans-serif", boxSizing: 'border-box', transition: 'border-color 0.15s' }}
+                style={{ width: '100%', height: 38, borderRadius: 11, padding: '0 36px 0 40px', fontSize: 13.5, fontWeight: 500, color: C.navy, outline: 'none', border: '1px solid #ECEEF6', background: '#fff', fontFamily: "'DM Sans', system-ui, sans-serif", boxSizing: 'border-box', transition: 'border-color 0.15s' }}
                 onFocus={e => { e.target.style.borderColor = '#B0B5CC' }}
                 onBlur={e => { e.target.style.borderColor = '#ECEEF6' }}
               />
@@ -389,14 +384,14 @@ export default function AdminTicketsPage() {
               )}
             </div>
 
-            {/* Category dropdown */}
+            {/* Type dropdown */}
             {catDropOpen && (
               <div style={{ position: 'fixed', inset: 0, zIndex: 99 }} onClick={() => setCatDropOpen(false)} />
             )}
             <div style={{ position: 'relative', zIndex: 100 }}>
               {(() => {
-                const ac = CATEGORIES.find(c => c.id === activeCategory) ?? CATEGORIES[0]
-                const AcIcon = ac.Icon
+                const at = TYPES.find(t => t.id === activeType) ?? TYPES[0]
+                const AtIcon = at.Icon
                 return (
                   <button
                     onClick={() => setCatDropOpen(v => !v)}
@@ -404,34 +399,34 @@ export default function AdminTicketsPage() {
                     onMouseEnter={e => { if (!catDropOpen) e.currentTarget.style.background = '#ECEEF5' }}
                     onMouseLeave={e => { if (!catDropOpen) e.currentTarget.style.background = '#F7F8FC' }}
                   >
-                    <div style={{ width: 28, height: 28, borderRadius: 8, background: ac.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <AcIcon size={13} strokeWidth={2.2} style={{ color: ac.color }} />
+                    <div style={{ width: 28, height: 28, borderRadius: 8, background: '#F0F2F8', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <AtIcon size={13} strokeWidth={2.2} style={{ color: C.muted }} />
                     </div>
-                    <span style={{ flex: 1, fontSize: 13.5, fontWeight: 600, color: C.navy, textAlign: 'left', whiteSpace: 'nowrap' }}>{ac.label}</span>
-                    <span style={{ padding: '2px 8px', borderRadius: 99, background: '#F0F2F8', fontSize: 11, fontWeight: 700, color: C.muted, flexShrink: 0 }}>{catCount(ac.id)}</span>
+                    <span style={{ flex: 1, fontSize: 13.5, fontWeight: 600, color: C.navy, textAlign: 'left', whiteSpace: 'nowrap' }}>{at.label}</span>
+                    <span style={{ padding: '2px 8px', borderRadius: 99, background: '#F0F2F8', fontSize: 11, fontWeight: 700, color: C.muted, flexShrink: 0 }}>{typeCount(at.id)}</span>
                     <ChevronDown size={13} strokeWidth={2.3} style={{ color: C.muted, flexShrink: 0, transition: 'transform 0.18s', transform: catDropOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
                   </button>
                 )
               })()}
               {catDropOpen && (
                 <div style={{ position: 'absolute', top: 'calc(100% + 7px)', left: 0, minWidth: 238, background: '#fff', border: `1px solid ${C.border}`, borderRadius: 15, boxShadow: '0 10px 36px rgba(28,32,53,0.13)', zIndex: 200, padding: '7px' }}>
-                  {CATEGORIES.map(cat => {
-                    const CatIcon  = cat.Icon
-                    const isActive = activeCategory === cat.id
-                    const count    = catCount(cat.id)
+                  {TYPES.map(typ => {
+                    const TypIcon  = typ.Icon
+                    const isActive = activeType === typ.id
+                    const count    = typeCount(typ.id)
                     return (
-                      <button key={cat.id}
-                        onClick={() => { setActiveCategory(cat.id); setCatDropOpen(false) }}
-                        style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 10px', borderRadius: 9, border: 'none', background: isActive ? cat.bg : 'transparent', cursor: 'pointer', textAlign: 'left', transition: 'background 0.12s', outline: 'none', fontFamily: "'DM Sans', system-ui, sans-serif" }}
+                      <button key={typ.id}
+                        onClick={() => { setActiveType(typ.id); setCatDropOpen(false) }}
+                        style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 10px', borderRadius: 9, border: 'none', background: isActive ? '#F0F2F8' : 'transparent', cursor: 'pointer', textAlign: 'left', transition: 'background 0.12s', outline: 'none', fontFamily: "'DM Sans', system-ui, sans-serif" }}
                         onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#F5F6FA' }}
                         onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
                       >
-                        <div style={{ width: 30, height: 30, borderRadius: 8, background: isActive ? cat.bg : '#F0F2F8', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          <CatIcon size={13} strokeWidth={isActive ? 2.3 : 1.8} style={{ color: isActive ? cat.color : '#8B90A7' }} />
+                        <div style={{ width: 30, height: 30, borderRadius: 8, background: '#F0F2F8', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <TypIcon size={13} strokeWidth={isActive ? 2.3 : 1.8} style={{ color: '#8B90A7' }} />
                         </div>
-                        <span style={{ flex: 1, fontSize: 13, fontWeight: isActive ? 700 : 500, color: isActive ? cat.color : '#5A6080' }}>{cat.label}</span>
+                        <span style={{ flex: 1, fontSize: 13, fontWeight: isActive ? 700 : 500, color: isActive ? C.navy : '#5A6080' }}>{typ.label}</span>
                         {count > 0 && (
-                          <span style={{ padding: '2px 8px', borderRadius: 99, background: isActive ? cat.color + '22' : '#F0F2F8', fontSize: 11, fontWeight: 700, color: isActive ? cat.color : '#8B90A7', flexShrink: 0 }}>{count}</span>
+                          <span style={{ padding: '2px 8px', borderRadius: 99, background: '#E8EAF2', fontSize: 11, fontWeight: 700, color: C.muted, flexShrink: 0 }}>{count}</span>
                         )}
                       </button>
                     )
@@ -439,7 +434,6 @@ export default function AdminTicketsPage() {
                 </div>
               )}
             </div>
-
           </div>
           </div>
 
@@ -451,12 +445,12 @@ export default function AdminTicketsPage() {
               style={{ padding: '13px 20px', borderBottom: `1px solid ${C.border}`, background: '#FAFBFE' }}>
               <div className="flex items-center gap-2.5">
                 <span style={{ fontSize: 13.5, fontWeight: 700, color: C.navy }}>
-                  {activeCategory === 'All' ? 'All Tickets' : activeCategory}
+                  {activeType === 'All' ? 'All Types' : activeType}
                 </span>
                 <span style={{ padding: '2px 9px', borderRadius: 99, background: '#F0F2F8', fontSize: 11.5, fontWeight: 700, color: C.muted }}>{filtered.length}</span>
               </div>
               <div className="flex items-center gap-1.5">
-                {(['All', 'Open', 'Pending', 'Resolved', 'Closed'] as const).map(s => {
+                {(['All', 'Pending', 'Resolved', 'Closed'] as const).map(s => {
                   const isAllBtn = s === 'All'
                   const isActive = statusFilter === s
                   const ss       = isAllBtn ? null : STATUS_STYLE[s as TStatus]
@@ -476,7 +470,7 @@ export default function AdminTicketsPage() {
 
             {/* Column headers */}
             <div className="grid" style={{ gridTemplateColumns: COL, padding: '12px 20px', background: '#F7F8FC', borderBottom: `1px solid ${C.border}` }}>
-              {['Ticket ID', 'Employee', 'Category', 'Created', 'Priority', 'Status', 'Assigned To', 'Updated', 'View'].map(h => (
+              {['Ticket ID', 'Employee', 'Type', 'Category', 'Priority', 'Status', 'Action'].map(h => (
                 <span key={h} style={{ fontSize: 10.5, fontWeight: 700, color: '#B0B4C8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                   {h}
                 </span>
@@ -499,9 +493,9 @@ export default function AdminTicketsPage() {
                 const cb     = CAT_BADGE[t.category] ?? { bg: '#F0F2F8', color: C.muted }
                 const isLast = idx === filtered.length - 1
                 return (
-                  <div key={t.id} className="atkt-row grid items-center"
-                    style={{ gridTemplateColumns: COL, padding: '14px 20px', borderBottom: isLast ? 'none' : `1px solid #F0F2F8`, background: '#fff', transition: 'background 0.12s' }}>
-                    <div>
+                  <div key={t.id} className="atkt-row grid items-start"
+                    style={{ gridTemplateColumns: COL, padding: '16px 20px', borderBottom: isLast ? 'none' : `1px solid #F0F2F8`, background: '#fff', transition: 'background 0.12s', gap: '12px' }}>
+                    <div style={{ textAlign: 'left' }}>
                       <div style={{ fontSize: 12.5, fontWeight: 700, color: C.navy, fontVariantNumeric: 'tabular-nums' }}>{t.id}</div>
                       {t.comments.length > 0 && (
                         <div className="flex items-center gap-1 mt-0.5">
@@ -510,40 +504,47 @@ export default function AdminTicketsPage() {
                         </div>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 min-w-0">
-                      <EmployeeAvatar name={t.employee} size={28} />
+                    <div className="flex items-start gap-2 min-w-0" style={{ textAlign: 'left' }}>
                       <div className="min-w-0">
                         <div className="truncate" style={{ fontSize: 12.5, fontWeight: 600, color: C.navy }}>{t.employee}</div>
-                        <div style={{ fontSize: 11, color: C.muted, marginTop: 1 }}>
-                          {(() => { const dc = DEPT_COLOR[t.department] ?? { bg: '#F0F2F8', color: C.muted }; return <span style={{ fontSize: 10.5, fontWeight: 600, color: dc.color, background: dc.bg, padding: '1px 6px', borderRadius: 4 }}>{t.department}</span> })()}
-                        </div>
+                        <div style={{ fontSize: 11, color: C.muted, marginTop: 1, fontWeight: 600 }}>{t.employeeCode}</div>
                       </div>
                     </div>
-                    <span style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 9px', borderRadius: 8, background: cb.bg, color: cb.color, fontSize: 11.5, fontWeight: 600, width: 'fit-content', whiteSpace: 'nowrap' }}>
-                      {t.category}
-                    </span>
-                    <span style={{ fontSize: 12, color: '#5A6080', fontWeight: 500 }}>{fmtDate(t.createdDate)}</span>
-                    <span className="inline-flex items-center gap-1.5 rounded-full"
-                      style={{ padding: '4px 10px', background: ps.bg, color: ps.color, fontSize: 11.5, fontWeight: 600, width: 'fit-content', whiteSpace: 'nowrap', border: `1px solid ${ps.border}` }}>
-                      <span style={{ width: 5, height: 5, borderRadius: '50%', background: ps.dot, display: 'inline-block', flexShrink: 0 }} />
-                      {t.priority}
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 rounded-full"
-                      style={{ padding: '4px 10px', background: ss.bg, color: ss.color, fontSize: 11.5, fontWeight: 600, width: 'fit-content', whiteSpace: 'nowrap', border: `1px solid ${ss.dot}40` }}>
-                      <span style={{ width: 5, height: 5, borderRadius: '50%', background: ss.dot, display: 'inline-block', flexShrink: 0 }} />
-                      {t.status}
-                    </span>
-                    <span className="truncate" style={{ fontSize: 12.5, color: '#5A6080', fontWeight: 500 }}>{t.assignedTo}</span>
-                    <span style={{ fontSize: 12, color: '#5A6080', fontWeight: 500 }}>{fmtDate(t.lastUpdated)}</span>
-                    <button
-                      onClick={() => openDetail(t)}
-                      title="Manage ticket"
-                      style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid #E8EAF2', background: '#fff', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.14s' }}
-                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.08)'; e.currentTarget.style.borderColor = 'rgba(99,102,241,0.30)' }}
-                      onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = '#E8EAF2' }}
-                    >
-                      <Eye size={14} strokeWidth={1.8} style={{ color: '#8B90A7' }} />
-                    </button>
+                    <div style={{ textAlign: 'left' }}>
+                      <span style={{ fontSize: 12.5, fontWeight: 600, color: C.navy }}>
+                        {t.type}
+                      </span>
+                    </div>
+                    <div style={{ textAlign: 'left' }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', padding: '5px 11px', borderRadius: 9, background: cb.bg, color: cb.color, fontSize: 12.5, fontWeight: 600, width: 'fit-content', whiteSpace: 'nowrap' }}>
+                        {t.category}
+                      </span>
+                    </div>
+                    <div style={{ textAlign: 'left' }}>
+                      <span className="inline-flex items-center gap-1.5 rounded-full"
+                        style={{ padding: '4px 10px', background: ps.bg, color: ps.color, fontSize: 11.5, fontWeight: 600, width: 'fit-content', whiteSpace: 'nowrap', border: `1px solid ${ps.border}` }}>
+                        <span style={{ width: 5, height: 5, borderRadius: '50%', background: ps.dot, display: 'inline-block', flexShrink: 0 }} />
+                        {t.priority}
+                      </span>
+                    </div>
+                    <div style={{ textAlign: 'left' }}>
+                      <span className="inline-flex items-center gap-1.5 rounded-full"
+                        style={{ padding: '4px 10px', background: ss.bg, color: ss.color, fontSize: 11.5, fontWeight: 600, width: 'fit-content', whiteSpace: 'nowrap', border: `1px solid ${ss.dot}40` }}>
+                        <span style={{ width: 5, height: 5, borderRadius: '50%', background: ss.dot, display: 'inline-block', flexShrink: 0 }} />
+                        {t.status}
+                      </span>
+                    </div>
+                    <div style={{ textAlign: 'left' }}>
+                      <button
+                        onClick={() => openDetail(t)}
+                        title="Manage ticket"
+                        style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid #E8EAF2', background: '#fff', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.14s' }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.08)'; e.currentTarget.style.borderColor = 'rgba(99,102,241,0.30)' }}
+                        onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = '#E8EAF2' }}
+                      >
+                        <Eye size={14} strokeWidth={1.8} style={{ color: '#8B90A7' }} />
+                      </button>
+                    </div>
                   </div>
                 )
               })
@@ -596,7 +597,7 @@ export default function AdminTicketsPage() {
 
             {/* Ticket title bar */}
             <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 18, padding: '22px 28px', marginBottom: 20 }}>
-              <div className="flex items-start justify-between gap-4">
+              <div className="flex items-center justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-2">
                     <span style={{ fontSize: 12, fontWeight: 600, color: C.muted, fontVariantNumeric: 'tabular-nums' }}>{t.id}</span>
@@ -623,7 +624,8 @@ export default function AdminTicketsPage() {
                   <EmployeeAvatar name={t.employee} size={44} />
                   <div>
                     <div style={{ fontSize: 14, fontWeight: 700, color: C.navy }}>{t.employee}</div>
-                    <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>{t.department}</div>
+                    <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>{t.employeeCode}</div>
+                    <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>{t.role}</div>
                   </div>
                 </div>
               </div>

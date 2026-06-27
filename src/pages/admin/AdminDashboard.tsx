@@ -20,6 +20,7 @@ import OrgProfileWrapperPage from './settings/OrgProfileWrapperPage'
 import WorkingHoursPage from './settings/WorkingHoursPage'
 import AdminAnnouncementsPage from './settings/AdminAnnouncementsPage'
 import RewardsAndRecognitionPage from './settings/RewardsAndRecognitionPage'
+import PolicySetupPage from './settings/PolicySetupPage'
 import PendingApprovalsPage from './timesheet/PendingApprovalsPage'
 import TimesheetPoliciesPage from './timesheet/TimesheetPoliciesPage'
 import AdminTicketsPage from './tickets/AdminTicketsPage'
@@ -27,6 +28,11 @@ import LeavePolicyPage from './leave/LeavePolicyPage'
 import DesignationPage from './users/DesignationPage'
 import PayrollBAPage from './payroll/PayrollBAPage'
 import AdminAssetManagementPage from './assets/AdminAssetManagementPage'
+import AdminAssetsListPage from './assets/AdminAssetsListPage'
+import AdminAddAssetPage from './assets/AdminAddAssetPage'
+import AdminUploadBulkAssetsPage from './assets/AdminUploadBulkAssetsPage'
+import AdminAssetsRequestPage from './assets/AdminAssetsRequestPage'
+import ActivityTagPage from './projects/ActivityTagPage'
 
 const PAGE_LABELS: Record<string, string> = {
   'my-profile':           'My Profile',
@@ -49,6 +55,7 @@ const PAGE_LABELS: Record<string, string> = {
   'attendance-report':    'Attendance Report',
   'leave-report':         'Leave Report',
   'audit-trail':          'Audit Trail',
+  'policy-setup':         'Policy Setup',
   'org-profile':          'Organization Profile',
   'working-hours':        'Working Hours & Holidays',
   'email-notifications':  'Email Notifications',
@@ -56,8 +63,14 @@ const PAGE_LABELS: Record<string, string> = {
   'rewards-recognition':  'Rewards and Recognition',
   'admin-tickets':        'Support Tickets',
   'designation':          'Designation Management',
+  'activity-tag':         'Activity Tag',
   'admin-payroll':        'Payroll',
   'admin-assets':         'Asset Management',
+  'assets-list':          'Assets List',
+  'assets-allocation':    'Assets Allocation',
+  'assets-request':       'Assets Request',
+  'add-asset':            'Add Asset',
+  'upload-bulk-assets':   'Upload Bulk Assets',
 }
 
 function ComingSoon({ id }: { id: string }) {
@@ -112,6 +125,7 @@ function PageContent({ activeItem, onNavigate }: { activeItem: string; onNavigat
   if (activeItem === 'attendance-report')      return <AttendanceReportPage />
   if (activeItem === 'leave-report')            return <LeaveReportPage />
   if (activeItem === 'audit-trail')             return <AuditTrailPage />
+  if (activeItem === 'policy-setup')           return <PolicySetupPage />
   if (activeItem === 'org-profile')            return <OrgProfileWrapperPage />
   if (activeItem === 'working-hours')          return <WorkingHoursPage />
   if (activeItem === 'announcements')          return <AdminAnnouncementsPage />
@@ -119,8 +133,13 @@ function PageContent({ activeItem, onNavigate }: { activeItem: string; onNavigat
   if (activeItem === 'admin-tickets')          return <AdminTicketsPage />
   if (activeItem === 'leave-policy')           return <LeavePolicyPage />
   if (activeItem === 'designation')            return <DesignationPage />
+  if (activeItem === 'activity-tag')           return <ActivityTagPage />
   if (activeItem === 'admin-payroll')          return <PayrollBAPage />
-  if (activeItem === 'admin-assets')           return <AdminAssetManagementPage />
+  if (activeItem === 'admin-assets')           return <AdminAssetManagementPage onNavigate={onNavigate} />
+  if (activeItem === 'assets-list')            return <AdminAssetsListPage onNavigate={onNavigate} />
+  if (activeItem === 'add-asset')              return <AdminAddAssetPage onBack={() => onNavigate('assets-list')} onSave={() => onNavigate('assets-list')} />
+  if (activeItem === 'upload-bulk-assets')     return <AdminUploadBulkAssetsPage onBack={() => onNavigate('assets-list')} />
+  if (activeItem === 'assets-request')         return <AdminAssetsRequestPage />
   return <ComingSoon id={activeItem} />
 }
 

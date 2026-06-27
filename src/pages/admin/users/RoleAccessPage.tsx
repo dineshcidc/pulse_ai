@@ -479,42 +479,34 @@ export default function RoleAccessPage() {
       `}</style>
 
       {/* ── Page header ── */}
-      <div style={{ marginBottom: 20 }}>
-        <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: C.navy }}>Role & Access Control</h1>
-        <p style={{ margin: '4px 0 0', fontSize: 13, color: C.muted }}>
-          Define what each role can access and reassign user permissions across the organisation.
-        </p>
-      </div>
-
-      {/* ── Stat cards ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginBottom: 22 }}>
-        {(['Employee', 'Manager', 'Admin'] as Role[]).map(role => {
-          const cfg  = ROLE_CFG[role]
-          const meta = ROLE_META[role]
-          const Icon = meta.Icon
-          return (
-            <div key={role} style={{
-              background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16,
-              padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 14,
-              cursor: 'pointer',
-            }}
-              onClick={() => { setTab('users'); setRFilter(role) }}
-            >
-              <div style={{
-                width: 44, height: 44, borderRadius: 12, flexShrink: 0,
-                background: cfg.light, border: `1px solid ${cfg.border}`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <Icon size={20} color={cfg.color} />
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{role}</p>
-                <p style={{ margin: '2px 0 0', fontSize: 26, fontWeight: 800, color: cfg.color, lineHeight: 1 }}>{counts[role]}</p>
-                <p style={{ margin: '3px 0 0', fontSize: 11.5, color: C.muted }}>{meta.tagline}</p>
-              </div>
-            </div>
-          )
-        })}
+      <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20 }}>
+        <div>
+          <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: C.navy }}>Role & Access Control</h1>
+          <p style={{ margin: '4px 0 0', fontSize: 13, color: C.muted }}>
+            Define what each role can access and reassign user permissions across the organisation.
+          </p>
+        </div>
+        {/* ── Role badges ── */}
+        <div style={{ display: 'flex', gap: 10, flexShrink: 0 }}>
+          {(['Employee', 'Manager', 'Admin'] as Role[]).map(role => {
+            const cfg = ROLE_CFG[role]
+            return (
+              <span key={role} style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                padding: '4px 12px', borderRadius: 8,
+                fontSize: 12.5, fontWeight: 600,
+                background: cfg.light, color: cfg.color, border: `1px solid ${cfg.border}`,
+                cursor: 'pointer', transition: 'all 0.15s',
+              }}
+                onClick={() => { setTab('users'); setRFilter(role) }}
+                onMouseEnter={e => { e.currentTarget.style.background = cfg.bg }}
+                onMouseLeave={e => { e.currentTarget.style.background = cfg.light }}
+              >
+                {role} <strong>{counts[role]}</strong>
+              </span>
+            )
+          })}
+        </div>
       </div>
 
       {/* ── Tabs ── */}
@@ -676,9 +668,6 @@ export default function RoleAccessPage() {
                 Clear
               </button>
             )}
-            <span style={{ marginLeft: 'auto', fontSize: 12.5, color: C.muted, whiteSpace: 'nowrap' }}>
-              <strong style={{ color: C.navy }}>{filtered.length}</strong> of {users.length} users
-            </span>
           </div>
 
           {/* Table */}
@@ -776,6 +765,17 @@ export default function RoleAccessPage() {
                 )}
               </tbody>
             </table>
+
+            {/* Pagination Footer */}
+            <div style={{
+              padding: '12px 20px', borderTop: `1px solid ${C.border}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              background: C.surface,
+            }}>
+              <span style={{ fontSize: 12.5, color: C.muted }}>
+                Showing <strong style={{ color: C.navy }}>{filtered.length}</strong> of <strong style={{ color: C.navy }}>{users.length}</strong> users
+              </span>
+            </div>
           </div>
         </div>
       )}

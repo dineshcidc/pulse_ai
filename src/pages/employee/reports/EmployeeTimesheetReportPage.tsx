@@ -329,7 +329,6 @@ export default function EmployeeTimesheetReportPage({ onBack }: { onBack: () => 
                   <div style={{ fontSize:14.5, fontWeight:800, color:C.navy, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{ME.name}</div>
                   <div style={{ fontSize:11.5, color:C.muted, marginTop:1 }}>{ME.empId}</div>
                   <div style={{ display:'flex', gap:5, marginTop:7, flexWrap:'wrap' }}>
-                    <span style={{ fontSize:11, fontWeight:600, padding:'2px 9px', borderRadius:99, background:'rgba(99,102,241,0.12)', color:'#4338CA', border:'1px solid rgba(99,102,241,0.20)' }}>{ME.department}</span>
                     <span style={{ fontSize:11, fontWeight:600, padding:'2px 9px', borderRadius:99, background:'rgba(255,255,255,0.70)', color:C.navy, border:`1px solid ${C.border}` }}>{ME.role}</span>
                   </div>
                 </div>

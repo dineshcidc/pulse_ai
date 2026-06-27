@@ -79,7 +79,6 @@ export default function LeavePolicyPage() {
   const [tab,          setTab]          = useState<PolicyTab>('types')
   const [configs,      setConfigs]      = useState<LeaveTypeConfig[]>(DEFAULT_CONFIGS)
   const [general,      setGeneral]      = useState<GeneralPolicy>(DEFAULT_GENERAL)
-  const [fy,           setFy]           = useState<'2025-26' | '2026-27'>('2026-27')
   const [saveLoading,  setSaveLoading]  = useState(false)
   const [saveSuccess,  setSaveSuccess]  = useState(false)
   const [hasChanges,   setHasChanges]   = useState(false)
@@ -117,13 +116,6 @@ export default function LeavePolicyPage() {
     setSaveLoading(false)
     setSaveSuccess(true)
     setHasChanges(false)
-  }
-
-  function handleReset() {
-    setConfigs(DEFAULT_CONFIGS)
-    setGeneral(DEFAULT_GENERAL)
-    setHasChanges(false)
-    setSaveSuccess(false)
   }
 
   function closeAddType() {
@@ -223,22 +215,10 @@ export default function LeavePolicyPage() {
           <p style={{ fontSize: 13.5, color: '#787878', fontWeight: 500 }}>Define leave types, entitlements, and organisation-wide rules</p>
         </div>
         <div className="flex items-center gap-3">
-          {/* FY selector */}
-          <div style={{ background: '#F0F2F8', borderRadius: 10, padding: 3, display: 'flex', gap: 2 }}>
-            {(['2025-26', '2026-27'] as const).map(y => (
-              <button key={y} onClick={() => setFy(y)}
-                style={{ padding: '6px 14px', borderRadius: 7, border: 'none', cursor: 'pointer', fontSize: 12.5, fontWeight: fy === y ? 700 : 500, background: fy === y ? '#fff' : 'transparent', color: fy === y ? C.navy : C.muted, boxShadow: fy === y ? '0 1px 4px rgba(28,32,53,0.10)' : 'none', transition: 'all 0.15s', fontFamily: 'inherit' }}>
-                FY {y}
-              </button>
-            ))}
+          {/* Current Year Tab */}
+          <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 10, padding: '6px 14px', display: 'inline-flex', alignItems: 'center', fontSize: 12.5, fontWeight: 600, color: C.navy }}>
+            FY 2026-27
           </div>
-          {/* Reset */}
-          <button onClick={handleReset}
-            style={{ height: 40, padding: '0 16px', borderRadius: 10, border: `1px solid ${C.border}`, background: '#fff', color: C.muted, fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'inherit', transition: 'all 0.15s' }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = '#C8CCE0'; e.currentTarget.style.color = C.navy }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = C.border;  e.currentTarget.style.color = C.muted }}>
-            <RotateCcw size={13} strokeWidth={2} /> Reset to Defaults
-          </button>
           {/* Save */}
           <button onClick={handleSave} disabled={saveLoading || !hasChanges}
             style={{ height: 40, padding: '0 20px', borderRadius: 10, border: 'none', fontSize: 13.5, fontWeight: 700, cursor: (!hasChanges || saveLoading) ? 'not-allowed' : 'pointer', background: saveSuccess ? '#0EA86A' : (!hasChanges || saveLoading) ? '#E8EAF2' : 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)', color: (!hasChanges || saveLoading) ? '#B0B4C8' : '#fff', display: 'flex', alignItems: 'center', gap: 7, fontFamily: 'inherit', transition: 'background 0.2s, opacity 0.15s' }}
@@ -302,9 +282,9 @@ export default function LeavePolicyPage() {
         {tab === 'types' && (
           <>
             {/* Column header */}
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 0.55fr 0.65fr 1fr 0.9fr 0.65fr 0.45fr', padding: '11px 24px', background: '#F7F8FC', borderBottom: `1px solid ${C.border}` }}>
-              {['Leave Type', 'Code', 'Category', 'Annual Days', 'Approval', 'Active', ''].map(h => (
-                <span key={h} style={{ fontSize: 10.5, fontWeight: 700, color: '#B0B4C8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</span>
+            <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 0.7fr 0.75fr 1fr 1fr 1fr 0.7fr', padding: '11px 24px', background: '#F7F8FC', borderBottom: `1px solid ${C.border}` }}>
+              {['Leave Type', 'Code', 'Category', 'Annual Days', 'Approval', 'Active', 'Action'].map(h => (
+                <span key={h} style={{ fontSize: 10.5, fontWeight: 700, color: '#B0B4C8', textTransform: 'uppercase', letterSpacing: '0.06em', textAlign: h === 'Action' ? 'center' : 'left' }}>{h}</span>
               ))}
             </div>
 
@@ -313,7 +293,7 @@ export default function LeavePolicyPage() {
                 {/* Main row */}
                 <div
                   className="lp-row"
-                  style={{ display: 'grid', gridTemplateColumns: '2fr 0.55fr 0.65fr 1fr 0.9fr 0.65fr 0.45fr', padding: '15px 24px', alignItems: 'center', background: '#fff', transition: 'background 0.12s', opacity: cfg.active ? 1 : 0.5 }}
+                  style={{ display: 'grid', gridTemplateColumns: '1.6fr 0.7fr 0.75fr 1fr 1fr 1fr 0.7fr', padding: '15px 24px', alignItems: 'center', background: '#fff', transition: 'background 0.12s', opacity: cfg.active ? 1 : 0.5 }}
                 >
                   {/* Name */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -351,15 +331,17 @@ export default function LeavePolicyPage() {
                   <Toggle checked={cfg.active} onChange={v => updateConfig(cfg.name, 'active', v)} />
 
                   {/* Edit */}
-                  <button
-                    onClick={() => openEdit(cfg)}
-                    style={{ width: 30, height: 30, borderRadius: 8, border: `1px solid ${C.border}`, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0 }}
-                    onMouseEnter={e => { e.currentTarget.style.background = '#F0F2F8'; e.currentTarget.style.borderColor = '#C8CCE0' }}
-                    onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = C.border }}
-                    title="Edit leave name and code"
-                  >
-                    <Pencil size={13} strokeWidth={2} style={{ color: C.muted }} />
-                  </button>
+                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <button
+                      onClick={() => openEdit(cfg)}
+                      style={{ width: 30, height: 30, borderRadius: 8, border: `1px solid ${C.border}`, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0 }}
+                      onMouseEnter={e => { e.currentTarget.style.background = '#F0F2F8'; e.currentTarget.style.borderColor = '#C8CCE0' }}
+                      onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = C.border }}
+                      title="Edit leave name and code"
+                    >
+                      <Pencil size={13} strokeWidth={2} style={{ color: C.muted }} />
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

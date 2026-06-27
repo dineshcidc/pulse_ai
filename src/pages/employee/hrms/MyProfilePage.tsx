@@ -1422,7 +1422,7 @@ export default function MyProfilePage() {
       <AddOtherDocumentModal open={showAddOtherDocModal} onClose={() => setShowAddOtherDocModal(false)} />
       {/* Page header */}
       <div className="mb-5">
-        <h1 className="text-xl font-bold" style={{ color: C.navy }}>My Profile</h1>
+        <h1 className="font-bold" style={{ fontSize: 22, color: C.navy }}>My Profile</h1>
         <p className="text-sm mt-0.5" style={{ color: '#787878', fontWeight: 500 }}>View and manage your personal information</p>
       </div>
 

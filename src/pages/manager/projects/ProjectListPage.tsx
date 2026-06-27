@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Search, Clock, TrendingUp, Users, AlertCircle, Calendar, ArrowRight } from 'lucide-react'
 import ProjectDetailPage from './ProjectDetailPage'
 
-type Status = 'active' | 'on-hold' | 'completed'
+type Status = 'active' | 'on-hold' | 'completed' | 'draft'
 
 interface Project {
   id: string
@@ -72,10 +72,12 @@ const STATUS_CONFIG: Record<Status, { label: string; color: string; bg: string; 
   'active':    { label: 'Active',    color: '#0A8A58', bg: 'rgba(14,168,106,0.10)',  border: 'rgba(14,168,106,0.20)'  },
   'on-hold':   { label: 'On Hold',   color: '#92400E', bg: 'rgba(245,158,11,0.10)',  border: 'rgba(245,158,11,0.20)'  },
   'completed': { label: 'Completed', color: '#3B82F6', bg: 'rgba(59,130,246,0.10)',  border: 'rgba(59,130,246,0.20)'  },
+  'draft':     { label: 'Draft',     color: '#6B7280', bg: 'rgba(107,114,128,0.10)', border: 'rgba(107,114,128,0.20)'  },
 }
 
 const FILTER_TABS: { id: 'all' | Status; label: string }[] = [
   { id: 'all',       label: 'All Projects' },
+  { id: 'draft',     label: 'Draft'        },
   { id: 'active',    label: 'Active'       },
   { id: 'on-hold',   label: 'On Hold'      },
   { id: 'completed', label: 'Completed'    },

@@ -965,14 +965,12 @@ function DeptRow({ dept, onView, onEdit }: { dept: Department; onView: () => voi
       {/* Actions */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
         <button onClick={onEdit}
-          style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${C.border}`, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0 }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.08)'; e.currentTarget.style.borderColor = 'rgba(99,102,241,0.30)' }}
-          onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = C.border }}>
-          <Edit2 size={13} style={{ color: hovered ? '#6366F1' : C.muted }} strokeWidth={1.8} />
+          style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${C.border}`, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+          <Edit2 size={13} style={{ color: C.muted }} strokeWidth={1.8} />
         </button>
         <button onClick={onView}
-          style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${hovered ? dept.color + '40' : C.border}`, background: hovered ? `${dept.color}0E` : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0 }}>
-          <Eye size={13} style={{ color: hovered ? dept.color : C.muted }} strokeWidth={1.8} />
+          style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${C.border}`, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+          <Eye size={13} style={{ color: C.muted }} strokeWidth={1.8} />
         </button>
       </div>
     </div>
@@ -1017,7 +1015,6 @@ export default function DepartmentManagementPage() {
 
   const totalEmployees = depts.reduce((a, d) => a + d.employeeCount, 0)
   const totalOpen      = depts.reduce((a, d) => a + d.openPositions, 0)
-  const fullyStaffed   = depts.filter(d => d.employeeCount >= d.targetHeadcount).length
 
   return (
     <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
@@ -1048,11 +1045,10 @@ export default function DepartmentManagementPage() {
       </div>
 
       {/* Stat cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
         <StatCard label="Total Departments"    subtext="active in the org"        value={depts.length}    icon={Layers}      color="#6366F1" bg="rgba(99,102,241,0.09)"  border="rgba(99,102,241,0.15)"  delay={0}   />
         <StatCard label="Total Employees"      subtext="across all departments"   value={totalEmployees}  icon={Users}       color="#0EA86A" bg="rgba(14,168,106,0.09)" border="rgba(14,168,106,0.15)" delay={80}  />
-        <StatCard label="Fully Staffed"         subtext="met headcount target"    value={fullyStaffed}    icon={CheckCircle2} color="#F5A623" bg="rgba(245,166,35,0.09)" border="rgba(245,166,35,0.15)" delay={160} />
-        <StatCard label="Open Positions"       subtext="pending to be filled"     value={totalOpen}       icon={AlertCircle} color="#E84855" bg="rgba(232,72,85,0.09)"  border="rgba(232,72,85,0.15)"  delay={240} />
+        <StatCard label="Open Positions"       subtext="pending to be filled"     value={totalOpen}       icon={AlertCircle} color="#E84855" bg="rgba(232,72,85,0.09)"  border="rgba(232,72,85,0.15)"  delay={160} />
       </div>
 
       {/* Table card */}
@@ -1062,7 +1058,7 @@ export default function DepartmentManagementPage() {
           display: 'flex', alignItems: 'center', gap: 12,
           padding: '14px 20px', borderBottom: `1px solid ${C.border}`,
         }}>
-          <div style={{ position: 'relative', flex: '0 0 340px' }}>
+          <div style={{ position: 'relative', flex: 1 }}>
             <Search size={13} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: C.muted, pointerEvents: 'none' }} />
             <input
               type="text"
@@ -1070,12 +1066,12 @@ export default function DepartmentManagementPage() {
               onChange={e => setSearch(e.target.value)}
               placeholder="Search departments or heads..."
               style={{
-                width: '100%', height: 34, paddingLeft: 30, paddingRight: 12,
+                width: '100%', height: 38, paddingLeft: 30, paddingRight: 12,
                 border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 13,
-                color: C.navy, background: C.hover, outline: 'none', fontFamily: 'inherit',
+                color: C.navy, background: '#fff', outline: 'none', fontFamily: 'inherit',
               }}
-              onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.background = '#fff' }}
-              onBlur={e => { e.target.style.borderColor = C.border; e.target.style.background = C.hover }}
+              onFocus={e => { e.target.style.borderColor = '#6366F1' }}
+              onBlur={e => { e.target.style.borderColor = C.border }}
             />
           </div>
           <span style={{ marginLeft: 'auto', fontSize: 12.5, fontWeight: 600, color: C.muted }}>

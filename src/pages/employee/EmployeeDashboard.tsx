@@ -66,8 +66,8 @@ function PageContent({ activeItem, onNavigate }: { activeItem: string; onNavigat
   if (activeItem === 'dashboard')       return <DashboardPage />
   if (activeItem === 'timesheet-add')     return <AddTimesheetPage />
   if (activeItem === 'timesheet-history') return <TimesheetHistoryPage onNavigate={onNavigate} />
-  if (activeItem === 'leave-create') return <LeaveCreatePage />
-  if (activeItem === 'leave-status') return <LeaveStatusPage />
+  if (activeItem === 'leave-create') return <LeaveCreatePage onNavigate={onNavigate} />
+  if (activeItem === 'leave-status') return <LeaveStatusPage onNavigate={onNavigate} />
   if (activeItem === 'leave-history') return <LeaveHistoryPage />
   if (activeItem === 'my-profile')    return <MyProfilePage />
   if (activeItem === 'org-structure') return <OrgStructurePage />

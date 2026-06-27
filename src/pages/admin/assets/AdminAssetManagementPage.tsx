@@ -224,6 +224,38 @@ const PENDING_EMPLOYEES: PendingEmployee[] = [
 const ROLES = ['All Roles', 'Senior Developer', 'Product Manager', 'UI/UX Designer', 'QA Engineer', 'Backend Engineer', 'Data Analyst', 'Frontend Developer', 'DevOps Engineer', 'Tech Lead', 'QA Lead', 'Product Designer', 'Engineering Manager', 'Software Engineer', 'HR Manager']
 const CATEGORIES = ['All Categories', 'Laptop', 'Monitor', 'Phone', 'Tablet', 'Accessories']
 
+// Mock available asset codes by category
+const AVAILABLE_ASSETS: Record<string, Array<{ code: string; description: string }>> = {
+  'Laptop': [
+    { code: 'LAP-002', description: 'MacBook Pro 16" - M3 Max' },
+    { code: 'LAP-004', description: 'ASUS ZenBook 14" - Ryzen 7' },
+    { code: 'LAP-006', description: 'Dell Latitude 15" - Business Edition' },
+    { code: 'LAP-008', description: 'MacBook Air M2 - 13"' },
+  ],
+  'Monitor': [
+    { code: 'MON-002', description: 'LG 32" Curved Gaming Monitor' },
+    { code: 'MON-004', description: 'HP E243i 24" IPS' },
+    { code: 'MON-006', description: 'BenQ SW240 24" Color Accurate' },
+    { code: 'MON-008', description: 'ViewSonic VG2755 27" Business' },
+    { code: 'MON-010', description: 'Gigabyte M28U 28" 4K 120Hz' },
+    { code: 'MON-012', description: 'Dell P2423D 24" QHD Office' },
+  ],
+  'Phone': [
+    { code: 'PHN-001', description: 'iPhone 15 Pro' },
+    { code: 'PHN-002', description: 'Samsung Galaxy S24 Ultra' },
+    { code: 'PHN-003', description: 'Google Pixel 8 Pro' },
+  ],
+  'Tablet': [
+    { code: 'TAB-002', description: 'Samsung Galaxy Tab S8 Ultra' },
+    { code: 'TAB-004', description: 'Lenovo Tab M10 Plus' },
+  ],
+  'Accessories': [
+    { code: 'ACC-001', description: 'Logitech MX Keys Wireless Keyboard' },
+    { code: 'ACC-002', description: 'Logitech MX Master 3S Mouse' },
+    { code: 'ACC-003', description: 'USB-C Docking Station' },
+  ],
+}
+
 function fmtDate(d: string) {
   return new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
 }
@@ -259,7 +291,7 @@ function Dropdown({ value, options, onChange, minW = 140 }: { value: string; opt
   )
 }
 
-export default function AdminAssetManagementPage() {
+export default function AdminAssetManagementPage({ onNavigate }: { onNavigate?: (id: string) => void }) {
   const [assetStatus, setAssetStatus] = useState<'assigned' | 'pending'>('assigned')
   const [search, setSearch] = useState('')
   const [roleFilter, setRoleFilter] = useState('All Roles')
@@ -268,9 +300,9 @@ export default function AdminAssetManagementPage() {
   const [expandedEmployees, setExpandedEmployees] = useState<Set<string>>(new Set())
   const [editDetails, setEditDetails] = useState<EmployeeAsset | null>(null)
   const [addEntryModal, setAddEntryModal] = useState<PendingEmployee | null>(null)
-  const [formData, setFormData] = useState({ systemId: '', assetDescription: '', category: 'Laptop', assignedDate: '' })
-  const [addedAssets, setAddedAssets] = useState<{ systemId: string; assetDescription: string; category: string; assignedDate: string }[]>([])
-  const [editingAssetIdx, setEditingAssetIdx] = useState<number | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState('')
+  const [selectedAssetCode, setSelectedAssetCode] = useState('')
+  const [addedAssets, setAddedAssets] = useState<{ assetCode: string; assetDescription: string; category: string }[]>([])
   const [isSavingAssets, setIsSavingAssets] = useState(false)
 
   // Group assets by employee (by email to group same employee)
@@ -328,14 +360,14 @@ export default function AdminAssetManagementPage() {
       {/* Page header */}
       <div className="flex items-start justify-between mb-5">
         <div>
-          <h1 className="text-xl font-bold" style={{ color: C.navy }}>Asset Management</h1>
+          <h1 className="text-xl font-bold" style={{ color: C.navy }}>Asset Allocation</h1>
           <p className="text-sm mt-0.5" style={{ color: '#787878', fontWeight: 500 }}>Manage and track all employee asset allocations</p>
         </div>
       </div>
 
 
       {/* ── PENDING ASSETS VIEW ────────────────────────────────────────── */}
-      {assetStatus === 'pending' && (
+      {false && assetStatus === 'pending' && (
         <>
           {/* Search Bar with Switch */}
           <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, padding: '14px 18px', marginBottom: 16 }}>
@@ -370,7 +402,8 @@ export default function AdminAssetManagementPage() {
                 >
                   Assigned
                 </button>
-                <button
+                {/* Pending Button - Hidden */}
+                {/* <button
                   onClick={() => setAssetStatus('pending')}
                   style={{
                     padding: '6px 14px', fontSize: 12, fontWeight: 600,
@@ -380,7 +413,7 @@ export default function AdminAssetManagementPage() {
                   }}
                 >
                   Pending ({PENDING_EMPLOYEES.length})
-                </button>
+                </button> */}
               </div>
 
               {search && (
@@ -470,7 +503,7 @@ export default function AdminAssetManagementPage() {
                   {/* Add Entry Button */}
                   <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
                     <button
-                      onClick={() => { setAddEntryModal(emp); setFormData({ systemId: '', assetDescription: '', category: 'Laptop', assignedDate: '' }); }}
+                      onClick={() => { setAddEntryModal(emp); setSelectedCategory(''); setSelectedAssetCode(''); setAddedAssets([]); }}
                       style={{
                         padding: '4px 10px', fontSize: 11, fontWeight: 600,
                         color: '#6366F1', background: 'rgba(99,102,241,0.10)',
@@ -535,8 +568,8 @@ export default function AdminAssetManagementPage() {
           {/* Category Filter */}
           <Dropdown value={categoryFilter} options={CATEGORIES} onChange={setCategoryFilter} minW={160} />
 
-          {/* Asset Status Switch */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: C.hover, borderRadius: 8, padding: '4px', border: `1px solid ${C.border}` }}>
+          {/* Asset Status Switch - Hidden */}
+          <div style={{ display: 'none', alignItems: 'center', gap: 8, background: C.hover, borderRadius: 8, padding: '4px', border: `1px solid ${C.border}` }}>
             <button
               onClick={() => setAssetStatus('assigned')}
               style={{
@@ -596,14 +629,14 @@ export default function AdminAssetManagementPage() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: '40px 1.4fr 1.2fr 1.6fr 0.5fr',
+              gridTemplateColumns: '40px 1.2fr 0.8fr 1fr 1.5fr 0.6fr 0.8fr',
               gap: 14,
               padding: '14px 18px',
               background: C.surface,
               borderBottom: `1px solid ${C.border}`,
             }}
           >
-            {['', 'Employee Name', 'Role', 'Email', 'Actions'].map((col) => (
+            {['', 'Employee Name', 'Employee Code', 'Role', 'Email', 'Assets Count', 'Actions'].map((col) => (
               <span
                 key={col}
                 style={{
@@ -612,6 +645,7 @@ export default function AdminAssetManagementPage() {
                   color: C.muted,
                   textTransform: 'uppercase',
                   letterSpacing: '0.06em',
+                  textAlign: col === 'Actions' ? 'center' : 'left',
                 }}
               >
                 {col}
@@ -629,7 +663,7 @@ export default function AdminAssetManagementPage() {
                   className="ast-row"
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: '40px 1.4fr 1.2fr 1.6fr 0.5fr',
+                    gridTemplateColumns: '40px 1.2fr 0.8fr 1fr 1.5fr 0.6fr 0.8fr',
                     gap: 14,
                     padding: '12px 18px',
                     borderBottom: `1px solid ${C.border}`,
@@ -651,6 +685,11 @@ export default function AdminAssetManagementPage() {
                     {emp.employeeName}
                   </span>
 
+                  {/* Employee Code */}
+                  <span style={{ fontSize: 12, fontWeight: 600, color: C.navy }}>
+                    CC{String(groupedList.indexOf(emp) + 1).padStart(3, '0')}
+                  </span>
+
                   {/* Role */}
                   <span style={{ fontSize: 12.5, fontWeight: 500, color: C.navy }}>
                     {emp.role}
@@ -661,8 +700,15 @@ export default function AdminAssetManagementPage() {
                     {emp.email}
                   </span>
 
+                  {/* Assets Count */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: '#6366F1', background: 'rgba(99,102,241,0.12)', width: 28, height: 28, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {emp.assets.length}
+                    </span>
+                  </div>
+
                   {/* Actions - Eye & Plus Icons */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                     <button
                       onClick={() => toggleExpandEmployee(emp.id)}
                       title="View assets"
@@ -684,6 +730,18 @@ export default function AdminAssetManagementPage() {
                       <Eye size={14} strokeWidth={1.8} style={{ color: isExpanded ? '#6366F1' : C.muted }} />
                     </button>
                     <button
+                      onClick={() => {
+                        setAddEntryModal({
+                          id: emp.id,
+                          avatar: emp.avatar,
+                          employeeName: emp.employeeName,
+                          role: emp.role,
+                          email: emp.email
+                        });
+                        setSelectedCategory('');
+                        setSelectedAssetCode('');
+                        setAddedAssets([]);
+                      }}
                       title="Add asset"
                       style={{
                         width: 32, height: 32, borderRadius: 8,
@@ -816,7 +874,7 @@ export default function AdminAssetManagementPage() {
             background: 'rgba(10,12,28,0.52)', backdropFilter: 'blur(5px)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}
-          onClick={e => { if (e.target === e.currentTarget) { setAddEntryModal(null); setAddedAssets([]); setEditingAssetIdx(null) } }}
+          onClick={e => { if (e.target === e.currentTarget) { setAddEntryModal(null); setAddedAssets([]) } }}
         >
           <div
             style={{
@@ -833,7 +891,7 @@ export default function AdminAssetManagementPage() {
                 <p style={{ fontSize: 12, color: C.muted, margin: 0, marginTop: 4 }}>Add one or more assets for {addEntryModal.employeeName}</p>
               </div>
               <button
-                onClick={() => { setAddEntryModal(null); setAddedAssets([]); setEditingAssetIdx(null) }}
+                onClick={() => { setAddEntryModal(null); setAddedAssets([]); setSelectedCategory(''); setSelectedAssetCode('') }}
                 style={{
                   width: 32, height: 32,
                   background: C.hover, border: 'none', borderRadius: 8,
@@ -869,62 +927,26 @@ export default function AdminAssetManagementPage() {
             {/* Content - Two Column Layout */}
             <div style={{ flex: 1, overflow: 'auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
               {/* Left Column - Form */}
-              <div style={{ padding: '24px 28px', borderRight: `1px solid ${C.border}`, overflowY: 'auto' }}>
-                <h3 style={{ fontSize: 13, fontWeight: 700, color: C.navy, margin: '0 0 16px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Asset Details</h3>
+              <div style={{ padding: '24px 28px', borderRight: `1px solid ${C.border}`, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+                <h3 style={{ fontSize: 13, fontWeight: 700, color: C.navy, margin: '0 0 24px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Select Asset</h3>
 
-                <div style={{ marginBottom: 16 }}>
-                  <label style={{ fontSize: 10, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 6 }}>System ID</label>
-                  <input
-                    type="text"
-                    value={formData.systemId}
-                    onChange={(e) => setFormData({ ...formData, systemId: e.target.value })}
-                    placeholder="e.g., SYS-2024-0042"
-                    style={{
-                      width: '100%', padding: '10px 12px',
-                      fontSize: 13, fontWeight: 500, color: C.navy,
-                      border: `1px solid ${C.border}`, borderRadius: 8,
-                      background: '#fff', fontFamily: "'DM Sans', system-ui, sans-serif",
-                      outline: 'none', boxSizing: 'border-box',
-                    }}
-                    onFocus={(e) => { e.target.style.borderColor = '#7C3AED' }}
-                    onBlur={(e) => { e.target.style.borderColor = C.border }}
-                  />
-                </div>
-
-                <div style={{ marginBottom: 16 }}>
-                  <label style={{ fontSize: 10, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 6 }}>Asset Description</label>
-                  <input
-                    type="text"
-                    value={formData.assetDescription}
-                    onChange={(e) => setFormData({ ...formData, assetDescription: e.target.value })}
-                    placeholder='e.g., MacBook Pro 14" M2'
-                    style={{
-                      width: '100%', padding: '10px 12px',
-                      fontSize: 13, fontWeight: 500, color: C.navy,
-                      border: `1px solid ${C.border}`, borderRadius: 8,
-                      background: '#fff', fontFamily: "'DM Sans', system-ui, sans-serif",
-                      outline: 'none', boxSizing: 'border-box',
-                    }}
-                    onFocus={(e) => { e.target.style.borderColor = '#7C3AED' }}
-                    onBlur={(e) => { e.target.style.borderColor = C.border }}
-                  />
-                </div>
-
-                <div style={{ marginBottom: 16 }}>
-                  <label style={{ fontSize: 10, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 6 }}>Category</label>
+                {/* Asset Category */}
+                <div style={{ marginBottom: 20 }}>
+                  <label style={{ fontSize: 10, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 8 }}>Asset Category</label>
                   <select
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    value={selectedCategory}
+                    onChange={(e) => { setSelectedCategory(e.target.value); setSelectedAssetCode('') }}
                     style={{
-                      width: '100%', padding: '10px 12px',
-                      fontSize: 13, fontWeight: 500, color: C.navy,
-                      border: `1px solid ${C.border}`, borderRadius: 8,
+                      width: '100%', padding: '11px 12px',
+                      fontSize: 13, fontWeight: 500, color: selectedCategory ? C.navy : '#999',
+                      border: `1px solid ${C.border}`, borderRadius: 9,
                       background: '#fff', fontFamily: "'DM Sans', system-ui, sans-serif",
                       outline: 'none', boxSizing: 'border-box', cursor: 'pointer',
                     }}
-                    onFocus={(e) => { e.target.style.borderColor = '#7C3AED' }}
-                    onBlur={(e) => { e.target.style.borderColor = C.border }}
+                    onFocus={(e) => { e.target.style.borderColor = '#7C3AED'; e.target.style.background = '#f9f9f9' }}
+                    onBlur={(e) => { e.target.style.borderColor = C.border; e.target.style.background = '#fff' }}
                   >
+                    <option value="">Select asset category...</option>
                     <option>Laptop</option>
                     <option>Monitor</option>
                     <option>Phone</option>
@@ -933,47 +955,51 @@ export default function AdminAssetManagementPage() {
                   </select>
                 </div>
 
-                <div style={{ marginBottom: 20 }}>
-                  <label style={{ fontSize: 10, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 6 }}>Assigned Date</label>
-                  <input
-                    type="date"
-                    value={formData.assignedDate}
-                    onChange={(e) => setFormData({ ...formData, assignedDate: e.target.value })}
+                {/* Asset Code */}
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ fontSize: 10, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 8 }}>Asset Code</label>
+                  <select
+                    value={selectedAssetCode}
+                    onChange={(e) => setSelectedAssetCode(e.target.value)}
                     style={{
-                      width: '100%', padding: '10px 12px',
-                      fontSize: 13, fontWeight: 500, color: C.navy,
-                      border: `1px solid ${C.border}`, borderRadius: 8,
+                      width: '100%', padding: '11px 12px',
+                      fontSize: 13, fontWeight: 500, color: selectedAssetCode ? C.navy : '#999',
+                      border: `1px solid ${C.border}`, borderRadius: 9,
                       background: '#fff', fontFamily: "'DM Sans', system-ui, sans-serif",
                       outline: 'none', boxSizing: 'border-box', cursor: 'pointer',
                     }}
-                    onFocus={(e) => { e.target.style.borderColor = '#7C3AED' }}
-                    onBlur={(e) => { e.target.style.borderColor = C.border }}
-                  />
+                    onFocus={(e) => { e.target.style.borderColor = '#7C3AED'; e.target.style.background = '#f9f9f9' }}
+                    onBlur={(e) => { e.target.style.borderColor = C.border; e.target.style.background = '#fff' }}
+                  >
+                    <option value="">Select an asset code...</option>
+                    {AVAILABLE_ASSETS[selectedCategory]?.map(asset => (
+                      <option key={asset.code} value={asset.code}>{asset.code}</option>
+                    ))}
+                  </select>
                 </div>
 
+                {/* Add Asset Button */}
                 <button
                   onClick={() => {
-                    if (formData.systemId && formData.assetDescription && formData.assignedDate) {
-                      if (editingAssetIdx !== null) {
-                        const updated = [...addedAssets]
-                        updated[editingAssetIdx] = { ...formData }
-                        setAddedAssets(updated)
-                        setEditingAssetIdx(null)
-                      } else {
-                        setAddedAssets([...addedAssets, { ...formData }])
-                      }
-                      setFormData({ systemId: '', assetDescription: '', category: 'Laptop', assignedDate: '' })
+                    const selected = AVAILABLE_ASSETS[selectedCategory]?.find(a => a.code === selectedAssetCode)
+                    if (selected) {
+                      setAddedAssets([...addedAssets, { assetCode: selected.code, assetDescription: selected.description, category: selectedCategory }])
+                      setSelectedAssetCode('')
                     }
                   }}
+                  disabled={!selectedAssetCode || !AVAILABLE_ASSETS[selectedCategory]?.find(a => a.code === selectedAssetCode)}
                   style={{
-                    width: '100%', padding: '10px', fontSize: 13, fontWeight: 700,
-                    color: '#fff', background: '#6366F1', border: 'none', borderRadius: 8,
-                    cursor: 'pointer', transition: 'background 0.15s', textTransform: 'uppercase', letterSpacing: '0.05em',
+                    width: '100%', padding: '11px 16px', fontSize: 13, fontWeight: 700,
+                    color: selectedAssetCode && AVAILABLE_ASSETS[selectedCategory]?.find(a => a.code === selectedAssetCode) ? '#fff' : '#B0B4C8',
+                    background: selectedAssetCode && AVAILABLE_ASSETS[selectedCategory]?.find(a => a.code === selectedAssetCode) ? '#6366F1' : '#E8EAF2',
+                    border: 'none', borderRadius: 9,
+                    cursor: selectedAssetCode && AVAILABLE_ASSETS[selectedCategory]?.find(a => a.code === selectedAssetCode) ? 'pointer' : 'not-allowed',
+                    transition: 'background 0.15s, color 0.15s', textTransform: 'uppercase', letterSpacing: '0.05em',
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = '#4F46E5' }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = '#6366F1' }}
+                  onMouseEnter={(e) => { if (selectedAssetCode && AVAILABLE_ASSETS[selectedCategory]?.find(a => a.code === selectedAssetCode)) e.currentTarget.style.background = '#4F46E5' }}
+                  onMouseLeave={(e) => { if (selectedAssetCode && AVAILABLE_ASSETS[selectedCategory]?.find(a => a.code === selectedAssetCode)) e.currentTarget.style.background = '#6366F1' }}
                 >
-                  {editingAssetIdx !== null ? 'Update Asset' : '+ Add Asset'}
+                  + Add Asset
                 </button>
               </div>
 
@@ -992,47 +1018,28 @@ export default function AdminAssetManagementPage() {
                         key={idx}
                         style={{
                           background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10,
-                          padding: 12, transition: 'all 0.15s',
+                          padding: 14, transition: 'all 0.15s', display: 'flex', alignItems: 'flex-start', gap: 12, justifyContent: 'space-between',
                         }}
                         onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 4px 12px rgba(28,32,53,0.08)'; e.currentTarget.style.borderColor = '#7C3AED' }}
                         onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = C.border }}
                       >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-                          <div style={{ flex: 1 }}>
-                            <p style={{ fontSize: 12, fontWeight: 700, color: C.navy, margin: '0 0 4px' }}>{asset.assetDescription}</p>
-                            <p style={{ fontSize: 10, color: C.muted, margin: 0, textTransform: 'uppercase', fontWeight: 600 }}>{asset.category}</p>
-                          </div>
-                          <div style={{ display: 'flex', gap: 6 }}>
-                            <button
-                              onClick={() => { setFormData(asset); setEditingAssetIdx(idx) }}
-                              title="Edit"
-                              style={{
-                                width: 28, height: 28, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                border: `1px solid ${C.border}`, background: '#fff', cursor: 'pointer', transition: 'all 0.15s',
-                              }}
-                              onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(99,102,241,0.10)'; e.currentTarget.style.borderColor = '#7C3AED' }}
-                              onMouseLeave={(e) => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = C.border }}
-                            >
-                              <Edit size={13} style={{ color: '#6366F1' }} />
-                            </button>
-                            <button
-                              onClick={() => { setAddedAssets(addedAssets.filter((_, i) => i !== idx)); if (editingAssetIdx === idx) setEditingAssetIdx(null) }}
-                              title="Delete"
-                              style={{
-                                width: 28, height: 28, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                border: `1px solid ${C.border}`, background: '#fff', cursor: 'pointer', transition: 'all 0.15s',
-                              }}
-                              onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(232,72,85,0.10)'; e.currentTarget.style.borderColor = '#E84855' }}
-                              onMouseLeave={(e) => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = C.border }}
-                            >
-                              <X size={13} style={{ color: '#E84855' }} />
-                            </button>
-                          </div>
+                        <div style={{ flex: 1 }}>
+                          <p style={{ fontSize: 13, fontWeight: 700, color: C.navy, margin: '0 0 4px' }}>{asset.assetCode}</p>
+                          <p style={{ fontSize: 12, color: C.muted, margin: '0 0 4px', fontWeight: 500 }}>{asset.assetDescription}</p>
+                          <p style={{ fontSize: 10, color: '#999', margin: 0, textTransform: 'uppercase', fontWeight: 600 }}>{asset.category}</p>
                         </div>
-                        <div style={{ fontSize: 10, color: C.muted, paddingTop: 8, borderTop: `1px solid ${C.border}` }}>
-                          <p style={{ margin: '6px 0' }}><strong>ID:</strong> {asset.systemId}</p>
-                          <p style={{ margin: '0' }}><strong>Date:</strong> {asset.assignedDate}</p>
-                        </div>
+                        <button
+                          onClick={() => { setAddedAssets(addedAssets.filter((_, i) => i !== idx)) }}
+                          title="Remove"
+                          style={{
+                            width: 28, height: 28, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            border: `1px solid #D0D3E4`, background: '#fff', cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0, marginTop: 0,
+                          }}
+                          onMouseEnter={(e) => { e.currentTarget.style.background = '#F0F2F8'; e.currentTarget.style.borderColor = '#B0B4C8' }}
+                          onMouseLeave={(e) => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = '#D0D3E4' }}
+                        >
+                          <X size={14} style={{ color: '#8B90A7' }} />
+                        </button>
                       </div>
                     ))}
                   </div>
@@ -1043,7 +1050,7 @@ export default function AdminAssetManagementPage() {
             {/* Footer */}
             <div style={{ padding: '14px 28px', borderTop: `1px solid ${C.border}`, display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
               <button
-                onClick={() => { setAddEntryModal(null); setAddedAssets([]); setEditingAssetIdx(null) }}
+                onClick={() => { setAddEntryModal(null); setAddedAssets([]); setSelectedCategory(''); setSelectedAssetCode('') }}
                 style={{
                   padding: '9px 20px', fontSize: 12, fontWeight: 700,
                   color: C.navy, background: C.hover, border: 'none', borderRadius: 8,
@@ -1063,8 +1070,13 @@ export default function AdminAssetManagementPage() {
                     setAssetStatus('assigned')
                     setAddEntryModal(null)
                     setAddedAssets([])
-                    setEditingAssetIdx(null)
-                    setFormData({ systemId: '', assetDescription: '', category: 'Laptop', assignedDate: '' })
+                    setSelectedCategory('')
+                    setSelectedAssetCode('')
+
+                    // Navigate to Assets Request > Tab 2
+                    if (onNavigate) {
+                      onNavigate('assets-request')
+                    }
                   }
                 }}
                 disabled={addedAssets.length === 0 || isSavingAssets}
@@ -1083,10 +1095,10 @@ export default function AdminAssetManagementPage() {
                       style={{ animation: 'spin 0.75s linear infinite' }}>
                       <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
                     </svg>
-                    Saving...
+                    Sending...
                   </>
                 ) : (
-                  <>Save & Assign All ({addedAssets.length})</>
+                  <>Send Request ({addedAssets.length})</>
                 )}
               </button>
             </div>

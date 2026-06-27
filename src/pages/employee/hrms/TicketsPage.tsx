@@ -20,7 +20,7 @@ interface TicketComment {
 }
 
 interface TicketRecord {
-  id: string; category: string; subject: string; description: string
+  id: string; type: string; category: string; subject: string; description: string
   createdDate: string; priority: Priority; status: TStatus
   assignedTo: string; lastUpdated: string
   hasAttachment: boolean
@@ -30,24 +30,38 @@ interface TicketRecord {
 // ── Static data ──────────────────────────────────────────────────────────────
 const CATEGORIES = [
   { id: 'All',             label: 'All Tickets',    Icon: LayoutGrid, color: '#5B5FDE', bg: 'rgba(99,102,241,0.10)',  desc: ''                                              },
-  { id: 'System Support',  label: 'System Support', Icon: Monitor,    color: '#3B82F6', bg: 'rgba(59,130,246,0.10)',  desc: 'Login issues, portal errors, system outages'   },
-  { id: 'Project Request', label: 'Project Request',Icon: FolderOpen, color: '#7C3AED', bg: 'rgba(124,58,237,0.10)', desc: 'Access requests, project resources & tools'    },
-  { id: 'Personal',        label: 'Personal',       Icon: User,       color: '#0D9488', bg: 'rgba(13,148,136,0.10)',  desc: 'WFH requests, personal admin matters'          },
-  { id: 'HR Request',      label: 'HR Request',     Icon: Users,      color: '#0EA86A', bg: 'rgba(14,168,106,0.10)',  desc: 'Payslips, documents, leave & policy queries'   },
-  { id: 'IT Support',      label: 'IT Support',     Icon: Laptop,     color: '#6366F1', bg: 'rgba(99,102,241,0.10)',  desc: 'Hardware, software, VPN & device requests'     },
-  { id: 'Finance',         label: 'Finance',        Icon: DollarSign, color: '#D97706', bg: 'rgba(245,158,11,0.10)',  desc: 'Reimbursements, claims & invoice queries'      },
+  { id: 'Fin - Income Tax',         label: 'Fin - Income Tax related queries',           Icon: DollarSign, color: '#D97706', bg: 'rgba(245,158,11,0.10)',  desc: 'Income tax queries'      },
+  { id: 'Fin - LWF',                label: 'Fin - LWF related queries',                  Icon: DollarSign, color: '#D97706', bg: 'rgba(245,158,11,0.10)',  desc: 'LWF queries'             },
+  { id: 'Fin - Others',             label: 'Fin - Others',                              Icon: DollarSign, color: '#D97706', bg: 'rgba(245,158,11,0.10)',  desc: 'Other finance queries'    },
+  { id: 'Fin - Payslip',            label: 'Fin - Payslip related queries',             Icon: DollarSign, color: '#D97706', bg: 'rgba(245,158,11,0.10)',  desc: 'Payslip queries'         },
+  { id: 'Fin - PF/ESI/PT',          label: 'Fin - PF/ESI/PT related queries',           Icon: DollarSign, color: '#D97706', bg: 'rgba(245,158,11,0.10)',  desc: 'PF/ESI/PT queries'       },
+  { id: 'Fin - Salary Account',     label: 'Fin - Salary A/c opening/conversion',       Icon: DollarSign, color: '#D97706', bg: 'rgba(245,158,11,0.10)',  desc: 'Salary account queries'   },
+  { id: 'HR - Attendance',          label: 'HR - Attendance related queries',           Icon: Users,      color: '#0EA86A', bg: 'rgba(14,168,106,0.10)',  desc: 'Attendance queries'      },
+  { id: 'HR - Leave',               label: 'HR - Leave related queries',                Icon: Users,      color: '#0EA86A', bg: 'rgba(14,168,106,0.10)',  desc: 'Leave queries'           },
+  { id: 'HR - Others',              label: 'HR - Others',                               Icon: Users,      color: '#0EA86A', bg: 'rgba(14,168,106,0.10)',  desc: 'Other HR queries'        },
+  { id: 'HR - Policy',              label: 'HR - Policy related queries',               Icon: Users,      color: '#0EA86A', bg: 'rgba(14,168,106,0.10)',  desc: 'Policy queries'          },
+  { id: 'HR - Profile',             label: 'HR - Profile updation',                     Icon: Users,      color: '#0EA86A', bg: 'rgba(14,168,106,0.10)',  desc: 'Profile updates'         },
+  { id: 'IT - Hardware',            label: 'IT - Hardware related queries',             Icon: Laptop,     color: '#6366F1', bg: 'rgba(99,102,241,0.10)',  desc: 'Hardware queries'        },
+  { id: 'IT - Office365',           label: 'IT - Office 365 related queries',           Icon: Laptop,     color: '#6366F1', bg: 'rgba(99,102,241,0.10)',  desc: 'Office 365 queries'      },
+  { id: 'IT - Others',              label: 'IT - Others',                               Icon: Laptop,     color: '#6366F1', bg: 'rgba(99,102,241,0.10)',  desc: 'Other IT queries'        },
+  { id: 'IT - Software',            label: 'IT - Software related queries',             Icon: Laptop,     color: '#6366F1', bg: 'rgba(99,102,241,0.10)',  desc: 'Software queries'        },
+  { id: 'IT - VPN',                 label: 'IT - VPN',                                  Icon: Laptop,     color: '#6366F1', bg: 'rgba(99,102,241,0.10)',  desc: 'VPN queries'             },
+  { id: 'PA - Addition/Deletion',   label: 'PA-Addition/Deletion of Resource',          Icon: FolderOpen, color: '#7C3AED', bg: 'rgba(124,58,237,0.10)', desc: 'Resource allocation'      },
+  { id: 'PA - Allocation',          label: 'PA-Change in Allocation %',                 Icon: FolderOpen, color: '#7C3AED', bg: 'rgba(124,58,237,0.10)', desc: 'Allocation changes'       },
+  { id: 'PA - New Project',         label: 'PA-Creation of New Project',                Icon: FolderOpen, color: '#7C3AED', bg: 'rgba(124,58,237,0.10)', desc: 'New project setup'        },
+  { id: 'PA - Closure',             label: 'PA-Project Closure',                        Icon: FolderOpen, color: '#7C3AED', bg: 'rgba(124,58,237,0.10)', desc: 'Project closure'          },
 ] as const
 
 const TICKETS: TicketRecord[] = [
   {
-    id: 'TKT-2401', category: 'IT Support', subject: 'Laptop not connecting to corporate VPN',
+    id: 'TKT-2401', type: 'IT & Admin', category: 'IT - Hardware related queries', subject: 'Laptop not connecting to corporate VPN',
     description: 'My laptop has been unable to connect to the corporate VPN for the past 3 days. I have tried reinstalling the Cisco AnyConnect client and resetting credentials, but the issue persists. Error code: VPN_AUTH_FAILED. This is blocking access to all internal tools and repositories.',
-    createdDate: '2026-05-20', priority: 'High', status: 'Open',
+    createdDate: '2026-05-20', priority: 'High', status: 'Pending',
     assignedTo: 'Arjun Menon', lastUpdated: '2026-05-21', hasAttachment: true,
     comments: [],
   },
   {
-    id: 'TKT-2398', category: 'HR Request', subject: 'Update emergency contact details in HRMS system',
+    id: 'TKT-2398', type: 'HR', category: 'HR - Profile updation', subject: 'Update emergency contact details in HRMS system',
     description: 'I need to update my emergency contact details in the HRMS portal. My previous contact has changed her phone number and I would also like to add my spouse as a secondary emergency contact. Please assist with updating both entries at the earliest.',
     createdDate: '2026-05-18', priority: 'Medium', status: 'Resolved',
     assignedTo: 'Priya Mehta', lastUpdated: '2026-05-20', hasAttachment: false,
@@ -57,7 +71,7 @@ const TICKETS: TicketRecord[] = [
     ],
   },
   {
-    id: 'TKT-2395', category: 'System Support', subject: 'Unable to access HRMS portal — persistent login error',
+    id: 'TKT-2395', type: 'IT & Admin', category: 'IT - Software related queries', subject: 'Unable to access HRMS portal — persistent login error',
     description: 'I have been unable to log into the HRMS portal since 16 May 2026. After entering credentials the system shows a loading spinner for approximately 30 seconds and then displays a blank white screen. I have reproduced the issue on Chrome, Firefox and Edge browsers across both my laptop and mobile. Clearing cache and cookies has not resolved it.',
     createdDate: '2026-05-16', priority: 'Critical', status: 'Pending',
     assignedTo: 'Dev Team', lastUpdated: '2026-05-21', hasAttachment: true,
@@ -66,7 +80,7 @@ const TICKETS: TicketRecord[] = [
     ],
   },
   {
-    id: 'TKT-2389', category: 'Finance', subject: 'Reimbursement claim for April 2026 not processed',
+    id: 'TKT-2389', type: 'Finance Manager', category: 'Fin - Salary A/c opening/conversion', subject: 'Reimbursement claim for April 2026 not processed',
     description: 'My expense reimbursement claim for April 2026 totalling ₹4,850 (travel and accommodation for the Pune client visit on Apr 12–13) has not been processed. The claim was submitted via the expense portal on April 18 with all receipts attached. Request you to check the status and process the payment at the earliest.',
     createdDate: '2026-05-12', priority: 'High', status: 'Pending',
     assignedTo: 'Sunita Rao', lastUpdated: '2026-05-15', hasAttachment: true,
@@ -76,14 +90,14 @@ const TICKETS: TicketRecord[] = [
     ],
   },
   {
-    id: 'TKT-2382', category: 'Project Request', subject: 'Access request to new project repository — AMS-v3',
+    id: 'TKT-2382', type: 'Project Allocation', category: 'PA-Addition/Deletion of Resource', subject: 'Access request to new project repository — AMS-v3',
     description: 'I have been assigned to the AMS-v3 project starting May 12 but I do not yet have access to the project repository on Bitbucket. The project manager Raj Kumar is aware and has approved the request. Please provision the required read/write access to the AMS-v3 codebase at the earliest so I can begin onboarding tasks.',
-    createdDate: '2026-05-09', priority: 'Medium', status: 'Open',
+    createdDate: '2026-05-09', priority: 'Medium', status: 'Pending',
     assignedTo: 'Raj Kumar', lastUpdated: '2026-05-09', hasAttachment: false,
     comments: [],
   },
   {
-    id: 'TKT-2375', category: 'Personal', subject: 'Work-from-home extension request for June 2026',
+    id: 'TKT-2375', type: 'HR', category: 'HR - Leave related queries', subject: 'Work-from-home extension request for June 2026',
     description: 'I would like to request a work-from-home extension for June 2026 due to a family medical situation at home. My current WFH approval is valid until May 31. I will maintain full availability during standard working hours, attend all meetings online, and ensure there is no impact on deliverables.',
     createdDate: '2026-05-05', priority: 'Low', status: 'Resolved',
     assignedTo: 'Priya Mehta', lastUpdated: '2026-05-07', hasAttachment: false,
@@ -93,7 +107,7 @@ const TICKETS: TicketRecord[] = [
     ],
   },
   {
-    id: 'TKT-2368', category: 'IT Support', subject: 'Request for additional 27-inch monitor for workstation',
+    id: 'TKT-2368', type: 'IT & Admin', category: 'IT - Hardware related queries', subject: 'Request for additional 27-inch monitor for workstation',
     description: 'My current workstation has a single 24-inch display which significantly limits productivity when working across multiple applications simultaneously. I would like to request an additional 27-inch monitor to improve my workflow efficiency. I am happy to collect the unit from the IT store room at a convenient time.',
     createdDate: '2026-04-28', priority: 'Low', status: 'Closed',
     assignedTo: 'Arjun Menon', lastUpdated: '2026-05-02', hasAttachment: false,
@@ -104,7 +118,7 @@ const TICKETS: TicketRecord[] = [
     ],
   },
   {
-    id: 'TKT-2361', category: 'HR Request', subject: 'April 2026 salary slip not received via email',
+    id: 'TKT-2361', type: 'HR', category: 'HR - Leave related queries', subject: 'April 2026 salary slip not received via email',
     description: 'I have not received my April 2026 salary slip via email. The slip is typically dispatched on the 5th of the following month but as of April 22 it has not arrived. I have checked my spam and junk folders thoroughly with no result. Please resend the April 2026 salary slip to my registered email address: sarah.johnson@concertidc.com.',
     createdDate: '2026-04-22', priority: 'Medium', status: 'Resolved',
     assignedTo: 'Sunita Rao', lastUpdated: '2026-04-24', hasAttachment: false,
@@ -138,12 +152,26 @@ const PRIORITY_STYLE: Record<Priority, { bg: string; color: string; dot: string;
 }
 
 const CAT_BADGE: Record<string, { bg: string; color: string }> = {
-  'IT Support':      { bg: 'rgba(99,102,241,0.10)',  color: '#5B5FDE' },
-  'HR Request':      { bg: 'rgba(14,168,106,0.10)',  color: '#0A7040' },
-  'System Support':  { bg: 'rgba(59,130,246,0.10)',  color: '#1D4ED8' },
-  'Finance':         { bg: 'rgba(245,158,11,0.10)',  color: '#B45309' },
-  'Project Request': { bg: 'rgba(124,58,237,0.10)',  color: '#7C3AED' },
-  'Personal':        { bg: 'rgba(13,148,136,0.10)',  color: '#0D9488' },
+  'Fin - Income Tax related queries':           { bg: 'rgba(245,158,11,0.10)',  color: '#B45309' },
+  'Fin - LWF related queries':                  { bg: 'rgba(245,158,11,0.10)',  color: '#B45309' },
+  'Fin - Others':                               { bg: 'rgba(245,158,11,0.10)',  color: '#B45309' },
+  'Fin - Payslip related queries':              { bg: 'rgba(245,158,11,0.10)',  color: '#B45309' },
+  'Fin - PF/ESI/PT related queries':            { bg: 'rgba(245,158,11,0.10)',  color: '#B45309' },
+  'Fin - Salary A/c opening/conversion':        { bg: 'rgba(245,158,11,0.10)',  color: '#B45309' },
+  'HR - Attendance related queries':            { bg: 'rgba(14,168,106,0.10)',  color: '#0A7040' },
+  'HR - Leave related queries':                 { bg: 'rgba(14,168,106,0.10)',  color: '#0A7040' },
+  'HR - Others':                                { bg: 'rgba(14,168,106,0.10)',  color: '#0A7040' },
+  'HR - Policy related queries':                { bg: 'rgba(14,168,106,0.10)',  color: '#0A7040' },
+  'HR - Profile updation':                      { bg: 'rgba(14,168,106,0.10)',  color: '#0A7040' },
+  'IT - Hardware related queries':              { bg: 'rgba(99,102,241,0.10)',  color: '#5B5FDE' },
+  'IT - Office 365 related queries':            { bg: 'rgba(99,102,241,0.10)',  color: '#5B5FDE' },
+  'IT - Others':                                { bg: 'rgba(99,102,241,0.10)',  color: '#5B5FDE' },
+  'IT - Software related queries':              { bg: 'rgba(99,102,241,0.10)',  color: '#5B5FDE' },
+  'IT - VPN':                                   { bg: 'rgba(99,102,241,0.10)',  color: '#5B5FDE' },
+  'PA-Addition/Deletion of Resource':           { bg: 'rgba(124,58,237,0.10)',  color: '#7C3AED' },
+  'PA-Change in Allocation %':                  { bg: 'rgba(124,58,237,0.10)',  color: '#7C3AED' },
+  'PA-Creation of New Project':                 { bg: 'rgba(124,58,237,0.10)',  color: '#7C3AED' },
+  'PA-Project Closure':                         { bg: 'rgba(124,58,237,0.10)',  color: '#7C3AED' },
 }
 
 const C      = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7' }
@@ -177,11 +205,11 @@ function fmtDateTime(ts: string) {
 export default function TicketsPage() {
   // ── List state ──
   const [activeCard,     setActiveCard]     = useState<ActiveCard>(null)
-  const [activeCategory, setActiveCategory] = useState('All')
+  const [activeType,     setActiveType]     = useState('All')
   const [searchQuery,    setSearchQuery]    = useState('')
   const [statusFilter,   setStatusFilter]   = useState<TStatus | 'All'>('All')
   const [viewTicket,     setViewTicket]     = useState<TicketRecord | null>(null)
-  const [catDropOpen,    setCatDropOpen]    = useState(false)
+  const [typeDropOpen,   setTypeDropOpen]   = useState(false)
 
   // ── Ticket-view state ──
   const [localComments,  setLocalComments]  = useState<TicketComment[]>([])
@@ -189,6 +217,7 @@ export default function TicketsPage() {
   const [commentLoading, setCommentLoading] = useState(false)
 
   // ── Create Ticket form state ──
+  const [tkType,        setTkType]        = useState('')
   const [tkCategory,    setTkCategory]    = useState('')
   const [tkSubject,     setTkSubject]     = useState('')
   const [tkPriority,    setTkPriority]    = useState<Priority | ''>('')
@@ -202,16 +231,16 @@ export default function TicketsPage() {
   const tkFileRef = useRef<HTMLInputElement>(null)
 
   // ── Derived ──
-  const catCount  = (id: string) => id === 'All' ? TICKETS.length : TICKETS.filter(t => t.category === id).length
+  const typeCount = (type: string) => type === 'All' ? TICKETS.length : TICKETS.filter(t => t.type === type).length
   const openCount = TICKETS.filter(t => t.status === 'Open').length
-  const tkCanSubmit = tkCategory && tkSubject.trim() && tkPriority && tkDescription.trim()
+  const tkCanSubmit = tkType && tkCategory && tkSubject.trim() && tkPriority && tkDescription.trim()
 
   const basFiltered = TICKETS.filter(t => {
-    const matchCat    = activeCategory === 'All' || t.category === activeCategory
+    const matchType   = activeType === 'All' || t.type === activeType
     const q           = searchQuery.toLowerCase()
     const matchSearch = !q || t.subject.toLowerCase().includes(q) || t.id.toLowerCase().includes(q)
-                           || t.category.toLowerCase().includes(q) || t.assignedTo.toLowerCase().includes(q)
-    return matchCat && matchSearch
+                           || t.type.toLowerCase().includes(q) || t.category.toLowerCase().includes(q) || t.assignedTo.toLowerCase().includes(q)
+    return matchType && matchSearch
   })
   const filtered = basFiltered.filter(t => statusFilter === 'All' || t.status === statusFilter)
 
@@ -240,7 +269,7 @@ export default function TicketsPage() {
   }
 
   function resetTkForm() {
-    setTkCategory(''); setTkSubject(''); setTkPriority('')
+    setTkType(''); setTkCategory(''); setTkSubject(''); setTkPriority('')
     setTkDescription(''); setTkAttachment(null); setTkContact('email')
     setTkSuccess(false)
     if (tkFileRef.current) tkFileRef.current.value = ''
@@ -275,10 +304,6 @@ export default function TicketsPage() {
       dotBg:       'rgba(245,158,11,0.20)',
       iconColor:   '#D97706',
       arrowColor:  '#D97706',
-      badge:       `${openCount} Open` as string,
-      badgeBg:     'rgba(245,158,11,0.10)',
-      badgeColor:  '#B45309',
-      badgeDot:    '#F59E0B',
     },
     {
       id:          'ticket-create' as const,
@@ -455,56 +480,23 @@ export default function TicketsPage() {
               )}
             </div>
 
-            {/* Category — custom selection dropdown */}
-            {catDropOpen && (
-              <div style={{ position: 'fixed', inset: 0, zIndex: 99 }} onClick={() => setCatDropOpen(false)} />
+            {/* Ticket Type — custom selection dropdown */}
+            {typeDropOpen && (
+              <div style={{ position: 'fixed', inset: 0, zIndex: 99 }} onClick={() => setTypeDropOpen(false)} />
             )}
             <div style={{ position: 'relative', zIndex: 100 }}>
-              {(() => {
-                const ac = CATEGORIES.find(c => c.id === activeCategory) ?? CATEGORIES[0]
-                const AcIcon = ac.Icon
-                return (
-                  <button
-                    onClick={() => setCatDropOpen(v => !v)}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: 9, height: 46, padding: '0 14px 0 12px', borderRadius: 11, border: 'none', background: catDropOpen ? '#F4F5F8' : '#fff', cursor: 'pointer', fontFamily: "'DM Sans', system-ui, sans-serif", transition: 'background 0.14s', outline: 'none', minWidth: 210 }}
-                    onMouseEnter={e => { if (!catDropOpen) e.currentTarget.style.background = '#F7F8FC' }}
-                    onMouseLeave={e => { if (!catDropOpen) e.currentTarget.style.background = '#fff' }}
-                  >
-                    <div style={{ width: 28, height: 28, borderRadius: 8, background: ac.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <AcIcon size={13} strokeWidth={2.2} style={{ color: ac.color }} />
-                    </div>
-                    <span style={{ flex: 1, fontSize: 13.5, fontWeight: 600, color: C.navy, textAlign: 'left', whiteSpace: 'nowrap' }}>{ac.label}</span>
-                    <span style={{ padding: '2px 8px', borderRadius: 99, background: '#F0F2F8', fontSize: 11, fontWeight: 700, color: C.muted, flexShrink: 0 }}>{catCount(ac.id)}</span>
-                    <ChevronDown size={13} strokeWidth={2.3} style={{ color: C.muted, flexShrink: 0, transition: 'transform 0.18s', transform: catDropOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
-                  </button>
-                )
-              })()}
-
-              {catDropOpen && (
-                <div style={{ position: 'absolute', top: 'calc(100% + 7px)', left: 0, minWidth: 238, background: '#fff', border: `1px solid ${C.border}`, borderRadius: 15, boxShadow: '0 10px 36px rgba(28,32,53,0.13)', zIndex: 200, padding: '7px' }}>
-                  {CATEGORIES.map(cat => {
-                    const CatIcon  = cat.Icon
-                    const isActive = activeCategory === cat.id
-                    const count    = catCount(cat.id)
-                    return (
-                      <button key={cat.id}
-                        onClick={() => { setActiveCategory(cat.id); setCatDropOpen(false) }}
-                        style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 10px', borderRadius: 9, border: 'none', background: isActive ? cat.bg : 'transparent', cursor: 'pointer', textAlign: 'left', transition: 'background 0.12s', outline: 'none', fontFamily: "'DM Sans', system-ui, sans-serif" }}
-                        onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#F5F6FA' }}
-                        onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
-                      >
-                        <div style={{ width: 30, height: 30, borderRadius: 8, background: isActive ? cat.bg : '#F0F2F8', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          <CatIcon size={13} strokeWidth={isActive ? 2.3 : 1.8} style={{ color: isActive ? cat.color : '#8B90A7' }} />
-                        </div>
-                        <span style={{ flex: 1, fontSize: 13, fontWeight: isActive ? 700 : 500, color: isActive ? cat.color : '#5A6080' }}>{cat.label}</span>
-                        {count > 0 && (
-                          <span style={{ padding: '2px 8px', borderRadius: 99, background: isActive ? cat.color + '22' : '#F0F2F8', fontSize: 11, fontWeight: 700, color: isActive ? cat.color : '#8B90A7', flexShrink: 0 }}>{count}</span>
-                        )}
-                      </button>
-                    )
-                  })}
-                </div>
-              )}
+              <div className="relative">
+                <select value={activeType} onChange={e => setActiveType(e.target.value)}
+                  style={{ ...inputBase, height: 46, paddingRight: 36, paddingLeft: 14, border: 'none', background: '#fff', appearance: 'none', cursor: 'pointer', color: activeType ? C.navy : C.muted }}>
+                  <option value="All">All Types</option>
+                  <option value="HR">HR</option>
+                  <option value="IT & Admin">IT & Admin</option>
+                  <option value="System Admin">System Admin</option>
+                  <option value="Finance Manager">Finance Manager</option>
+                  <option value="Project Allocation">Project Allocation</option>
+                </select>
+                <ChevronDown size={14} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: C.muted, pointerEvents: 'none' }} />
+              </div>
             </div>
 
           </div>
@@ -515,12 +507,11 @@ export default function TicketsPage() {
               style={{ padding: '13px 20px', borderBottom: `1px solid ${C.border}`, background: '#FAFBFE' }}>
               <div className="flex items-center gap-2.5">
                 <span style={{ fontSize: 13.5, fontWeight: 700, color: C.navy }}>
-                  {activeCategory === 'All' ? 'All Tickets' : activeCategory}
+                  {activeType === 'All' ? 'Ticket Status' : activeType}
                 </span>
-                <span style={{ padding: '2px 9px', borderRadius: 99, background: '#F0F2F8', fontSize: 11.5, fontWeight: 700, color: C.muted }}>{filtered.length}</span>
               </div>
               <div className="flex items-center gap-1.5">
-                {(['All', 'Open', 'Pending', 'Resolved', 'Closed'] as const).map(s => {
+                {(['All', 'Pending', 'Resolved', 'Closed'] as const).map(s => {
                   const isAllBtn = s === 'All'
                   const isActive = statusFilter === s
                   const ss       = isAllBtn ? null : STATUS_STYLE[s as TStatus]
@@ -538,8 +529,8 @@ export default function TicketsPage() {
               </div>
             </div>
 
-            <div className="grid" style={{ gridTemplateColumns: COL, padding: '13px 20px', background: '#F7F8FC', borderBottom: `1px solid ${C.border}` }}>
-              {['Ticket ID', 'Category', 'Created', 'Priority', 'Status', 'Assigned To', 'Updated', 'Action'].map(h => (
+            <div className="grid" style={{ gridTemplateColumns: '0.8fr 1fr 1.2fr 0.8fr 0.8fr 1.1fr 0.5fr', padding: '13px 20px', background: '#F7F8FC', borderBottom: `1px solid ${C.border}` }}>
+              {['Ticket ID', 'Type', 'Category', 'Priority', 'Date', 'Status', 'Action'].map(h => (
                 <span key={h} style={{ fontSize: 10.5, fontWeight: 700, color: '#B0B4C8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</span>
               ))}
             </div>
@@ -560,22 +551,21 @@ export default function TicketsPage() {
                 const isLast = idx === filtered.length - 1
                 return (
                   <div key={t.id} className="tkt-row grid items-center"
-                    style={{ gridTemplateColumns: COL, padding: '18px 20px', borderBottom: isLast ? 'none' : `1px solid #F0F2F8`, background: '#fff', transition: 'background 0.12s' }}>
+                    style={{ gridTemplateColumns: '0.8fr 1fr 1.2fr 0.8fr 0.8fr 1.1fr 0.5fr', padding: '18px 20px', borderBottom: isLast ? 'none' : `1px solid #F0F2F8`, background: '#fff', transition: 'background 0.12s' }}>
                     <span style={{ fontSize: 12.5, fontWeight: 700, color: C.navy, fontVariantNumeric: 'tabular-nums' }}>{t.id}</span>
+                    <span style={{ fontSize: 12, color: '#5A6080', fontWeight: 500 }}>{t.type}</span>
                     <span style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 9px', borderRadius: 8, background: cb.bg, color: cb.color, fontSize: 11.5, fontWeight: 600, width: 'fit-content', whiteSpace: 'nowrap' }}>{t.category}</span>
-                    <span style={{ fontSize: 12, color: '#5A6080', fontWeight: 500 }}>{fmtDate(t.createdDate)}</span>
                     <span className="inline-flex items-center gap-1.5 rounded-full"
                       style={{ padding: '4px 10px', background: ps.bg, color: ps.color, fontSize: 11.5, fontWeight: 600, width: 'fit-content', whiteSpace: 'nowrap', border: `1px solid ${ps.border}` }}>
                       <span style={{ width: 5, height: 5, borderRadius: '50%', background: ps.dot, display: 'inline-block', flexShrink: 0 }} />
                       {t.priority}
                     </span>
+                    <span style={{ fontSize: 12, color: '#5A6080', fontWeight: 500 }}>{fmtDate(t.createdDate)}</span>
                     <span className="inline-flex items-center gap-1.5 rounded-full"
                       style={{ padding: '4px 10px', background: ss.bg, color: ss.color, fontSize: 11.5, fontWeight: 600, width: 'fit-content', whiteSpace: 'nowrap', border: `1px solid ${ss.dot}40` }}>
                       <span style={{ width: 5, height: 5, borderRadius: '50%', background: ss.dot, display: 'inline-block', flexShrink: 0 }} />
                       {t.status}
                     </span>
-                    <span className="truncate" style={{ fontSize: 12.5, color: '#5A6080', fontWeight: 500 }}>{t.assignedTo}</span>
-                    <span style={{ fontSize: 12, color: '#5A6080', fontWeight: 500 }}>{fmtDate(t.lastUpdated)}</span>
                     <button
                       onClick={() => openTicketView(t)}
                       title="View ticket details"
@@ -618,6 +608,21 @@ export default function TicketsPage() {
             <div style={{ padding: '26px 24px' }}>
               <div className="grid grid-cols-2 gap-5 mb-6">
                 <div>
+                  <label style={LABEL}>Ticket Type <span style={{ color: '#E84855' }}>*</span></label>
+                  <div className="relative">
+                    <select value={tkType} onChange={e => setTkType(e.target.value)}
+                      style={{ ...inputBase, paddingRight: 36, paddingLeft: 14, border: `1px solid ${C.border}`, background: tkType ? '#F5F6FF' : '#fff', appearance: 'none', cursor: 'pointer', color: tkType ? C.navy : C.muted }}>
+                      <option value="">— Select Type —</option>
+                      <option value="HR">HR</option>
+                      <option value="IT & Admin">IT & Admin</option>
+                      <option value="System Admin">System Admin</option>
+                      <option value="Finance Manager">Finance Manager</option>
+                      <option value="Project Allocation">Project Allocation</option>
+                    </select>
+                    <ChevronDown size={14} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: C.muted, pointerEvents: 'none' }} />
+                  </div>
+                </div>
+                <div>
                   <label style={LABEL}>Ticket Category <span style={{ color: '#E84855' }}>*</span></label>
                   <div className="relative">
                     <select value={tkCategory} onChange={e => setTkCategory(e.target.value)}
@@ -627,12 +632,6 @@ export default function TicketsPage() {
                     </select>
                     <ChevronDown size={14} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: C.muted, pointerEvents: 'none' }} />
                   </div>
-                </div>
-                <div>
-                  <label style={LABEL}>Subject <span style={{ color: '#E84855' }}>*</span></label>
-                  <input type="text" value={tkSubject} onChange={e => setTkSubject(e.target.value)}
-                    placeholder="Brief one-line summary of the issue"
-                    style={{ ...inputBase, border: `1px solid ${C.border}`, background: tkSubject ? '#F5F6FF' : '#fff' }} />
                 </div>
               </div>
 
@@ -651,6 +650,13 @@ export default function TicketsPage() {
                     )
                   })}
                 </div>
+              </div>
+
+              <div className="mb-6">
+                <label style={LABEL}>Subject <span style={{ color: '#E84855' }}>*</span></label>
+                <input type="text" value={tkSubject} onChange={e => setTkSubject(e.target.value)}
+                  placeholder="Brief one-line summary of the issue"
+                  style={{ ...inputBase, border: `1px solid ${C.border}`, background: tkSubject ? '#F5F6FF' : '#fff' }} />
               </div>
 
               <div className="mb-6">
@@ -759,9 +765,10 @@ export default function TicketsPage() {
                   <div style={{ fontSize: 12.5, fontWeight: 700, color: '#5B5FDE', marginBottom: 4 }}>Required fields</div>
                   <div style={{ fontSize: 12, color: '#6366F1', lineHeight: 1.6 }}>
                     {[
+                      { label: 'Type',        filled: !!tkType               },
                       { label: 'Category',    filled: !!tkCategory           },
-                      { label: 'Subject',     filled: !!tkSubject.trim()     },
                       { label: 'Priority',    filled: !!tkPriority           },
+                      { label: 'Subject',     filled: !!tkSubject.trim()     },
                       { label: 'Description', filled: !!tkDescription.trim() },
                     ].filter(f => !f.filled).map(f => (
                       <span key={f.label} className="inline-flex items-center gap-1 mr-2" style={{ color: '#8B90A7', fontWeight: 500 }}>· {f.label}</span>
@@ -771,15 +778,15 @@ export default function TicketsPage() {
               </div>
             )}
 
-            <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden' }}>
-              <div className="flex items-center gap-2.5" style={{ padding: '14px 18px', borderBottom: `1px solid ${C.border}` }}>
+            <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden', display: 'flex', flexDirection: 'column', height: 520 }}>
+              <div className="flex items-center gap-2.5" style={{ padding: '14px 18px', borderBottom: `1px solid ${C.border}`, flexShrink: 0 }}>
                 <div className="flex items-center justify-center rounded-lg flex-shrink-0"
                   style={{ width: 30, height: 30, background: 'rgba(99,102,241,0.10)', color: '#5B5FDE' }}>
                   <LayoutGrid size={13} strokeWidth={2.2} />
                 </div>
                 <span style={{ fontSize: 13.5, fontWeight: 700, color: C.navy }}>Category Guide</span>
               </div>
-              <div style={{ padding: '10px 12px 14px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <div style={{ padding: '10px 12px 14px', display: 'flex', flexDirection: 'column', gap: 4, overflowY: 'auto', flex: 1 }}>
                 {CATEGORIES.slice(1).map(cat => {
                   const CatIcon    = cat.Icon
                   const isSelected = tkCategory === cat.id
@@ -1087,19 +1094,19 @@ export default function TicketsPage() {
                   <div style={{ fontSize: 12.5, color: C.muted, marginTop: 2 }}>Please review before submitting</div>
                 </div>
                 <button onClick={() => setTkConfirm(false)}
-                  style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: C.muted, lineHeight: 0, padding: 4 }}
-                  onMouseEnter={e => { e.currentTarget.style.color = C.navy }}
-                  onMouseLeave={e => { e.currentTarget.style.color = C.muted }}>
+                  style={{ marginLeft: 'auto', background: '#F0F2F8', border: `1px solid ${C.border}`, borderRadius: 8, cursor: 'pointer', color: C.muted, lineHeight: 0, padding: 6, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = '#E8EAF2'; e.currentTarget.style.color = C.navy }}
+                  onMouseLeave={e => { e.currentTarget.style.background = '#F0F2F8'; e.currentTarget.style.color = C.muted }}>
                   <X size={16} />
                 </button>
               </div>
             </div>
 
-            <div style={{ padding: '20px 28px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ padding: '20px 28px', display: 'flex', flexDirection: 'column', gap: 14 }}>
               {[
+                { label: 'Type',     value: tkType },
                 { label: 'Category', value: tkCategory },
                 { label: 'Subject',  value: tkSubject  },
-                { label: 'Contact',  value: CONTACT_METHODS.find(c => c.id === tkContact)?.label ?? tkContact },
               ].map(({ label, value }) => (
                 <div key={label} className="flex items-center justify-between"
                   style={{ padding: '10px 14px', background: '#F7F8FC', borderRadius: 10 }}>

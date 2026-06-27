@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
-import { Search, Clock, TrendingUp, Users, CheckCircle2, Calendar, ArrowRight, Building2, Plus, Edit } from 'lucide-react'
+import { Search, Clock, TrendingUp, Users, CheckCircle2, Calendar, ArrowRight, Building2, Plus, Edit, AlertCircle } from 'lucide-react'
 import ProjectDetailPage from '../../manager/projects/ProjectDetailPage'
 import AddProjectPage from './AddProjectPage'
 
-type Status = 'active' | 'on-hold' | 'completed'
+type Status = 'active' | 'on-hold' | 'completed' | 'draft'
 
 interface Project {
   id: string
@@ -23,6 +23,22 @@ interface Project {
 }
 
 const PROJECTS: Project[] = [
+  {
+    id: 'p0',
+    name: 'AI Analytics Dashboard',
+    client: 'Internal R&D',
+    department: 'Product',
+    status: 'draft',
+    startDate: 'Jul 2026',
+    endDate: 'Sep 2026',
+    members: 3,
+    avatars: [51, 62, 68],
+    hoursLogged: 12,
+    pendingApprovals: 0,
+    progress: 5,
+    description: 'Early-stage analytics dashboard for real-time workforce insights and performance metrics. Currently in design phase with initial requirements gathering.',
+    color: '#A78BFA',
+  },
   {
     id: 'p1',
     name: 'Pulse.AI Platform v2',
@@ -173,13 +189,14 @@ const STATUS_CONFIG: Record<Status, { label: string; color: string; bg: string; 
   'active':    { label: 'Active',    color: '#0A8A58', bg: 'rgba(14,168,106,0.10)',  border: 'rgba(14,168,106,0.20)'  },
   'on-hold':   { label: 'On Hold',   color: '#92400E', bg: 'rgba(245,158,11,0.10)',  border: 'rgba(245,158,11,0.20)'  },
   'completed': { label: 'Completed', color: '#3B82F6', bg: 'rgba(59,130,246,0.10)',  border: 'rgba(59,130,246,0.20)'  },
+  'draft':     { label: 'Draft',     color: '#6B7280', bg: 'rgba(107,114,128,0.10)', border: 'rgba(107,114,128,0.20)'  },
 }
 
-const FILTER_TABS: { id: 'all' | Status; label: string }[] = [
-  { id: 'all',       label: 'All Projects' },
+const FILTER_TABS: { id: Status; label: string }[] = [
   { id: 'active',    label: 'Active'       },
   { id: 'on-hold',   label: 'On Hold'      },
   { id: 'completed', label: 'Completed'    },
+  { id: 'draft',     label: 'Draft'        },
 ]
 
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', hover: '#F0F2F8' }
@@ -386,42 +403,47 @@ function ProjectCard({
         </div>
       </div>
 
-      {/* Members + Hours */}
-      <div className="flex items-center justify-between" style={{ marginBottom: 20 }}>
-        <div className="flex items-center gap-3">
-          <AvatarStack avatars={project.avatars} total={project.members} />
-          <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: '#1C2035', lineHeight: 1.2 }}>{project.members}</div>
-            <div style={{ fontSize: 11, color: '#8B90A7', fontWeight: 500, marginTop: 1 }}>Members</div>
+      {project.status !== 'draft' && (
+        <>
+          {/* Members + Hours */}
+          <div className="flex items-center justify-between" style={{ marginBottom: 20 }}>
+            <div className="flex items-center gap-3">
+              <AvatarStack avatars={project.avatars} total={project.members} />
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#1C2035', lineHeight: 1.2 }}>{project.members}</div>
+                <div style={{ fontSize: 11, color: '#8B90A7', fontWeight: 500, marginTop: 1 }}>Members</div>
+              </div>
+            </div>
+            <div style={{ width: 1, height: 36, background: '#E8EAF2' }} />
+            <div className="flex items-center gap-2.5">
+              <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(14,168,106,0.09)', border: '1px solid rgba(14,168,106,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Clock size={15} strokeWidth={1.8} style={{ color: '#0EA86A' }} />
+              </div>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#1C2035', lineHeight: 1.2 }}>{project.hoursLogged}h</div>
+                <div style={{ fontSize: 11, color: '#8B90A7', fontWeight: 500, marginTop: 1 }}>Logged</div>
+              </div>
+            </div>
           </div>
-        </div>
-        <div style={{ width: 1, height: 36, background: '#E8EAF2' }} />
-        <div className="flex items-center gap-2.5">
-          <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(14,168,106,0.09)', border: '1px solid rgba(14,168,106,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <Clock size={15} strokeWidth={1.8} style={{ color: '#0EA86A' }} />
-          </div>
-          <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: '#1C2035', lineHeight: 1.2 }}>{project.hoursLogged}h</div>
-            <div style={{ fontSize: 11, color: '#8B90A7', fontWeight: 500, marginTop: 1 }}>Logged</div>
-          </div>
-        </div>
-      </div>
 
-      <div style={{ height: 1, background: '#F0F2F8', marginBottom: 18 }} />
+          <div style={{ height: 1, background: '#F0F2F8', marginBottom: 18 }} />
+        </>
+      )}
 
       {/* Footer */}
       <button
-        onClick={onView}
+        onClick={project.status === 'draft' ? undefined : onView}
         className="w-full flex items-center justify-center gap-2 rounded-xl cursor-pointer font-semibold transition-all duration-150"
         style={{
           height: 40, fontSize: 13, border: 'none',
-          background: hovered ? `${project.color}14` : '#F7F8FC',
-          color: hovered ? project.color : '#5A6080',
-          outline: `1px solid ${hovered ? `${project.color}25` : '#ECEEF5'}`,
+          background: hovered && project.status !== 'draft' ? `${project.color}14` : '#F7F8FC',
+          color: hovered && project.status !== 'draft' ? project.color : '#5A6080',
+          outline: `1px solid ${hovered && project.status !== 'draft' ? `${project.color}25` : '#ECEEF5'}`,
           fontFamily: 'inherit',
+          cursor: project.status === 'draft' ? 'default' : 'pointer',
         }}
       >
-        View Details
+        {project.status === 'draft' ? 'Continue to Edit' : 'View Details'}
         <ArrowRight size={13} />
       </button>
     </div>
@@ -430,7 +452,7 @@ function ProjectCard({
 
 /* ── Main page ── */
 export default function AdminProjectsPage() {
-  const [filter, setFilter] = useState<'all' | Status>('all')
+  const [filter, setFilter] = useState<Status>('active')
   const [search, setSearch] = useState('')
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [addingProject, setAddingProject] = useState(false)
@@ -454,7 +476,7 @@ export default function AdminProjectsPage() {
   }
 
   const filtered = PROJECTS.filter(p => {
-    const matchesFilter = filter === 'all' || p.status === filter
+    const matchesFilter = p.status === filter
     const matchesSearch =
       p.name.toLowerCase().includes(search.toLowerCase()) ||
       p.client.toLowerCase().includes(search.toLowerCase()) ||
@@ -463,8 +485,8 @@ export default function AdminProjectsPage() {
   })
 
   const activeCount    = PROJECTS.filter(p => p.status === 'active').length
+  const onHoldCount    = PROJECTS.filter(p => p.status === 'on-hold').length
   const completedCount = PROJECTS.filter(p => p.status === 'completed').length
-  const totalMembers   = PROJECTS.reduce((a, p) => a + p.members, 0)
 
   return (
     <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
@@ -512,7 +534,7 @@ export default function AdminProjectsPage() {
       <div className="grid grid-cols-4 gap-4 mb-6">
         <StatCard label="Total Projects"  subtext="across the organisation"   value={PROJECTS.length} icon={TrendingUp}    color="#6366F1" bg="rgba(99,102,241,0.09)"   border="rgba(99,102,241,0.15)"  delay={0}   />
         <StatCard label="Active Projects" subtext="currently in progress"     value={activeCount}     icon={Clock}         color="#0EA86A" bg="rgba(14,168,106,0.09)"  border="rgba(14,168,106,0.15)"  delay={80}  />
-        <StatCard label="Total Members"   subtext="assigned across projects"  value={totalMembers}    icon={Users}         color="#F5A623" bg="rgba(245,166,35,0.09)"  border="rgba(245,166,35,0.15)"  delay={160} />
+        <StatCard label="On Hold"         subtext="temporarily paused"        value={onHoldCount}     icon={AlertCircle}   color="#F5A623" bg="rgba(245,166,35,0.09)"  border="rgba(245,166,35,0.15)"  delay={160} />
         <StatCard label="Completed"       subtext="successfully delivered"    value={completedCount}  icon={CheckCircle2}  color="#3B82F6" bg="rgba(59,130,246,0.09)"  border="rgba(59,130,246,0.15)"  delay={240} />
       </div>
 

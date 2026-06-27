@@ -279,7 +279,7 @@ export default function Header({ isSidebarOpen, onToggleSidebar, onNavigate, onL
           </div>
           <div style={{ flex: 1, overflowY: 'auto', padding: '14px 16px' }}>
             {NOTIFICATIONS.map(n => { const Icon = n.Icon; return (
-              <div key={n.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 14, padding: 16, background: '#fff', borderRadius: 14, marginBottom: 12, cursor: 'pointer', position: 'relative' }}>
+              <div key={n.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 14, padding: 16, background: '#fff', borderRadius: 14, marginBottom: 12, cursor: 'pointer', position: 'relative', transition: 'all 0.15s' }} onMouseEnter={e => { e.currentTarget.style.background = '#F7F8FC' }} onMouseLeave={e => { e.currentTarget.style.background = '#fff' }}>
                 <div style={{ width: 42, height: 42, borderRadius: 12, background: n.iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon size={18} style={{ color: n.iconColor }} /></div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 4 }}>
@@ -288,7 +288,6 @@ export default function Header({ isSidebarOpen, onToggleSidebar, onNavigate, onL
                   </div>
                   <p style={{ fontSize: 12.5, color: '#5C6080', lineHeight: 1.6, margin: 0 }}>{n.desc}</p>
                 </div>
-                {n.unread && <span style={{ position: 'absolute', top: 14, right: 14, width: 7, height: 7, borderRadius: '50%', background: '#E84855' }} />}
               </div>
             )})}
           </div>

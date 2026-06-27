@@ -142,7 +142,7 @@ export default function DesignationPage() {
             <Search size={14} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: C.muted, pointerEvents: 'none' }} />
             <input value={search} onChange={e => setSearch(e.target.value)}
               placeholder="Search designation…"
-              style={{ width: '100%', height: 38, paddingLeft: 32, paddingRight: 10, border: `1px solid ${C.border}`, borderRadius: 9, fontSize: 13, color: C.navy, background: C.surface, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box', transition: 'border-color 0.15s' }}
+              style={{ width: '100%', height: 38, paddingLeft: 32, paddingRight: 10, border: `1px solid ${C.border}`, borderRadius: 9, fontSize: 13, color: C.navy, background: '#fff', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box', transition: 'border-color 0.15s' }}
               onFocus={e => { e.target.style.borderColor = '#6366F1' }}
               onBlur={e => { e.target.style.borderColor = C.border }} />
           </div>

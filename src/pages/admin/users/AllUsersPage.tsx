@@ -47,10 +47,10 @@ const ROLES       = ['All Roles',       'Employee', 'Manager', 'Admin']
 
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', hover: '#F0F2F8', surface: '#F7F8FC' }
 
-/* avatar | name | emp-id | email | role | project | department | joined | actions */
-const COLS = '40px minmax(130px,1fr) 108px 180px 96px 130px 130px 112px 104px'
+/* avatar | name | emp-id | email | role | department | joined | actions */
+const COLS = '40px 1fr 1fr 1.2fr 1fr 1fr 1fr 100px'
 
-const TH_LABELS = ['', 'Employee', 'Emp ID', 'Email', 'Role', 'Project', 'Department', 'Joined', 'Actions']
+const TH_LABELS = ['', 'Employee', 'Emp ID', 'Email', 'Role', 'Department', 'Joined', 'Actions']
 
 function Dropdown({ value, options, onChange }: { value: string; options: string[]; onChange: (v: string) => void }) {
   return (
@@ -99,9 +99,9 @@ function ActionBtn({ icon, title, danger }: { icon: React.ReactNode; title: stri
       style={{
         width: 30, height: 30, borderRadius: 7,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        border: `1px solid ${hov ? (danger ? 'rgba(232,72,85,0.25)' : C.border) : 'transparent'}`,
-        background: hov ? (danger ? 'rgba(232,72,85,0.07)' : C.hover) : 'transparent',
-        color: hov ? (danger ? '#E84855' : C.navy) : C.muted,
+        border: `1px solid ${C.border}`,
+        background: hov ? C.hover : '#fff',
+        color: hov ? C.navy : C.muted,
         cursor: 'pointer', transition: 'all 0.15s',
       }}
     >{icon}</button>
@@ -118,7 +118,6 @@ const STAT_TILES = [
 export default function AllUsersPage({ onNavigate }: { onNavigate: (id: string) => void }) {
   const [search,     setSearch]     = useState('')
   const [roleFilter, setRoleFilter] = useState('All Roles')
-  const [projFilter, setProjFilter] = useState('All Projects')
   const [deptFilter, setDeptFilter] = useState('All Departments')
   const [searchFocus, setSearchFocus] = useState(false)
 
@@ -127,12 +126,10 @@ export default function AllUsersPage({ onNavigate }: { onNavigate: (id: string) 
     const matchSearch = !q ||
       u.name.toLowerCase().includes(q) ||
       u.empId.toLowerCase().includes(q) ||
-      u.email.toLowerCase().includes(q) ||
-      u.project.toLowerCase().includes(q)
+      u.email.toLowerCase().includes(q)
     const matchRole = roleFilter === 'All Roles'       || u.role       === roleFilter
-    const matchProj = projFilter === 'All Projects'    || u.project    === projFilter
     const matchDept = deptFilter === 'All Departments' || u.department === deptFilter
-    return matchSearch && matchRole && matchProj && matchDept
+    return matchSearch && matchRole && matchDept
   })
 
   const counts = {
@@ -142,7 +139,7 @@ export default function AllUsersPage({ onNavigate }: { onNavigate: (id: string) 
     inactive: USERS.filter(u => u.status === 'Inactive').length,
   }
 
-  const anyFilter = !!(search || roleFilter !== 'All Roles' || projFilter !== 'All Projects' || deptFilter !== 'All Departments')
+  const anyFilter = !!(search || roleFilter !== 'All Roles' || deptFilter !== 'All Departments')
 
   return (
     <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
@@ -220,11 +217,10 @@ export default function AllUsersPage({ onNavigate }: { onNavigate: (id: string) 
             />
           </div>
           <Dropdown value={roleFilter} options={ROLES}       onChange={setRoleFilter} />
-          <Dropdown value={projFilter} options={PROJECTS}    onChange={setProjFilter} />
           <Dropdown value={deptFilter} options={DEPARTMENTS} onChange={setDeptFilter} />
           {anyFilter && (
             <button
-              onClick={() => { setSearch(''); setRoleFilter('All Roles'); setProjFilter('All Projects'); setDeptFilter('All Departments') }}
+              onClick={() => { setSearch(''); setRoleFilter('All Roles'); setDeptFilter('All Departments') }}
               style={{ height: 38, padding: '0 14px', borderRadius: 9, fontSize: 13, fontWeight: 500, border: `1px solid ${C.border}`, background: C.hover, color: C.muted, cursor: 'pointer' }}
             >Clear</button>
           )}
@@ -288,9 +284,6 @@ export default function AllUsersPage({ onNavigate }: { onNavigate: (id: string) 
               {/* Role */}
               <div><RoleBadge role={u.role} /></div>
 
-              {/* Project */}
-              <span style={{ fontSize: 12.5, color: C.navy, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block' }}>{u.project}</span>
-
               {/* Department */}
               <span style={{ fontSize: 12.5, color: '#3D4266', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block' }}>{u.department}</span>
 
@@ -298,7 +291,7 @@ export default function AllUsersPage({ onNavigate }: { onNavigate: (id: string) 
               <span style={{ fontSize: 12, color: C.muted, whiteSpace: 'nowrap' }}>{u.joiningDate}</span>
 
               {/* Actions */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <ActionBtn icon={<Eye size={13} />}             title="View Profile" />
                 <ActionBtn icon={<Pencil size={13} />}          title="Edit User" />
                 <ActionBtn icon={<Trash2 size={13} />}          title="Delete User" danger />
@@ -316,18 +309,6 @@ export default function AllUsersPage({ onNavigate }: { onNavigate: (id: string) 
           <span style={{ fontSize: 12.5, color: C.muted }}>
             Showing <strong style={{ color: C.navy }}>{filtered.length}</strong> of <strong style={{ color: C.navy }}>{USERS.length}</strong> users
           </span>
-          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-            {(['Employee', 'Manager', 'Admin'] as Role[]).map(role => {
-              const cfg = ROLE_CFG[role]
-              const count = filtered.filter(u => u.role === role).length
-              return (
-                <span key={role} style={{
-                  fontSize: 11.5, fontWeight: 600, padding: '2px 8px', borderRadius: 5,
-                  color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}`,
-                }}>{count} {role}{count !== 1 ? 's' : ''}</span>
-              )
-            })}
-          </div>
         </div>
       </div>
     </div>

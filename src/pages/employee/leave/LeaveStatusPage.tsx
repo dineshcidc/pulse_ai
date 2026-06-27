@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { ClipboardList, Search, X, AlertTriangle, Eye } from 'lucide-react'
+import { ClipboardList, Search, X, AlertTriangle, Eye, Edit } from 'lucide-react'
 
-type Status = 'Pending' | 'Approved' | 'Rejected' | 'Cancelled'
+type Status = 'Draft' | 'Pending' | 'Approved' | 'Rejected' | 'Cancelled'
 
 interface LeaveRecord {
   id: string
@@ -17,6 +17,7 @@ interface LeaveRecord {
 }
 
 const LEAVE_DATA: LeaveRecord[] = [
+  { id: 'LVR-1025', type: 'Floating Holiday',     code: 'FH',  fromDate: '2026-06-10', toDate: '2026-06-12', days: 3, appliedDate: '2026-06-01', status: 'Draft',    approver: '—',           remarks: 'Summer break plans'                  },
   { id: 'LVR-1024', type: 'Planned Leave',        code: 'PL',  fromDate: '2026-05-25', toDate: '2026-05-27', days: 3, appliedDate: '2026-05-20', status: 'Pending',   approver: 'Raj Kumar',   remarks: 'Personal reasons'                    },
   { id: 'LVR-1018', type: 'Floating Holiday',     code: 'FH',  fromDate: '2026-06-02', toDate: '2026-06-05', days: 4, appliedDate: '2026-05-18', status: 'Pending',   approver: 'Raj Kumar',   remarks: 'Family function to attend'           },
   { id: 'LVR-1012', type: 'Unplanned Leave',      code: 'UPL', fromDate: '2026-05-10', toDate: '2026-05-11', days: 2, appliedDate: '2026-05-09', status: 'Approved',  approver: 'Priya Mehta', remarks: 'Not feeling well'                    },
@@ -28,6 +29,7 @@ const LEAVE_DATA: LeaveRecord[] = [
 ]
 
 const STATUS_STYLE: Record<Status, { bg: string; color: string; dot: string }> = {
+  Draft:     { bg: 'rgba(168,85,247,0.12)',  color: '#7C3AED', dot: '#A855F7' },
   Pending:   { bg: 'rgba(245,158,11,0.12)',  color: '#B45309', dot: '#F59E0B' },
   Approved:  { bg: 'rgba(14,168,106,0.12)',  color: '#0A7040', dot: '#0EA86A' },
   Rejected:  { bg: 'rgba(232,72,85,0.12)',   color: '#C0202E', dot: '#E84855' },
@@ -45,7 +47,7 @@ const CODE_STYLE: Record<string, { bg: string; color: string }> = {
   UPL: { bg: 'rgba(217,119,6,0.12)',   color: '#D97706' },
 }
 
-const STAT_TABS = ['All', 'Pending', 'Approved', 'Rejected', 'Cancelled'] as const
+const STAT_TABS = ['All', 'Pending', 'Approved', 'Rejected', 'Draft', 'Cancelled'] as const
 
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', hover: '#F0F2F8' }
 
@@ -56,7 +58,7 @@ function fmtDate(d: string) {
 
 const COL = '1.6fr 1.9fr 0.7fr 1.2fr 1.1fr 1.2fr 0.9fr'
 
-export default function LeaveStatusPage() {
+export default function LeaveStatusPage({ onNavigate }: { onNavigate?: (id: string) => void } = {}) {
   const [records,       setRecords]       = useState<LeaveRecord[]>(LEAVE_DATA)
   const [search,        setSearch]        = useState('')
   const [activeTab,     setActiveTab]     = useState<typeof STAT_TABS[number]>('All')
@@ -181,8 +183,8 @@ export default function LeaveStatusPage() {
             placeholder="Search by leave type, ID or approver..."
             style={{
               width: '100%', height: 38, borderRadius: 9,
-              border: `1px solid ${search ? '#6366F1' : C.border}`,
-              background: search ? '#F5F6FF' : '#F7F8FC',
+              border: `1px solid ${C.border}`,
+              background: '#fff',
               padding: '0 12px 0 34px',
               fontSize: 13, color: C.navy, outline: 'none',
               fontFamily: "'DM Sans', system-ui, sans-serif",
@@ -365,7 +367,19 @@ export default function LeaveStatusPage() {
 
                 {/* Action */}
                 <div>
-                  {r.status === 'Pending' ? (
+                  {r.status === 'Draft' ? (
+                    <button
+                      title="Edit draft"
+                      style={{
+                        width: 32, height: 32, borderRadius: 8, border: '1px solid #D0D4E4',
+                        background: '#F0F2F8', color: '#8B90A7',
+                        cursor: 'default', transition: 'all 0.15s',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}
+                    >
+                      <Edit size={14} strokeWidth={1.8} />
+                    </button>
+                  ) : r.status === 'Pending' ? (
                     <button
                       onClick={() => setCancelTarget(r.id)}
                       style={{
@@ -384,13 +398,13 @@ export default function LeaveStatusPage() {
                       title="View rejection reason"
                       onClick={() => setViewTarget(r.id)}
                       style={{
-                        width: 32, height: 32, borderRadius: 8, border: '1px solid rgba(232,72,85,0.22)',
-                        background: 'rgba(232,72,85,0.06)', color: '#E84855',
+                        width: 32, height: 32, borderRadius: 8, border: '1px solid #D0D4E4',
+                        background: '#F0F2F8', color: '#8B90A7',
                         cursor: 'pointer', transition: 'all 0.15s',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                       }}
-                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(232,72,85,0.14)'; e.currentTarget.style.borderColor = 'rgba(232,72,85,0.4)' }}
-                      onMouseLeave={e => { e.currentTarget.style.background = 'rgba(232,72,85,0.06)'; e.currentTarget.style.borderColor = 'rgba(232,72,85,0.22)' }}
+                      onMouseEnter={e => { e.currentTarget.style.background = '#E8EAF2'; e.currentTarget.style.color = '#1C2035'; e.currentTarget.style.borderColor = '#C0C4D6' }}
+                      onMouseLeave={e => { e.currentTarget.style.background = '#F0F2F8'; e.currentTarget.style.color = '#8B90A7'; e.currentTarget.style.borderColor = '#D0D4E4' }}
                     >
                       <Eye size={14} strokeWidth={1.8} />
                     </button>

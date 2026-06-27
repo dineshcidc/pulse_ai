@@ -5,7 +5,7 @@ import {
   DollarSign, Briefcase, Code2, Tag, X, Check, ChevronDown,
 } from 'lucide-react'
 
-type Status = 'active' | 'on-hold' | 'completed'
+type Status = 'active' | 'on-hold' | 'completed' | 'draft'
 
 interface Project {
   id: string
@@ -100,6 +100,7 @@ const STATUS_CONFIG: Record<Status, { label: string; color: string; bg: string; 
   'active':    { label: 'Active',    color: '#0A8A58', bg: 'rgba(14,168,106,0.10)',  border: 'rgba(14,168,106,0.20)'  },
   'on-hold':   { label: 'On Hold',   color: '#92400E', bg: 'rgba(245,158,11,0.10)',  border: 'rgba(245,158,11,0.20)'  },
   'completed': { label: 'Completed', color: '#3B82F6', bg: 'rgba(59,130,246,0.10)',  border: 'rgba(59,130,246,0.20)'  },
+  'draft':     { label: 'Draft',     color: '#6B7280', bg: 'rgba(107,114,128,0.10)', border: 'rgba(107,114,128,0.20)'  },
 }
 
 
@@ -344,6 +345,12 @@ function AllocationTab() {
   const [editTarget,   setEditTarget]     = useState<AllocatedEmployee | null>(null)
   const [editForm,     setEditForm]       = useState({ role: '', allocation: 100, email: '' })
   const [editSaving,   setEditSaving]     = useState(false)
+  const [showAddMember, setShowAddMember] = useState(false)
+  const [addForm, setAddForm]             = useState({ name: '', role: '', allocation: 100, email: '', startDate: '', endDate: '' })
+  const [addLoading, setAddLoading]       = useState(false)
+  const [employeeSearch, setEmployeeSearch] = useState('')
+  const [showEmployeeList, setShowEmployeeList] = useState(false)
+  const [selectedEmployee, setSelectedEmployee] = useState<AllocatedEmployee | null>(null)
 
   async function confirmDelete() {
     if (!deleteTarget) return
@@ -376,13 +383,27 @@ function AllocationTab() {
     <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden' }}>
       {/* Table header */}
       <div
-        className="flex items-center justify-between"
-        style={{ padding: '18px 24px', borderBottom: `1px solid ${C.border}` }}
+        style={{ padding: '18px 24px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}
       >
         <div>
           <div style={{ fontSize: 15, fontWeight: 700, color: C.navy }}>Allocated Team Members</div>
           <div style={{ fontSize: 12.5, color: C.muted, marginTop: 2 }}>{employees.length} members assigned to this project</div>
         </div>
+        <button
+          onClick={() => setShowAddMember(true)}
+          style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          padding: '6px 12px', borderRadius: 10, flexShrink: 0,
+          border: '1.5px dashed #6366F1', background: 'rgba(99, 102, 241, 0.06)',
+          color: '#6366F1', fontSize: 12.5, fontWeight: 600,
+          cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'inherit'
+        }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99, 102, 241, 0.12)'; e.currentTarget.style.borderColor = '#4F46E5' }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(99, 102, 241, 0.06)'; e.currentTarget.style.borderColor = '#6366F1' }}
+        >
+          <Plus size={14} strokeWidth={2.5} />
+          Add Member
+        </button>
       </div>
 
       {/* Table */}
@@ -639,6 +660,178 @@ function AllocationTab() {
                   <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ animation: 'spin 0.8s linear infinite', flexShrink: 0 }}><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>Saving…</>
                 ) : (
                   <><Check size={15} strokeWidth={2.5} />Save Changes</>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Team Member Modal */}
+      {showAddMember && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          background: 'rgba(10,12,28,0.5)', backdropFilter: 'blur(6px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontFamily: "'DM Sans', system-ui, sans-serif",
+        }}
+          onClick={e => { if (e.target === e.currentTarget) setShowAddMember(false) }}
+        >
+          <div style={{
+            background: '#fff', borderRadius: 20, width: 540,
+            boxShadow: '0 28px 72px rgba(10,12,28,0.20)',
+            overflow: 'hidden', animation: 'fadeIn 0.18s ease',
+          }}>
+            {/* Header */}
+            <div style={{ padding: '20px 24px', borderBottom: `1px solid ${C.border}`, background: C.surface, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: C.navy, letterSpacing: '-0.2px' }}>Add Team Member</div>
+                <div style={{ fontSize: 12.5, color: C.muted, marginTop: 4 }}>Select an employee and set allocation percentage</div>
+              </div>
+              <button onClick={() => setShowAddMember(false)} style={{ width: 32, height: 32, borderRadius: 7, border: 'none', background: '#F0F2F8', color: C.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s', flexShrink: 0 }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#E5E9F5'; e.currentTarget.style.color = C.navy }}
+                onMouseLeave={e => { e.currentTarget.style.background = '#F0F2F8'; e.currentTarget.style.color = C.muted }}>
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Form */}
+            <div style={{ padding: '28px 28px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+              {/* Select Employee */}
+              <div style={{ position: 'relative' }}>
+                <label style={{ fontSize: 11.5, fontWeight: 700, color: '#8B90A7', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 8 }}>Select Employee *</label>
+                <input
+                  type="text"
+                  value={employeeSearch}
+                  onChange={e => { setEmployeeSearch(e.target.value); setShowEmployeeList(true) }}
+                  onFocus={() => setShowEmployeeList(true)}
+                  placeholder="Search by name or email…"
+                  style={{ width: '100%', height: 44, padding: '0 14px', border: `1px solid ${C.border}`, borderRadius: 10, fontSize: 13.5, fontWeight: 500, color: C.navy, outline: 'none', background: '#fff', fontFamily: 'inherit', boxSizing: 'border-box', transition: 'border-color 0.15s' }}
+                  onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.10)' }}
+                  onBlur={e => { setTimeout(() => setShowEmployeeList(false), 200); e.target.style.borderColor = C.border; e.target.style.boxShadow = 'none' }}
+                />
+
+                {/* Employee suggestions dropdown */}
+                {showEmployeeList && employeeSearch && !selectedEmployee && (
+                  <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 4, zIndex: 100, background: '#fff', border: `1px solid ${C.border}`, borderRadius: 12, overflow: 'hidden', boxShadow: '0 8px 24px rgba(28,32,53,0.10)', maxHeight: 220, overflowY: 'auto' }}>
+                    {ALLOCATIONS.filter(emp =>
+                      emp.name.toLowerCase().includes(employeeSearch.toLowerCase()) ||
+                      emp.email.toLowerCase().includes(employeeSearch.toLowerCase())
+                    ).map((emp, idx, arr) => (
+                      <button
+                        key={emp.id}
+                        onMouseDown={() => { setSelectedEmployee(emp); setEmployeeSearch(''); setShowEmployeeList(false) }}
+                        style={{ width: '100%', padding: '12px 14px', border: 'none', borderBottom: idx < arr.length - 1 ? `1px solid ${C.border}` : 'none', background: '#fff', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.1s', display: 'flex', alignItems: 'center', gap: 10 }}
+                        onMouseEnter={e => { e.currentTarget.style.background = C.surface }}
+                        onMouseLeave={e => { e.currentTarget.style.background = '#fff' }}
+                      >
+                        <img src={`https://i.pravatar.cc/32?img=${emp.avatar}`} alt={emp.name} style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: C.navy }}>{emp.name}</div>
+                          <div style={{ fontSize: 11.5, color: C.muted, marginTop: 2 }}>{emp.email}</div>
+                        </div>
+                      </button>
+                    ))}
+                    {ALLOCATIONS.filter(emp =>
+                      emp.name.toLowerCase().includes(employeeSearch.toLowerCase()) ||
+                      emp.email.toLowerCase().includes(employeeSearch.toLowerCase())
+                    ).length === 0 && (
+                      <div style={{ padding: '14px', textAlign: 'center', fontSize: 13, color: C.muted }}>No employees found</div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Selected Employee Details */}
+              {selectedEmployee && (
+                <div style={{ padding: '14px 16px', background: 'rgba(99, 102, 241, 0.06)', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <img src={`https://i.pravatar.cc/40?img=${selectedEmployee.avatar}`} alt={selectedEmployee.name} style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 600, color: C.navy }}>{selectedEmployee.name}</div>
+                    <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>{selectedEmployee.code} · {selectedEmployee.role}</div>
+                  </div>
+                  <button
+                    onClick={() => { setSelectedEmployee(null); setEmployeeSearch('') }}
+                    style={{ width: 28, height: 28, borderRadius: 7, border: 'none', background: 'rgba(99, 102, 241, 0.12)', color: '#6366F1', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99, 102, 241, 0.18)' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(99, 102, 241, 0.12)' }}
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              )}
+
+              {/* Allocation */}
+              {selectedEmployee && (
+                <div>
+                  <label style={{ fontSize: 11.5, fontWeight: 700, color: '#8B90A7', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 8 }}>Allocation</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <div style={{ flex: 1, position: 'relative' }}>
+                      <input type="number" min={10} max={100} step={5}
+                        value={addForm.allocation}
+                        onChange={e => setAddForm(prev => ({ ...prev, allocation: Math.min(100, Math.max(10, Number(e.target.value))) }))}
+                        style={{ width: '100%', height: 44, borderRadius: 10, padding: '0 38px 0 14px', fontSize: 13.5, fontWeight: 600, color: C.navy, outline: 'none', border: `1px solid ${C.border}`, background: '#fff', fontFamily: 'inherit', boxSizing: 'border-box', transition: 'border-color 0.15s' }}
+                        onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.10)' }}
+                        onBlur={e => { e.target.style.borderColor = C.border; e.target.style.boxShadow = 'none' }} />
+                      <span style={{ position: 'absolute', right: 13, top: '50%', transform: 'translateY(-50%)', fontSize: 13, fontWeight: 700, color: C.muted, pointerEvents: 'none' }}>%</span>
+                    </div>
+                    {/* Visual bar */}
+                    <div style={{ flex: 1.2 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                        <span style={{ fontSize: 11, color: C.muted, fontWeight: 600, minWidth: 24 }}>10%</span>
+                        <div style={{ flex: 1, height: 6, borderRadius: 99, background: '#F0F2F8', overflow: 'hidden', position: 'relative' }}>
+                          <div style={{ height: '100%', width: `${addForm.allocation}%`, borderRadius: 99, background: addForm.allocation === 100 ? '#0EA86A' : addForm.allocation >= 70 ? '#6366F1' : '#F5A623', transition: 'width 0.2s, background 0.2s' }} />
+                        </div>
+                        <span style={{ fontSize: 11, color: C.muted, fontWeight: 600, minWidth: 32 }}>100%</span>
+                      </div>
+                      <div style={{ textAlign: 'center', fontSize: 12, fontWeight: 700, color: addForm.allocation === 100 ? '#0A8A58' : addForm.allocation >= 70 ? '#5B5FDE' : '#B45309' }}>
+                        {addForm.allocation === 100 ? 'Full-time' : addForm.allocation >= 70 ? 'Mostly allocated' : 'Part-time'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Info Note and Days Input */}
+              {selectedEmployee && addForm.allocation < 70 && (
+                <div style={{ padding: '12px 14px', background: '#FEF8F0', border: `1px solid #FED7AA`, borderRadius: 12 }}>
+                  <div style={{ fontSize: 12.5, color: '#92400E', lineHeight: 1.5, marginBottom: 12 }}>
+                    <strong>ℹ️ Info:</strong> If you are assigning this employee on a part-time basis, please enter the number of allocated days. The employee will only have access to log timesheets for this project during the assigned allocation period.
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 11.5, fontWeight: 600, color: '#92400E', marginBottom: 6 }}>Allocated Days</label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="365"
+                      value={addForm.startDate || ''}
+                      onChange={e => setAddForm(prev => ({ ...prev, startDate: e.target.value }))}
+                      placeholder="Enter number of days…"
+                      style={{ width: '100%', height: 40, padding: '0 14px', border: `1px solid #FED7AA`, borderRadius: 10, fontSize: 13.5, fontWeight: 500, color: C.navy, outline: 'none', background: '#fff', fontFamily: 'inherit', boxSizing: 'border-box', transition: 'border-color 0.15s' }}
+                      onFocus={e => { e.target.style.borderColor = '#F59E0B'; e.target.style.boxShadow = '0 0 0 3px rgba(245,158,11,0.10)' }}
+                      onBlur={e => { e.target.style.borderColor = '#FED7AA'; e.target.style.boxShadow = 'none' }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div style={{ padding: '0 28px 26px', display: 'flex', gap: 10 }}>
+              <button onClick={() => { setShowAddMember(false); setSelectedEmployee(null); setEmployeeSearch(''); setAddForm({ name: '', role: '', allocation: 100, email: '', startDate: '', endDate: '' }) }} disabled={addLoading}
+                style={{ flex: 1, height: 44, borderRadius: 12, border: `1px solid ${C.border}`, background: '#fff', color: C.muted, fontSize: 14, fontWeight: 600, cursor: addLoading ? 'not-allowed' : 'pointer', fontFamily: 'inherit', transition: 'all 0.15s', opacity: addLoading ? 0.5 : 1 }}
+                onMouseEnter={e => { if (!addLoading) { e.currentTarget.style.borderColor = '#C8CCE0'; e.currentTarget.style.color = C.navy } }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted }}>
+                Cancel
+              </button>
+              <button onClick={() => { if (!selectedEmployee) return; setAddLoading(true); setTimeout(() => { setEmployees(prev => [...prev, { ...selectedEmployee, allocation: addForm.allocation }]) ; setAddLoading(false); setShowAddMember(false); setSelectedEmployee(null); setEmployeeSearch(''); setAddForm({ name: '', role: '', allocation: 100, email: '', startDate: '', endDate: '' }) }, 800) }} disabled={!selectedEmployee || addLoading}
+                style={{ flex: 1, height: 44, borderRadius: 12, border: 'none', background: !selectedEmployee || addLoading ? '#C8CCE0' : 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)', color: '#fff', fontSize: 14, fontWeight: 700, cursor: !selectedEmployee || addLoading ? 'not-allowed' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.15s' }}
+                onMouseEnter={e => { if (selectedEmployee && !addLoading) e.currentTarget.style.opacity = '0.88' }}
+                onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}>
+                {addLoading ? (
+                  <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ animation: 'spin 0.8s linear infinite', flexShrink: 0 }}><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>Adding…</>
+                ) : (
+                  <>Add Member</>
                 )}
               </button>
             </div>

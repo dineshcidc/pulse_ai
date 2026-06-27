@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import {
-  CalendarDays, Clock, TrendingUp, AlertCircle,
-  FolderOpen, Save, RotateCcw, Check, Info, ChevronDown,
+  CalendarDays, Clock, TrendingUp,
+  Save, Check, Info, ChevronDown,
 } from 'lucide-react'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -192,12 +192,6 @@ export default function TimesheetPoliciesPage() {
     setHasChanges(false)
   }
 
-  function handleReset() {
-    setPolicy(DEFAULT)
-    setHasChanges(false)
-    setSaveSuccess(false)
-  }
-
   return (
     <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
       <style>{`@keyframes tpSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }`}</style>
@@ -213,12 +207,6 @@ export default function TimesheetPoliciesPage() {
           </p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-          <button onClick={handleReset}
-            style={{ height: 40, padding: '0 16px', borderRadius: 10, border: `1px solid ${C.border}`, background: '#fff', color: C.muted, fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'inherit', transition: 'all 0.15s' }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = '#C8CCE0'; e.currentTarget.style.color = C.navy }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted }}>
-            <RotateCcw size={13} strokeWidth={2} /> Reset
-          </button>
           <button onClick={handleSave} disabled={saveLoading || !hasChanges}
             style={{ height: 40, padding: '0 20px', borderRadius: 10, border: 'none', fontSize: 13.5, fontWeight: 700, cursor: (!hasChanges || saveLoading) ? 'not-allowed' : 'pointer', background: saveSuccess ? '#0EA86A' : (!hasChanges || saveLoading) ? '#E8EAF2' : 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)', color: (!hasChanges || saveLoading) ? '#B0B4C8' : '#fff', display: 'flex', alignItems: 'center', gap: 7, fontFamily: 'inherit', transition: 'background 0.2s' }}
             onMouseEnter={e => { if (hasChanges && !saveLoading) e.currentTarget.style.opacity = '0.88' }}
@@ -332,49 +320,6 @@ export default function TimesheetPoliciesPage() {
           <PolicyRow label="Allow Holiday Logging" hint="Employees can log hours on public holidays" last>
             <Toggle checked={policy.holidayLogging} onChange={v => set('holidayLogging', v)} />
           </PolicyRow>
-        </AccordionSection>
-
-        {/* 4. Late Submission Policy */}
-        <AccordionSection
-          icon={AlertCircle}
-          title="Late Submission Policy"
-          sub="Rules for timesheets submitted after the grace deadline"
-          accent="#E84855"
-          accentBg="rgba(232,72,85,0.05)"
-          isOpen={open.has('late')}
-          onToggle={() => toggle('late')}
-          chips={<Chip label={policy.allowLateWithReason ? 'Late: Allowed with reason' : 'Late: Blocked'} />}
-        >
-          <PolicyRow label="Allow Late with Justification" hint="Employees can still submit after the grace window with a mandatory written reason" last>
-            <Toggle checked={policy.allowLateWithReason} onChange={v => set('allowLateWithReason', v)} />
-          </PolicyRow>
-        </AccordionSection>
-
-        {/* 5. Project & Allocation Rules */}
-        <AccordionSection
-          icon={FolderOpen}
-          title="Project & Allocation Rules"
-          sub="How time entries must be linked and distributed across projects"
-          accent="#7C3AED"
-          accentBg="rgba(124,58,237,0.05)"
-          isOpen={open.has('project')}
-          onToggle={() => toggle('project')}
-          chips={<Chip label={`Project: ${policy.requireProjectCode ? 'Required' : 'Optional'}`} />}
-        >
-          <PolicyRow label="Require Project Code" hint="Every time entry must be linked to a project code">
-            <Toggle checked={policy.requireProjectCode} onChange={v => set('requireProjectCode', v)} />
-          </PolicyRow>
-
-          <PolicyRow label="Allow Non-billable / General Hours" hint="Employees can log time not tied to any specific project" last>
-            <Toggle checked={policy.allowGeneralHours} onChange={v => set('allowGeneralHours', v)} />
-          </PolicyRow>
-
-          <div style={{ margin: '4px 28px 12px', padding: '12px 16px', borderRadius: 10, background: 'rgba(124,58,237,0.05)', border: '1px solid rgba(124,58,237,0.12)', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-            <Info size={13} strokeWidth={2} style={{ color: '#7C3AED', flexShrink: 0, marginTop: 1 }} />
-            <span style={{ fontSize: 12, color: '#7C3AED', lineHeight: 1.55 }}>
-              Non-billable hours (internal meetings, training, etc.) are counted separately and do not affect the project allocation threshold.
-            </span>
-          </div>
         </AccordionSection>
 
       </div>

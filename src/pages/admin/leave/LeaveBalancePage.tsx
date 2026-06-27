@@ -224,22 +224,26 @@ function LeaveBalanceDetailPage({ emp, onBack }: { emp: EmployeeBalance; onBack:
   return (
     <div style={{ fontFamily: "'DM Sans',system-ui,sans-serif" }}>
 
-      {/* Back button — badge style */}
-      <button
-        onClick={onBack}
-        style={{
-          display: 'inline-flex', alignItems: 'center', gap: 6,
-          background: C.hover, border: `1px solid ${C.border}`,
-          borderRadius: 8, cursor: 'pointer',
-          color: C.navy, fontSize: 12.5, fontWeight: 600,
-          padding: '6px 14px', marginBottom: 20, transition: 'all 0.15s',
-        }}
-        onMouseEnter={e => { e.currentTarget.style.background = '#E4E6EF'; e.currentTarget.style.borderColor = '#D1D4E4' }}
-        onMouseLeave={e => { e.currentTarget.style.background = C.hover;   e.currentTarget.style.borderColor = C.border  }}
-      >
-        <ArrowLeft size={14} />
-        Back
-      </button>
+      {/* Breadcrumb navigation */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+        <button
+          onClick={onBack}
+          style={{
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            background: '#fff', border: `1px solid ${C.border}`,
+            borderRadius: 8, cursor: 'pointer',
+            color: C.navy, width: 36, height: 36, padding: 0, transition: 'all 0.15s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = '#F7F8FC'; e.currentTarget.style.borderColor = '#D1D4E4' }}
+          onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = C.border }}
+        >
+          <ArrowLeft size={16} />
+        </button>
+        <span style={{ fontSize: 12.5, color: C.muted, fontWeight: 500 }}>/</span>
+        <span style={{ fontSize: 12.5, color: C.muted, fontWeight: 500 }}>Leave Balance Overview</span>
+        <span style={{ fontSize: 12.5, color: C.muted, fontWeight: 500 }}>/</span>
+        <span style={{ fontSize: 12.5, color: C.navy, fontWeight: 600 }}>{emp.employee}</span>
+      </div>
 
       {/* Employee profile card */}
       <div style={{
@@ -257,14 +261,6 @@ function LeaveBalanceDetailPage({ emp, onBack }: { emp: EmployeeBalance; onBack:
           <div style={{ minWidth: 0 }}>
             <p style={{ margin: 0, fontSize: 16, fontWeight: 800, color: C.navy }}>{emp.employee}</p>
             <p style={{ margin: '3px 0 0', fontSize: 12.5, color: C.muted }}>{emp.empId}</p>
-            <div style={{ display: 'flex', gap: 7, marginTop: 9, flexWrap: 'wrap' }}>
-              {[emp.department, emp.project].map(tag => (
-                <span key={tag} style={{
-                  padding: '2px 10px', borderRadius: 6, fontSize: 11.5, fontWeight: 600,
-                  color: C.navy, background: C.surface, border: `1px solid ${C.border}`,
-                }}>{tag}</span>
-              ))}
-            </div>
           </div>
         </div>
 
@@ -456,7 +452,7 @@ export default function LeaveBalancePage() {
         <div>
           <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: C.navy }}>Leave Balance Overview</h1>
           <p style={{ margin: '5px 0 0', fontSize: 13.5, color: '#787878', fontWeight: 500, lineHeight: 1.65 }}>
-            Monitor allocated, consumed, and remaining leave days for every employee. Click any row to view the full per-type breakdown.
+            Monitor allocated, consumed, and remaining leave days for every employee.
           </p>
         </div>
         <span style={{
@@ -467,7 +463,7 @@ export default function LeaveBalancePage() {
       </div>
 
       {/* Summary stat cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 22 }}>
+      <div style={{ display: 'none', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 22 }}>
         {STAT_DATA.map((s, i) => {
           const { Icon, color, iconBg } = STAT_ICONS[i]
           return (
@@ -541,7 +537,7 @@ export default function LeaveBalancePage() {
                       style={{ width: 38, height: 38, borderRadius: '50%', flexShrink: 0, objectFit: 'cover' }} />
                     <div style={{ minWidth: 0 }}>
                       <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: C.navy, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{emp.employee}</p>
-                      <p style={{ margin: '2px 0 0', fontSize: 11.5, color: C.muted, whiteSpace: 'nowrap' }}>{emp.empId} · {emp.department}</p>
+                      <p style={{ margin: '2px 0 0', fontSize: 11.5, color: C.muted, whiteSpace: 'nowrap' }}>{emp.empId}</p>
                     </div>
                   </div>
 

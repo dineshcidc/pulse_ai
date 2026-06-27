@@ -16,6 +16,7 @@ import {
   IndianRupee,
   Package,
   Receipt,
+  Ticket,
 } from 'lucide-react'
 
 
@@ -73,8 +74,20 @@ function buildNav(role: 'employee' | 'manager'): NavSection[] {
           children: [
             { id: 'my-profile',    label: 'My Profile'    },
             { id: 'org-structure', label: 'Org Structure' },
-            { id: 'tickets',       label: 'Tickets'       },
           ],
+        },
+        {
+          id: 'support-tickets', label: 'Support Tickets', Icon: Ticket,
+          children: role === 'manager'
+            ? [
+                { id: 'tickets', label: 'Tickets' },
+                { id: 'expense', label: 'Expense' },
+              ]
+            : [
+                { id: 'tickets', label: 'Tickets' },
+                { id: 'assets',  label: 'Assets'  },
+                { id: 'expense', label: 'Expense' },
+              ],
         },
         ...(role === 'manager'
           ? [{
@@ -84,9 +97,8 @@ function buildNav(role: 'employee' | 'manager'): NavSection[] {
                 { id: 'team-asset-requests',  label: 'Team Asset Requests'  },
               ],
             }]
-          : [{ id: 'assets', label: 'Assets', Icon: Package }]
+          : []
         ),
-        { id: 'expense', label: 'Expense', Icon: Receipt },
         { id: 'payroll', label: 'Payroll', Icon: Wallet    },
         { id: 'reports', label: 'Reports', Icon: BarChart3 },
       ],
@@ -140,20 +152,28 @@ function buildAdminNav(): NavSection[] {
             { id: 'project-setup',         label: 'Projects'              },
             { id: 'department-management', label: 'Department'  },
             { id: 'designation',           label: 'Designation' },
+            { id: 'activity-tag',          label: 'Activity Tag' },
           ],
         },
         { id: 'admin-org', label: 'Org Structure', Icon: Building2 },
       ],
     },
     {
-      label: 'ASSETS & SERVICES',
+      label: 'MANAGEMENT',
       items: [
         {
-          id: 'asset-services', label: 'Asset & Service', Icon: Briefcase,
+          id: 'ticket-management', label: 'Ticket Management', Icon: Receipt,
           children: [
-            { id: 'admin-assets', label: 'Assets' },
             { id: 'admin-tickets', label: 'Tickets' },
             { id: 'expense-management', label: 'Expense' },
+          ],
+        },
+        {
+          id: 'assets-management', label: 'Assets Management', Icon: Package,
+          children: [
+            { id: 'assets-list', label: 'Assets List' },
+            { id: 'admin-assets', label: 'Assets Allocation' },
+            { id: 'assets-request', label: 'Assets Request' },
           ],
         },
       ],
@@ -167,6 +187,7 @@ function buildAdminNav(): NavSection[] {
             { id: 'org-profile',          label: 'Organization Profile'      },
             { id: 'working-hours',        label: 'Working Hours & Holidays'  },
             { id: 'announcements',        label: 'Announcements'             },
+            { id: 'policy-setup',         label: 'Policy Setup'              },
             // { id: 'rewards-recognition',  label: 'Rewards and Recognition'   }, // hidden for now
           ],
         },

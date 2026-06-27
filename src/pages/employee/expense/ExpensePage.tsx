@@ -83,8 +83,8 @@ export default function ExpensePage() {
             placeholder="Search by category or claim head..."
             style={{
               width: '100%', height: 38, borderRadius: 9,
-              border: `1px solid ${searchQuery ? '#6366F1' : C.border}`,
-              background: searchQuery ? '#F5F6FF' : C.surface,
+              border: `1px solid ${C.border}`,
+              background: '#fff',
               padding: '0 12px 0 34px',
               fontSize: 13, color: C.navy, outline: 'none',
               fontFamily: "'DM Sans', system-ui, sans-serif",
