@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import {
-  Search, ChevronDown, Eye,
-  User, MessageSquare,
+  Search, ChevronDown, Eye, Calendar,
+  User, X, MessageSquare,
 } from 'lucide-react'
 
 type LeaveStatus = 'Pending' | 'Approved' | 'Rejected'
@@ -156,6 +156,26 @@ function Dropdown({ value, options, onChange, minW = 140 }: { value: string; opt
         {options.map(o => <option key={o}>{o}</option>)}
       </select>
       <ChevronDown size={11} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: C.muted, pointerEvents: 'none' }} />
+    </div>
+  )
+}
+
+function DateInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder: string }) {
+  const [focus, setFocus] = useState(false)
+  return (
+    <div style={{ position: 'relative', flexShrink: 0 }}>
+      <Calendar size={12} style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', color: C.muted, pointerEvents: 'none' }} />
+      <input type="date" value={value} onChange={e => onChange(e.target.value)}
+        onFocus={() => setFocus(true)} onBlur={() => setFocus(false)}
+        style={{
+          height: 36, paddingLeft: 28, paddingRight: 10,
+          border: `1px solid ${focus ? '#7C3AED' : C.border}`, borderRadius: 8,
+          fontSize: 12.5, color: value ? C.navy : C.muted,
+          background: '#fff', outline: 'none', cursor: 'pointer',
+          fontFamily: "'DM Sans',system-ui,sans-serif", width: 138,
+        }}
+        placeholder={placeholder}
+      />
     </div>
   )
 }

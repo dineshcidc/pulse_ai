@@ -59,12 +59,10 @@ function fmtDate(d: string) {
 const COL = '1.6fr 1.9fr 0.7fr 1.2fr 1.1fr 1.2fr 0.9fr'
 
 export default function LeaveStatusPage({ onNavigate }: { onNavigate?: (id: string) => void } = {}) {
-  void onNavigate
   const [records,       setRecords]       = useState<LeaveRecord[]>(LEAVE_DATA)
   const [search,        setSearch]        = useState('')
   const [activeTab,     setActiveTab]     = useState<typeof STAT_TABS[number]>('All')
-  const [fromFilter,    setFromFilter]    = useState('')
-  const [toFilter,      setToFilter]      = useState('')
+  const [statusDropdownOpen, setStatusDropdownOpen] = useState(false)
   const [cancelTarget,  setCancelTarget]  = useState<string | null>(null)
   const [viewTarget,    setViewTarget]    = useState<string | null>(null)
 
@@ -77,16 +75,8 @@ export default function LeaveStatusPage({ onNavigate }: { onNavigate?: (id: stri
     const q = search.toLowerCase()
     const matchSearch  = !q || r.type.toLowerCase().includes(q) || r.id.toLowerCase().includes(q) || r.approver.toLowerCase().includes(q)
     const matchTab     = activeTab === 'All' || r.status === activeTab
-    const matchFrom    = !fromFilter || r.fromDate >= fromFilter
-    const matchTo      = !toFilter   || r.toDate   <= toFilter
-    return matchSearch && matchTab && matchFrom && matchTo
+    return matchSearch && matchTab
   })
-
-  const hasFilters = search || fromFilter || toFilter
-
-  function clearFilters() {
-    setSearch(''); setFromFilter(''); setToFilter('')
-  }
 
   function doCancel() {
     if (!cancelTarget) return
@@ -127,75 +117,31 @@ export default function LeaveStatusPage({ onNavigate }: { onNavigate?: (id: stri
         </div>
       </div>
 
-      {/* ── Summary stat tabs ── */}
-      <div className="flex items-center gap-3 mb-5 flex-wrap">
-        {STAT_TABS.map(tab => {
-          const isActive = activeTab === tab
-          const ss = tab !== 'All' ? STATUS_STYLE[tab as Status] : null
-          return (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                padding: '6px 12px', borderRadius: 9, border: 'none',
-                cursor: 'pointer', transition: 'all 0.15s',
-                background: isActive
-                  ? (ss ? ss.bg : 'rgba(28,32,53,0.08)')
-                  : '#fff',
-                borderWidth: 1.5, borderStyle: 'solid',
-                borderColor: isActive
-                  ? (ss ? ss.dot + '44' : 'rgba(28,32,53,0.15)')
-                  : C.border,
-              }}
-            >
-              {ss && (
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: ss.dot, flexShrink: 0, display: 'inline-block' }} />
-              )}
-              <span style={{ fontSize: 12, fontWeight: 600, color: isActive ? (ss ? ss.color : C.navy) : C.muted }}>
-                {tab}
-              </span>
-              <span
-                style={{
-                  fontSize: 10.5, fontWeight: 700,
-                  padding: '1px 6px', borderRadius: 99,
-                  background: isActive ? (ss ? ss.dot + '22' : 'rgba(28,32,53,0.08)') : '#F0F2F8',
-                  color: isActive ? (ss ? ss.color : C.navy) : C.muted,
-                }}
-              >
-                {counts[tab]}
-              </span>
-            </button>
-          )
-        })}
-      </div>
-
-      {/* ── Filter toolbar ── */}
-      <div
-        className="flex items-center gap-3 mb-4 flex-wrap"
-        style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, padding: '14px 18px' }}
-      >
-        {/* Search */}
-        <div className="relative flex-1" style={{ minWidth: 200 }}>
+      {/* ── Search & Status Filter ── */}
+      <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, padding: '12px 16px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12, position: 'relative' }}>
+        {/* Search Bar */}
+        <div className="relative flex-1" style={{ minWidth: 0 }}>
           <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#B0B4C8', pointerEvents: 'none' }} />
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search by leave type, ID or approver..."
             style={{
-              width: '100%', height: 38, borderRadius: 9,
+              width: '100%', height: 40, borderRadius: 10,
               border: `1px solid ${C.border}`,
               background: '#fff',
-              padding: '0 12px 0 34px',
+              padding: '0 12px 0 36px',
               fontSize: 13, color: C.navy, outline: 'none',
               fontFamily: "'DM Sans', system-ui, sans-serif",
               boxSizing: 'border-box',
             }}
+            onFocus={e => { e.currentTarget.style.borderColor = '#6366F1'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.08)' }}
+            onBlur={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.boxShadow = 'none' }}
           />
           {search && (
             <button onClick={() => setSearch('')}
-              style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: C.muted, lineHeight: 0 }}>
-              <X size={12} />
+              style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: C.muted, lineHeight: 0, padding: 0 }}>
+              <X size={13} />
             </button>
           )}
         </div>
@@ -203,54 +149,97 @@ export default function LeaveStatusPage({ onNavigate }: { onNavigate?: (id: stri
         {/* Divider */}
         <div style={{ width: 1, height: 28, background: C.border, flexShrink: 0 }} />
 
-        {/* From date */}
-        <div className="flex items-center gap-2">
-          <span style={{ fontSize: 12, fontWeight: 600, color: C.muted, whiteSpace: 'nowrap' }}>From</span>
-          <input
-            type="date"
-            value={fromFilter}
-            onChange={e => setFromFilter(e.target.value)}
-            style={{
-              height: 38, borderRadius: 9, border: `1px solid ${fromFilter ? '#6366F1' : C.border}`,
-              background: fromFilter ? '#F5F6FF' : '#F7F8FC',
-              padding: '0 10px', fontSize: 13, color: C.navy, outline: 'none', cursor: 'pointer',
-              fontFamily: "'DM Sans', system-ui, sans-serif",
-            }}
-          />
-        </div>
+        {/* Status Dropdown */}
+        {(() => {
+          const currentStatusStyle = activeTab !== 'All' ? STATUS_STYLE[activeTab as Status] : null
+          const statusBg = currentStatusStyle ? currentStatusStyle.bg : 'rgba(139,144,167,0.08)'
+          const statusColor = currentStatusStyle ? currentStatusStyle.color : '#6B7280'
 
-        {/* To date */}
-        <div className="flex items-center gap-2">
-          <span style={{ fontSize: 12, fontWeight: 600, color: C.muted, whiteSpace: 'nowrap' }}>To</span>
-          <input
-            type="date"
-            value={toFilter}
-            min={fromFilter}
-            onChange={e => setToFilter(e.target.value)}
-            style={{
-              height: 38, borderRadius: 9, border: `1px solid ${toFilter ? '#6366F1' : C.border}`,
-              background: toFilter ? '#F5F6FF' : '#F7F8FC',
-              padding: '0 10px', fontSize: 13, color: C.navy, outline: 'none', cursor: 'pointer',
-              fontFamily: "'DM Sans', system-ui, sans-serif",
-            }}
-          />
-        </div>
+          return (
+            <button
+              onClick={() => setStatusDropdownOpen(!statusDropdownOpen)}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '8px 12px', borderRadius: 9, border: `1px solid ${C.border}`,
+                background: statusBg, cursor: 'pointer', transition: 'all 0.15s',
+                fontFamily: "'DM Sans', system-ui, sans-serif",
+                fontSize: 13, fontWeight: 600, color: statusColor, flexShrink: 0, whiteSpace: 'nowrap',
+                width: 120,
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = statusColor }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = C.border }}
+            >
+              <span>{activeTab}</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                style={{ transform: statusDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s', color: statusColor, flexShrink: 0 }}>
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+          )
+        })()}
 
-        {/* Clear */}
-        {hasFilters && (
-          <button
-            onClick={clearFilters}
-            className="flex items-center gap-1.5"
-            style={{
-              height: 38, padding: '0 14px', borderRadius: 9, border: `1px solid rgba(232,72,85,0.25)`,
-              background: 'rgba(232,72,85,0.06)', color: '#E84855', fontSize: 12.5, fontWeight: 600,
-              cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(232,72,85,0.12)' }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(232,72,85,0.06)' }}
-          >
-            <X size={12} strokeWidth={2.5} /> Clear filters
-          </button>
+        {/* Status Dropdown Popup */}
+        {statusDropdownOpen && (
+          <>
+            {/* Backdrop */}
+            <div
+              style={{ position: 'fixed', inset: 0, zIndex: 99 }}
+              onClick={() => setStatusDropdownOpen(false)}
+            />
+
+            {/* Popup */}
+            <div
+              style={{
+                position: 'absolute', top: 'calc(100% + 8px)', right: 16,
+                background: '#fff', border: `1px solid ${C.border}`, borderRadius: 12,
+                boxShadow: '0 10px 36px rgba(28,32,53,0.15)', zIndex: 100,
+                padding: '8px', minWidth: 260,
+              }}
+            >
+              {STAT_TABS.map(tab => {
+                const isActive = activeTab === tab
+                const ss = tab !== 'All' ? STATUS_STYLE[tab as Status] : { bg: 'rgba(139,144,167,0.08)', color: '#6B7280', dot: '#9CA3AF' }
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => {
+                      setActiveTab(tab)
+                      setStatusDropdownOpen(false)
+                    }}
+                    style={{
+                      width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                      padding: '10px 12px', borderRadius: 9, border: 'none',
+                      background: isActive ? ss.bg : 'transparent',
+                      cursor: 'pointer', transition: 'all 0.12s',
+                      fontFamily: "'DM Sans', system-ui, sans-serif",
+                      fontSize: 13, fontWeight: isActive ? 700 : 600,
+                      color: isActive ? ss.color : C.navy,
+                      textAlign: 'left',
+                    }}
+                    onMouseEnter={e => {
+                      if (!isActive) e.currentTarget.style.background = ss.bg
+                    }}
+                    onMouseLeave={e => {
+                      if (!isActive) e.currentTarget.style.background = 'transparent'
+                    }}
+                  >
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: ss.dot, flexShrink: 0 }} />
+                    <span style={{ flex: 1 }}>{tab}</span>
+                    <span
+                      style={{
+                        fontSize: 11, fontWeight: 700,
+                        padding: '2px 7px', borderRadius: 99,
+                        background: isActive ? ss.dot + '22' : '#F0F2F8',
+                        color: isActive ? ss.color : C.muted,
+                      }}
+                    >
+                      {counts[tab]}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </>
         )}
       </div>
 

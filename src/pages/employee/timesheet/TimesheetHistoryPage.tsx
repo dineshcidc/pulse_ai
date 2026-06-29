@@ -876,6 +876,7 @@ export default function TimesheetHistoryPage({ onNavigate }: { onNavigate: (id: 
   const draftDays     = monthEntries.filter(([, v]) => v.status === 'draft').length
   const returnedDays  = monthEntries.filter(([, v]) => v.status === 'returned').length
   const submittedDays = monthEntries.filter(([, v]) => v.status === 'submitted').length
+  const totalMonthH   = monthEntries.reduce((s, [, v]) => s + totalHoursForDay(v), 0)
 
   function prevMonth() {
     if (month === 0) { setYear(y => y - 1); setMonth(11) }

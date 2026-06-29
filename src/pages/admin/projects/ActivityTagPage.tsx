@@ -70,32 +70,45 @@ const ACTIVITY_TAGS: Record<string, Array<{ id: string; name: string; chargeCode
 }
 
 export default function ActivityTagPage() {
-  const [selectedRole, setSelectedRole] = useState<string>('Common')
+  const [selectedRole, setSelectedRole] = useState<string>('All')
   const [searchQuery, setSearchQuery] = useState('')
   const [showAddModal, setShowAddModal] = useState(false)
-  const [addModalRole, setAddModalRole] = useState('')
+  const [addModalRoles, setAddModalRoles] = useState<string[]>([])
   const [addModalRoleOpen, setAddModalRoleOpen] = useState(false)
   const [tagName, setTagName] = useState('')
   const [chargeCode, setChargeCode] = useState('')
+  const [saveLoading, setSaveLoading] = useState(false)
 
   const handleAddActivity = () => {
     setShowAddModal(true)
-    setAddModalRole('')
+    setAddModalRoles([])
     setTagName('')
     setChargeCode('')
   }
 
   const handleCloseAddModal = () => {
     setShowAddModal(false)
-    setAddModalRole('')
+    setAddModalRoles([])
     setAddModalRoleOpen(false)
     setTagName('')
     setChargeCode('')
   }
 
-  const handleSaveTag = () => {
-    if (addModalRole && tagName && chargeCode) {
-      // Save tag action
+  const handleToggleRole = (role: string) => {
+    setAddModalRoles(prev =>
+      prev.includes(role) ? prev.filter(r => r !== role) : [...prev, role]
+    )
+  }
+
+  const handleRemoveRole = (role: string) => {
+    setAddModalRoles(prev => prev.filter(r => r !== role))
+  }
+
+  const handleSaveTag = async () => {
+    if (addModalRoles.length > 0 && tagName && chargeCode) {
+      setSaveLoading(true)
+      await new Promise(r => setTimeout(r, 1200))
+      setSaveLoading(false)
       handleCloseAddModal()
     }
   }
@@ -108,10 +121,13 @@ export default function ActivityTagPage() {
     // Delete action
   }
 
-  const tags = ACTIVITY_TAGS[selectedRole] || []
+  const tags = selectedRole === 'All'
+    ? Object.values(ACTIVITY_TAGS).flat()
+    : (ACTIVITY_TAGS[selectedRole] || [])
 
   return (
     <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+      <style>{`@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }`}</style>
       <div style={{
         display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24, gap: 20,
       }}>
@@ -193,6 +209,38 @@ export default function ActivityTagPage() {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {/* All option */}
+            <button
+              onClick={() => setSelectedRole('All')}
+              style={{
+                padding: '12px 14px', borderRadius: 10, border: 'none',
+                background: selectedRole === 'All' ? 'rgba(99,102,241,0.10)' : 'transparent',
+                cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s',
+                outline: 'none', fontFamily: 'inherit',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              }}
+              onMouseEnter={e => {
+                if (selectedRole !== 'All') e.currentTarget.style.background = '#F5F6FA'
+              }}
+              onMouseLeave={e => {
+                if (selectedRole !== 'All') e.currentTarget.style.background = 'transparent'
+              }}
+            >
+              <div style={{ flex: 1 }}>
+                <div style={{
+                  fontSize: 13.5, fontWeight: selectedRole === 'All' ? 700 : 600,
+                  color: selectedRole === 'All' ? '#6366F1' : C.navy,
+                }}>
+                  All
+                </div>
+              </div>
+              <div style={{
+                fontSize: 12, fontWeight: 600, color: selectedRole === 'All' ? '#6366F1' : C.muted,
+              }}>
+                ({Object.values(ACTIVITY_TAGS).reduce((sum, tags) => sum + tags.length, 0)})
+              </div>
+            </button>
+
             {Object.entries(ROLE_CATEGORIES).map(([role, data]) => (
               <button
                 key={role}
@@ -241,10 +289,10 @@ export default function ActivityTagPage() {
             borderBottom: `1px solid ${C.border}`,
           }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', textAlign: 'left' }}>
-              Tag Name
+              Activity Name
             </div>
             <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', textAlign: 'left' }}>
-              Charge Code
+              Activity Code
             </div>
             <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', textAlign: 'center' }}>
               Actions
@@ -379,7 +427,7 @@ export default function ActivityTagPage() {
             {/* Role Selection */}
             <div style={{ marginBottom: 20 }}>
               <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: C.navy, marginBottom: 8 }}>
-                Select Role *
+                Select Role(s) *
               </label>
               <div style={{ position: 'relative' }}>
                 {addModalRoleOpen && (
@@ -391,13 +439,13 @@ export default function ActivityTagPage() {
                     width: '100%', height: 48, padding: '0 14px', borderRadius: 10,
                     border: `1px solid ${C.border}`, background: '#fff', cursor: 'pointer',
                     fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: 13.5, fontWeight: 600,
-                    color: addModalRole ? C.navy : C.muted, textAlign: 'left', transition: 'all 0.14s',
+                    color: addModalRoles.length > 0 ? C.navy : C.muted, textAlign: 'left', transition: 'all 0.14s',
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between', outline: 'none',
                   }}
                   onMouseEnter={e => { if (!addModalRoleOpen) e.currentTarget.style.background = C.hover }}
                   onMouseLeave={e => { if (!addModalRoleOpen) e.currentTarget.style.background = '#fff' }}
                 >
-                  {addModalRole || 'Choose a role'}
+                  {addModalRoles.length > 0 ? `${addModalRoles.length} role(s) selected` : 'Choose role(s)'}
                   <ChevronDown size={13} strokeWidth={2.3} style={{
                     color: C.muted, transition: 'transform 0.18s',
                     transform: addModalRoleOpen ? 'rotate(180deg)' : 'rotate(0deg)',
@@ -413,34 +461,71 @@ export default function ActivityTagPage() {
                     {Object.keys(ROLE_CATEGORIES).map(role => (
                       <button
                         key={role}
-                        onClick={() => { setAddModalRole(role); setAddModalRoleOpen(false) }}
+                        onClick={() => handleToggleRole(role)}
                         style={{
                           width: '100%', padding: '10px 12px', borderRadius: 8, border: 'none',
-                          background: addModalRole === role ? 'rgba(99,102,241,0.08)' : 'transparent',
+                          background: addModalRoles.includes(role) ? 'rgba(99,102,241,0.08)' : 'transparent',
                           cursor: 'pointer', textAlign: 'left', transition: 'background 0.12s',
                           outline: 'none', fontFamily: "'DM Sans', system-ui, sans-serif",
-                          fontSize: 13.5, fontWeight: addModalRole === role ? 700 : 500,
-                          color: addModalRole === role ? '#6366F1' : C.navy,
+                          fontSize: 13.5, fontWeight: addModalRoles.includes(role) ? 700 : 500,
+                          color: addModalRoles.includes(role) ? '#6366F1' : C.navy,
+                          display: 'flex', alignItems: 'center', gap: 10,
                         }}
                         onMouseEnter={e => {
-                          if (addModalRole !== role) e.currentTarget.style.background = '#F5F6FA'
+                          if (!addModalRoles.includes(role)) e.currentTarget.style.background = '#F5F6FA'
                         }}
                         onMouseLeave={e => {
-                          if (addModalRole !== role) e.currentTarget.style.background = 'transparent'
+                          if (!addModalRoles.includes(role)) e.currentTarget.style.background = 'transparent'
                         }}
                       >
+                        <input
+                          type="checkbox" checked={addModalRoles.includes(role)}
+                          onChange={() => {}}
+                          style={{ width: 16, height: 16, cursor: 'pointer' }}
+                        />
                         {role}
                       </button>
                     ))}
                   </div>
                 )}
               </div>
+
+              {/* Selected Roles Display */}
+              {addModalRoles.length > 0 && (
+                <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
+                  {addModalRoles.map(role => (
+                    <div
+                      key={role}
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 6,
+                        paddingLeft: 12, paddingRight: 8, height: 32,
+                        borderRadius: 8, background: 'rgba(99,102,241,0.1)',
+                        border: '1px solid rgba(99,102,241,0.2)',
+                      }}
+                    >
+                      <span style={{ fontSize: 13, fontWeight: 600, color: '#6366F1' }}>{role}</span>
+                      <button
+                        onClick={() => handleRemoveRole(role)}
+                        style={{
+                          width: 18, height: 18, borderRadius: 4, background: 'rgba(99,102,241,0.15)',
+                          border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center',
+                          justifyContent: 'center', transition: 'all 0.15s', padding: 0,
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.25)'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'rgba(99,102,241,0.15)'}
+                      >
+                        <X size={12} style={{ color: '#6366F1' }} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Tag Name */}
+            {/* Activity Name */}
             <div style={{ marginBottom: 20 }}>
               <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: C.navy, marginBottom: 8 }}>
-                Tag Name *
+                Activity Name *
               </label>
               <input
                 value={tagName}
@@ -457,10 +542,10 @@ export default function ActivityTagPage() {
               />
             </div>
 
-            {/* Charge Code */}
+            {/* Activity Code */}
             <div style={{ marginBottom: 24 }}>
               <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: C.navy, marginBottom: 8 }}>
-                Charge Code *
+                Activity Code *
               </label>
               <input
                 value={chargeCode}
@@ -494,22 +579,32 @@ export default function ActivityTagPage() {
               </button>
               <button
                 onClick={handleSaveTag}
-                disabled={!addModalRole || !tagName || !chargeCode}
+                disabled={addModalRoles.length === 0 || !tagName || !chargeCode || saveLoading}
                 style={{
                   flex: 1, height: 48, borderRadius: 10, border: 'none',
-                  background: (!addModalRole || !tagName || !chargeCode) ? '#C8CCE0' : '#6366F1',
+                  background: (addModalRoles.length === 0 || !tagName || !chargeCode || saveLoading) ? '#C8CCE0' : '#6366F1',
                   color: '#fff', fontSize: 13, fontWeight: 700,
-                  cursor: (!addModalRole || !tagName || !chargeCode) ? 'not-allowed' : 'pointer',
+                  cursor: (addModalRoles.length === 0 || !tagName || !chargeCode || saveLoading) ? 'not-allowed' : 'pointer',
                   fontFamily: "'DM Sans', system-ui, sans-serif", transition: 'all 0.15s', outline: 'none',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                 }}
                 onMouseEnter={e => {
-                  if (!(!addModalRole || !tagName || !chargeCode)) (e.currentTarget.style as any).background = '#5B5FDE'
+                  if (!(addModalRoles.length === 0 || !tagName || !chargeCode || saveLoading)) (e.currentTarget.style as any).background = '#5B5FDE'
                 }}
                 onMouseLeave={e => {
-                  if (!(!addModalRole || !tagName || !chargeCode)) (e.currentTarget.style as any).background = '#6366F1'
+                  if (!(addModalRoles.length === 0 || !tagName || !chargeCode || saveLoading)) (e.currentTarget.style as any).background = '#6366F1'
                 }}
               >
-                Add Tag
+                {saveLoading ? (
+                  <>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ animation: 'spin 0.8s linear infinite' }}>
+                      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                    </svg>
+                    Adding...
+                  </>
+                ) : (
+                  'Add Tag'
+                )}
               </button>
             </div>
           </div>

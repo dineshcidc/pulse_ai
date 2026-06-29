@@ -252,7 +252,7 @@ function LeaveDetailModal({
 
 /* ── Main Page ── */
 export default function TeamLeaveRequestsPage() {
-  const [tab, setTab]         = useState<LeaveStatus>('pending')
+  const [statusFilter, setStatusFilter] = useState<LeaveStatus | 'all'>('all')
   const [search, setSearch]   = useState('')
   const [projectFilter, setProjectFilter] = useState('All Projects')
   const [dateFilter, setDateFilter] = useState('')
@@ -282,14 +282,14 @@ export default function TeamLeaveRequestsPage() {
   const filtered = rows.filter(r => {
     const q = search.toLowerCase()
     const matchSearch = !q || r.employee.toLowerCase().includes(q) || r.project.toLowerCase().includes(q)
-    const matchStatus = r.status === tab
+    const matchStatus = statusFilter === 'all' || r.status === statusFilter
     const matchProject = projectFilter === 'All Projects' || r.project === projectFilter
     const matchDate   = !dateFilter || r.fromISO === dateFilter
     return matchSearch && matchStatus && matchProject && matchDate
   })
 
   const pendingCount  = rows.filter(r => r.status === 'pending').length
-  const hasActiveFilter = search || dateFilter || projectFilter !== 'All Projects'
+  const hasActiveFilter = search || dateFilter || projectFilter !== 'All Projects' || statusFilter !== 'all'
 
   const COLS = '1.5fr 1.2fr 1fr 1.2fr 1.2fr 0.6fr 1fr 1.1fr'
 
@@ -317,7 +317,8 @@ export default function TeamLeaveRequestsPage() {
       {/* Filter bar */}
       <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, padding: '14px 16px', marginBottom: 16 }}>
         <div className="flex items-center gap-3 flex-wrap">
-          <div style={{ position: 'relative', flexShrink: 0, width: 340 }}>
+          {/* Search */}
+          <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
             <Search size={14} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: C.muted, pointerEvents: 'none' }} />
             <input
               value={search}
@@ -329,8 +330,35 @@ export default function TeamLeaveRequestsPage() {
             />
           </div>
 
+          {/* Status Dropdown */}
+          <div style={{ position: 'relative', flexShrink: 0 }}>
+            <select
+              value={statusFilter}
+              onChange={e => setStatusFilter(e.target.value as LeaveStatus | 'all')}
+              style={{
+                height: 38, padding: '0 30px 0 12px',
+                border: `1px solid ${C.border}`, borderRadius: 9,
+                fontSize: 13, fontWeight: 500, color: statusFilter === 'all' ? C.muted : C.navy,
+                background: '#fff', outline: 'none',
+                cursor: 'pointer', appearance: 'none',
+                fontFamily: "'DM Sans', system-ui, sans-serif",
+                minWidth: 130,
+              }}
+              onFocus={e => { e.target.style.borderColor = '#6366F1' }}
+              onBlur={e => { e.target.style.borderColor = C.border }}
+            >
+              <option value="all">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+            </select>
+            <svg style={{ position: 'absolute', right: 9, top: '50%', transform: 'translateY(-50%)', color: C.muted, pointerEvents: 'none', width: 12, height: 12 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </div>
+
+          {/* Project Dropdown */}
           <Dropdown value={projectFilter} options={PROJECT_OPTIONS} onChange={setProjectFilter} />
 
+          {/* Date Filter */}
           <div style={{ position: 'relative', flexShrink: 0 }}>
             <Calendar size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: C.muted, pointerEvents: 'none', zIndex: 1 }} />
             <input
@@ -341,26 +369,15 @@ export default function TeamLeaveRequestsPage() {
             />
           </div>
 
+          {/* Clear Button */}
           {hasActiveFilter && (
             <button
-              onClick={() => { setSearch(''); setProjectFilter('All Projects'); setDateFilter('') }}
+              onClick={() => { setSearch(''); setProjectFilter('All Projects'); setDateFilter(''); setStatusFilter('all') }}
               style={{ height: 38, padding: '0 12px', borderRadius: 9, border: `1px solid ${C.border}`, background: '#fff', fontSize: 12.5, color: C.muted, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = '#C8CCE0'; e.currentTarget.style.color = C.navy }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted }}
             >Clear</button>
           )}
-
-          <div className="flex items-center gap-1.5 ml-auto">
-            {TABS.map(t => (
-              <button
-                key={t.id}
-                onClick={() => setTab(t.id)}
-                style={{ height: 34, padding: '0 14px', borderRadius: 8, border: 'none', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', background: tab === t.id ? C.navy : C.hover, color: tab === t.id ? '#fff' : C.muted, transition: 'all 0.15s', fontFamily: 'inherit' }}
-                onMouseEnter={e => { if (tab !== t.id) { e.currentTarget.style.background = '#E4E6EF'; e.currentTarget.style.color = C.navy } }}
-                onMouseLeave={e => { if (tab !== t.id) { e.currentTarget.style.background = C.hover; e.currentTarget.style.color = C.muted } }}
-              >{t.label}</button>
-            ))}
-          </div>
         </div>
       </div>
 

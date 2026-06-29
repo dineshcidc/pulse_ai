@@ -10,6 +10,7 @@ interface TimesheetPolicy {
   nextDayGraceTime:        string
   stdHoursPerDay:          number
   minHoursPerDay:          number
+  maxHoursPerDay:          number
   overtimeThresholdDay:    number
   overtimeThresholdWeek:   number
   autoFlagOvertime:        boolean
@@ -24,7 +25,8 @@ const DEFAULT: TimesheetPolicy = {
   eodDeadlineTime:         '23:00',
   nextDayGraceTime:        '10:00',
   stdHoursPerDay:          8,
-  minHoursPerDay:          1,
+  minHoursPerDay:          8,
+  maxHoursPerDay:          14,
   overtimeThresholdDay:    9,
   overtimeThresholdWeek:   45,
   autoFlagOvertime:        true,
@@ -59,13 +61,14 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
   )
 }
 
-function NumInput({ value, onChange, min, max, unit }: {
-  value: number; onChange: (v: number) => void; min: number; max: number; unit?: string
+function NumInput({ value, onChange, min, max, unit, placeholder }: {
+  value: number; onChange: (v: number) => void; min: number; max: number; unit?: string; placeholder?: string
 }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
       <input
         type="number" min={min} max={max} value={value}
+        placeholder={placeholder}
         onChange={e => onChange(Math.min(max, Math.max(min, parseInt(e.target.value) || min)))}
         style={{ width: 64, height: 36, borderRadius: 8, border: `1px solid ${C.border}`, background: '#fff', textAlign: 'center', fontSize: 14, fontWeight: 700, color: C.navy, outline: 'none', fontFamily: 'inherit' }}
       />
@@ -264,7 +267,7 @@ export default function TimesheetPoliciesPage() {
         <AccordionSection
           icon={Clock}
           title="Working Hour Limits"
-          sub="Standard and minimum hours per active working day"
+          sub="Standard, minimum and maximum hours per active working day"
           accent="#0EA86A"
           accentBg="rgba(14,168,106,0.05)"
           isOpen={open.has('hours')}
@@ -272,7 +275,8 @@ export default function TimesheetPoliciesPage() {
           chips={
             <>
               <Chip label={`${policy.stdHoursPerDay} hrs / day`} />
-              <Chip label={`Min ${policy.minHoursPerDay} hr`} />
+              <Chip label={`Min ${policy.minHoursPerDay} hrs`} />
+              <Chip label={`Max ${policy.maxHoursPerDay} hrs`} />
             </>
           }
         >
@@ -280,8 +284,12 @@ export default function TimesheetPoliciesPage() {
             <NumInput value={policy.stdHoursPerDay} onChange={v => set('stdHoursPerDay', v)} min={1} max={24} unit="hrs" />
           </PolicyRow>
 
-          <PolicyRow label="Minimum Hours to Log" hint="Least hours that must be logged per active day" last>
-            <NumInput value={policy.minHoursPerDay} onChange={v => set('minHoursPerDay', v)} min={0} max={policy.stdHoursPerDay} unit="hrs" />
+          <PolicyRow label="Minimum Hours to Log" hint="Least hours that must be logged per active day">
+            <NumInput value={policy.minHoursPerDay} onChange={v => set('minHoursPerDay', v)} min={0} max={policy.maxHoursPerDay} unit="hrs" placeholder="8" />
+          </PolicyRow>
+
+          <PolicyRow label="Maximum Hours to Log" hint="Maximum hours allowed per active working day" last>
+            <NumInput value={policy.maxHoursPerDay} onChange={v => set('maxHoursPerDay', v)} min={policy.stdHoursPerDay} max={24} unit="hrs" placeholder="14" />
           </PolicyRow>
         </AccordionSection>
 
@@ -295,10 +303,7 @@ export default function TimesheetPoliciesPage() {
           isOpen={open.has('overtime')}
           onToggle={() => toggle('overtime')}
           chips={
-            <>
-              <Chip label={`OT > ${policy.overtimeThresholdDay}h / day`} />
-              <Chip label={`Auto-flag: ${policy.autoFlagOvertime ? 'On' : 'Off'}`} />
-            </>
+            <Chip label={`OT > ${policy.overtimeThresholdDay}h / day`} />
           }
         >
           <PolicyRow label="Daily Overtime After" hint="Hours beyond this threshold in one day are marked overtime">
@@ -307,10 +312,6 @@ export default function TimesheetPoliciesPage() {
 
           <PolicyRow label="Weekly Overtime After" hint="Total hours beyond this across the full work week are flagged">
             <NumInput value={policy.overtimeThresholdWeek} onChange={v => set('overtimeThresholdWeek', v)} min={30} max={84} unit="hrs" />
-          </PolicyRow>
-
-          <PolicyRow label="Auto-flag Overtime Entries" hint="Mark overtime hours automatically for manager review">
-            <Toggle checked={policy.autoFlagOvertime} onChange={v => set('autoFlagOvertime', v)} />
           </PolicyRow>
 
           <PolicyRow label="Allow Weekend Logging" hint="Employees can log hours on Saturday and Sunday">

@@ -41,6 +41,7 @@ const ROLE_CFG: Record<Role, { color: string; bg: string; border: string }> = {
   Admin:    { color: '#7C3AED', bg: 'rgba(124,58,237,0.08)',   border: 'rgba(124,58,237,0.18)'  },
 }
 
+const PROJECTS    = ['All Projects',    'Pulse.AI v2', 'HDFC Portal', 'TechCorp ERP']
 const DEPARTMENTS = ['All Departments', 'Engineering', 'Design', 'QA & Testing', 'DevOps', 'Product', 'IT Operations']
 const ROLES       = ['All Roles',       'Employee', 'Manager', 'Admin']
 
@@ -88,7 +89,7 @@ function RoleBadge({ role }: { role: Role }) {
   )
 }
 
-function ActionBtn({ icon, title }: { icon: React.ReactNode; title: string }) {
+function ActionBtn({ icon, title, danger }: { icon: React.ReactNode; title: string; danger?: boolean }) {
   const [hov, setHov] = useState(false)
   return (
     <button
@@ -293,7 +294,7 @@ export default function AllUsersPage({ onNavigate }: { onNavigate: (id: string) 
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <ActionBtn icon={<Eye size={13} />}             title="View Profile" />
                 <ActionBtn icon={<Pencil size={13} />}          title="Edit User" />
-                <ActionBtn icon={<Trash2 size={13} />}          title="Delete User" />
+                <ActionBtn icon={<Trash2 size={13} />}          title="Delete User" danger />
               </div>
             </div>
           ))

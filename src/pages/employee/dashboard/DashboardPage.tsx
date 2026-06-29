@@ -1087,6 +1087,19 @@ export default function DashboardPage({ managerMode = false, onNavigateTeam }: D
                   <span style={{ fontSize: 11, color: C.muted, fontWeight: 500 }}>Shift: <span style={{ color: '#3D4266', fontWeight: 600 }}>10:00 AM – 07:00 PM</span></span>
                 </div>
               </div>
+
+              {/* Timesheet Entry Time Limit */}
+              <div style={{ padding: '10px 12px', borderRadius: 10, background: 'rgba(99,102,241,0.04)', border: '1px solid rgba(99,102,241,0.1)' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6366F1" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}>
+                    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                  <div style={{ fontSize: 11, color: '#4F46E5', fontWeight: 500, lineHeight: 1.4 }}>
+                    <div style={{ fontWeight: 600, color: '#6366F1', marginBottom: 2 }}>Timesheet Entry Time Limit</div>
+                    <div>Submit by <strong>11:00 PM</strong> same day • Late until <strong>11:00 AM</strong> next day</div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 

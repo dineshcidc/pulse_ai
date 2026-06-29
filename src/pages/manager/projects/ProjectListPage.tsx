@@ -77,7 +77,6 @@ const STATUS_CONFIG: Record<Status, { label: string; color: string; bg: string; 
 
 const FILTER_TABS: { id: 'all' | Status; label: string }[] = [
   { id: 'all',       label: 'All Projects' },
-  { id: 'draft',     label: 'Draft'        },
   { id: 'active',    label: 'Active'       },
   { id: 'on-hold',   label: 'On Hold'      },
   { id: 'completed', label: 'Completed'    },

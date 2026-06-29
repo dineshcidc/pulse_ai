@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import {
   Ticket, ClipboardList, PlusCircle, ChevronRight, ChevronDown, ArrowLeft,
-  Search, FolderOpen, User, Users, Laptop, DollarSign, LayoutGrid, X,
+  Search, Monitor, FolderOpen, User, Users, Laptop, DollarSign, LayoutGrid, X,
   Paperclip, Mail, Phone, MessageSquare, MapPin, Tag, AlertTriangle, Eye,
   Download, FileText, Send, Clock, Calendar,
 } from 'lucide-react'
@@ -175,6 +175,7 @@ const CAT_BADGE: Record<string, { bg: string; color: string }> = {
 }
 
 const C      = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7' }
+const COL    = '1fr 1.4fr 1fr 0.9fr 1.1fr 1.3fr 1fr 0.5fr'
 
 const inputBase: React.CSSProperties = {
   width: '100%', height: 44, borderRadius: 10, padding: '0 14px',
@@ -230,6 +231,8 @@ export default function TicketsPage() {
   const tkFileRef = useRef<HTMLInputElement>(null)
 
   // ── Derived ──
+  const typeCount = (type: string) => type === 'All' ? TICKETS.length : TICKETS.filter(t => t.type === type).length
+  const openCount = TICKETS.filter(t => t.status === 'Open').length
   const tkCanSubmit = tkType && tkCategory && tkSubject.trim() && tkPriority && tkDescription.trim()
 
   const basFiltered = TICKETS.filter(t => {
@@ -371,7 +374,7 @@ export default function TicketsPage() {
                   className="tkt-action-card text-left"
                   onClick={() => {
                     setActiveCard(a.id)
-                    setActiveType('All')
+                    setActiveCategory('All')
                     setSearchQuery('')
                     setStatusFilter('All')
                   }}
@@ -457,17 +460,19 @@ export default function TicketsPage() {
       {activeCard === 'ticket-status' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 
-          {/* TOP — Search + Category selector bar */}
-          <div className="flex items-center gap-3">
+          {/* TOP — Search + Category selector bar in white card */}
+          <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
 
-            {/* Search — wider, taller, light grey bg */}
-            <div className="relative flex-shrink-0" style={{ width: 340 }}>
-              <Search size={15} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: '#A0A5BC', pointerEvents: 'none' }} />
+            {/* Search — with border */}
+            <div className="relative flex-1">
+              <Search size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#A0A5BC', pointerEvents: 'none' }} />
               <input
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Search by ticket ID, subject, category…"
-                style={{ ...inputBase, height: 46, border: 'none', background: '#fff', padding: '0 38px 0 40px', fontSize: 13.5, borderRadius: 11, boxShadow: 'none' }}
+                style={{ ...inputBase, height: 40, border: `1px solid ${C.border}`, background: 'transparent', padding: '0 12px 0 36px', fontSize: 13.5, borderRadius: 9, boxShadow: 'none' }}
+                onFocus={e => { e.currentTarget.style.borderColor = '#6366F1'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.08)' }}
+                onBlur={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.boxShadow = 'none' }}
               />
               {searchQuery && (
                 <button onClick={() => setSearchQuery('')}
@@ -477,14 +482,17 @@ export default function TicketsPage() {
               )}
             </div>
 
-            {/* Ticket Type — custom selection dropdown */}
+            {/* Divider */}
+            <div style={{ width: 1, height: 24, background: C.border, flexShrink: 0 }} />
+
+            {/* Ticket Type — with light background */}
             {typeDropOpen && (
               <div style={{ position: 'fixed', inset: 0, zIndex: 99 }} onClick={() => setTypeDropOpen(false)} />
             )}
             <div style={{ position: 'relative', zIndex: 100 }}>
               <div className="relative">
                 <select value={activeType} onChange={e => setActiveType(e.target.value)}
-                  style={{ ...inputBase, height: 46, paddingRight: 36, paddingLeft: 14, border: 'none', background: '#fff', appearance: 'none', cursor: 'pointer', color: activeType ? C.navy : C.muted }}>
+                  style={{ ...inputBase, height: 40, paddingRight: 36, paddingLeft: 12, border: `1px solid ${C.border}`, background: '#F7F8FC', appearance: 'none', cursor: 'pointer', color: activeType ? C.navy : C.muted, fontSize: 13.5 }}>
                   <option value="All">All Types</option>
                   <option value="HR">HR</option>
                   <option value="IT & Admin">IT & Admin</option>

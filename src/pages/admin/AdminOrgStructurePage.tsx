@@ -735,7 +735,7 @@ export default function AdminOrgStructurePage() {
         {/* Add button */}
         <button
           onClick={() => setShowAddPage(true)}
-          style={{ display: 'flex', alignItems: 'center', gap: 6, height: 38, padding: '0 16px', borderRadius: 10, border: 'none', background: C.navy, fontSize: 13, fontWeight: 600, color: '#fff', cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.15s', flexShrink: 0 }}
+          style={{ display: 'none', alignItems: 'center', gap: 6, height: 38, padding: '0 16px', borderRadius: 10, border: 'none', background: C.navy, fontSize: 13, fontWeight: 600, color: '#fff', cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.15s', flexShrink: 0 }}
           onMouseEnter={e => { e.currentTarget.style.background = '#2A3050' }}
           onMouseLeave={e => { e.currentTarget.style.background = C.navy }}
         >
