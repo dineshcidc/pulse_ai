@@ -50,12 +50,6 @@ const TYPE_COLORS: Record<LeaveType, { color: string; bg: string }> = {
 
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', hover: '#F0F2F8', surface: '#F7F8FC' }
 
-const TABS: { id: LeaveStatus; label: string }[] = [
-  { id: 'pending',  label: 'Pending'  },
-  { id: 'approved', label: 'Approved' },
-  { id: 'rejected', label: 'Rejected' },
-]
-
 const PROJECT_OPTIONS = ['All Projects', 'Pulse.AI v2', 'HDFC Portal', 'TechCorp ERP']
 
 function Dropdown({ value, options, onChange, width }: { value: string; options: string[]; onChange: (v: string) => void; width?: number }) {

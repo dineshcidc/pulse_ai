@@ -59,6 +59,7 @@ function fmtDate(d: string) {
 const COL = '1.6fr 1.9fr 0.7fr 1.2fr 1.1fr 1.2fr 0.9fr'
 
 export default function LeaveStatusPage({ onNavigate }: { onNavigate?: (id: string) => void } = {}) {
+  void onNavigate
   const [records,       setRecords]       = useState<LeaveRecord[]>(LEAVE_DATA)
   const [search,        setSearch]        = useState('')
   const [activeTab,     setActiveTab]     = useState<typeof STAT_TABS[number]>('All')

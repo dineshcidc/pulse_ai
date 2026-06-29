@@ -142,11 +142,6 @@ const STATUS_CFG: Record<TSStatus, { label: string; color: string; bg: string; b
 }
 
 const PROJECT_OPTIONS = ['All Projects', 'Pulse.AI v2', 'HDFC Portal', 'TechCorp ERP']
-const STATUS_TABS: { id: TSStatus; label: string }[] = [
-  { id: 'pending',  label: 'Pending'  },
-  { id: 'approved', label: 'Approved' },
-  { id: 'rejected', label: 'Returned' },
-]
 
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', hover: '#F0F2F8', surface: '#F7F8FC' }
 
@@ -506,7 +501,6 @@ export default function TeamTimesheetsPage() {
 
   const pendingCount    = rows.filter(r => r.status === 'pending').length
   const selectedPending = selected.filter(id => rows.find(r => r.id === id)?.status === 'pending')
-  const hasActiveFilter = search || dateFilter || projectFilter !== 'All Projects'
 
   // Grid columns: checkbox | employee | project | date | hours | status | action
   const COLS = '36px 1.8fr 1.7fr 1fr 0.65fr 1fr 1fr'

@@ -3,7 +3,7 @@ import {
   Megaphone, Send, Clock, FileText, Paperclip, Users, User,
   Search, Plus, X, ChevronDown, Calendar, Trash2, Eye,
   CheckCircle, Download, Bell, Image as ImageIcon, ArrowLeft,
-  AlertTriangle, Info, Tag, MoreHorizontal,
+  AlertTriangle, Info, Tag,
 } from 'lucide-react'
 import ImageUploadCard from '../../../components/ImageUploadCard'
 

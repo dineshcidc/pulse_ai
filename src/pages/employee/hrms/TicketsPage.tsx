@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import {
   Ticket, ClipboardList, PlusCircle, ChevronRight, ChevronDown, ArrowLeft,
-  Search, Monitor, FolderOpen, User, Users, Laptop, DollarSign, LayoutGrid, X,
+  Search, FolderOpen, User, Users, Laptop, DollarSign, LayoutGrid, X,
   Paperclip, Mail, Phone, MessageSquare, MapPin, Tag, AlertTriangle, Eye,
   Download, FileText, Send, Clock, Calendar,
 } from 'lucide-react'
@@ -175,7 +175,6 @@ const CAT_BADGE: Record<string, { bg: string; color: string }> = {
 }
 
 const C      = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7' }
-const COL    = '1fr 1.4fr 1fr 0.9fr 1.1fr 1.3fr 1fr 0.5fr'
 
 const inputBase: React.CSSProperties = {
   width: '100%', height: 44, borderRadius: 10, padding: '0 14px',
@@ -231,8 +230,6 @@ export default function TicketsPage() {
   const tkFileRef = useRef<HTMLInputElement>(null)
 
   // ── Derived ──
-  const typeCount = (type: string) => type === 'All' ? TICKETS.length : TICKETS.filter(t => t.type === type).length
-  const openCount = TICKETS.filter(t => t.status === 'Open').length
   const tkCanSubmit = tkType && tkCategory && tkSubject.trim() && tkPriority && tkDescription.trim()
 
   const basFiltered = TICKETS.filter(t => {
@@ -374,7 +371,7 @@ export default function TicketsPage() {
                   className="tkt-action-card text-left"
                   onClick={() => {
                     setActiveCard(a.id)
-                    setActiveCategory('All')
+                    setActiveType('All')
                     setSearchQuery('')
                     setStatusFilter('All')
                   }}

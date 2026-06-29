@@ -110,7 +110,7 @@ const PROJECT_CODES: Record<string, string> = {
   p3: 'PRJ-2026-003',
 }
 
-const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', hover: '#F0F2F8', bg: '#F7F8FC' }
+const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', hover: '#F0F2F8', bg: '#F7F8FC', surface: '#F7F8FC' }
 
 const TABS = [
   { id: 'details',    label: 'Project Details'    },
@@ -704,10 +704,9 @@ function AllocationTab() {
                   type="text"
                   value={employeeSearch}
                   onChange={e => { setEmployeeSearch(e.target.value); setShowEmployeeList(true) }}
-                  onFocus={() => setShowEmployeeList(true)}
                   placeholder="Search by name or email…"
                   style={{ width: '100%', height: 44, padding: '0 14px', border: `1px solid ${C.border}`, borderRadius: 10, fontSize: 13.5, fontWeight: 500, color: C.navy, outline: 'none', background: '#fff', fontFamily: 'inherit', boxSizing: 'border-box', transition: 'border-color 0.15s' }}
-                  onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.10)' }}
+                  onFocus={e => { setShowEmployeeList(true); e.target.style.borderColor = '#6366F1'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.10)' }}
                   onBlur={e => { setTimeout(() => setShowEmployeeList(false), 200); e.target.style.borderColor = C.border; e.target.style.boxShadow = 'none' }}
                 />
 
