@@ -108,6 +108,8 @@ const STATUS_CONFIG: Record<Status, { label: string; color: string; bg: string; 
   'draft':     { label: 'Draft',     color: '#6B7280', bg: 'rgba(107,114,128,0.10)', border: 'rgba(107,114,128,0.20)'  },
 }
 
+
+
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', hover: '#F0F2F8', bg: '#F7F8FC' }
 
 const TABS = [

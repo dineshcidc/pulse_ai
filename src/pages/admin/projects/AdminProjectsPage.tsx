@@ -3,7 +3,7 @@ import { Search, Clock, TrendingUp, Users, CheckCircle2, Calendar, ArrowRight, P
 import ProjectDetailPage from '../../manager/projects/ProjectDetailPage'
 import AddProjectPage from './AddProjectPage'
 
-type Status = 'active' | 'on-hold' | 'completed' | 'draft'
+type Status = 'active' | 'on-hold' | 'completed' | 'draft' | 'yet-to-start'
 
 interface Project {
   id: string
@@ -228,20 +228,41 @@ const PROJECTS: Project[] = [
     actualEnd: 'Jan 20, 2026',
     sowSigned: 'Jun 12, 2026',
   },
+  {
+    id: 'p10',
+    name: 'Blockchain Supply Chain',
+    client: 'LogisticPro Inc',
+    department: 'Infrastructure',
+    status: 'yet-to-start',
+    startDate: 'Aug 2026',
+    endDate: 'Dec 2026',
+    members: 5,
+    avatars: [7, 32, 40, 50, 61],
+    hoursLogged: 0,
+    pendingApprovals: 0,
+    progress: 0,
+    description: 'Enterprise blockchain-based supply chain tracking solution to provide end-to-end visibility of goods movement across global logistics networks. Will include real-time tracking, smart contracts for automated transactions, and immutable audit logs for compliance reporting.',
+    color: '#EC4899',
+    plannedStart: 'Aug 1, 2026',
+    plannedEnd: 'Dec 31, 2026',
+    sowSigned: 'Jun 12, 2026',
+  },
 ]
 
 const STATUS_CONFIG: Record<Status, { label: string; color: string; bg: string; border: string }> = {
-  'active':    { label: 'Active',    color: '#0A8A58', bg: 'rgba(14,168,106,0.10)',  border: 'rgba(14,168,106,0.20)'  },
-  'on-hold':   { label: 'On Hold',   color: '#92400E', bg: 'rgba(245,158,11,0.10)',  border: 'rgba(245,158,11,0.20)'  },
-  'completed': { label: 'Completed', color: '#3B82F6', bg: 'rgba(59,130,246,0.10)',  border: 'rgba(59,130,246,0.20)'  },
-  'draft':     { label: 'Draft',     color: '#6B7280', bg: 'rgba(107,114,128,0.10)', border: 'rgba(107,114,128,0.20)'  },
+  'active':       { label: 'Active',       color: '#0A8A58', bg: 'rgba(14,168,106,0.10)',  border: 'rgba(14,168,106,0.20)'  },
+  'on-hold':      { label: 'On Hold',      color: '#92400E', bg: 'rgba(245,158,11,0.10)',  border: 'rgba(245,158,11,0.20)'  },
+  'completed':    { label: 'Completed',    color: '#3B82F6', bg: 'rgba(59,130,246,0.10)',  border: 'rgba(59,130,246,0.20)'  },
+  'yet-to-start': { label: 'Yet to start', color: '#6366F1', bg: 'rgba(99,102,241,0.10)',  border: 'rgba(99,102,241,0.20)'  },
+  'draft':        { label: 'Draft',        color: '#6B7280', bg: 'rgba(107,114,128,0.10)', border: 'rgba(107,114,128,0.20)'  },
 }
 
 const FILTER_TABS: { id: Status; label: string }[] = [
-  { id: 'active',    label: 'Active'       },
-  { id: 'on-hold',   label: 'On Hold'      },
-  { id: 'completed', label: 'Completed'    },
-  { id: 'draft',     label: 'Draft'        },
+  { id: 'active',      label: 'Active'       },
+  { id: 'on-hold',     label: 'On Hold'      },
+  { id: 'completed',   label: 'Completed'    },
+  { id: 'yet-to-start', label: 'Yet to start' },
+  { id: 'draft',       label: 'Draft'        },
 ]
 
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', hover: '#F0F2F8' }
@@ -473,18 +494,18 @@ function ProjectCard({
 
       {/* Footer */}
       <button
-        onClick={project.status === 'draft' ? undefined : onView}
+        onClick={project.status === 'draft' || project.status === 'yet-to-start' ? undefined : onView}
         className="w-full flex items-center justify-center gap-2 rounded-xl cursor-pointer font-semibold transition-all duration-150"
         style={{
           height: 40, fontSize: 13, border: 'none',
-          background: hovered && project.status !== 'draft' ? `${project.color}14` : '#F7F8FC',
-          color: hovered && project.status !== 'draft' ? project.color : '#5A6080',
-          outline: `1px solid ${hovered && project.status !== 'draft' ? `${project.color}25` : '#ECEEF5'}`,
+          background: hovered && project.status !== 'draft' && project.status !== 'yet-to-start' ? `${project.color}14` : '#F7F8FC',
+          color: hovered && project.status !== 'draft' && project.status !== 'yet-to-start' ? project.color : '#5A6080',
+          outline: `1px solid ${hovered && project.status !== 'draft' && project.status !== 'yet-to-start' ? `${project.color}25` : '#ECEEF5'}`,
           fontFamily: 'inherit',
-          cursor: project.status === 'draft' ? 'default' : 'pointer',
+          cursor: project.status === 'draft' || project.status === 'yet-to-start' ? 'default' : 'pointer',
         }}
       >
-        {project.status === 'draft' ? 'Continue to Edit' : 'View Details'}
+        {project.status === 'draft' ? 'Continue to Edit' : project.status === 'yet-to-start' ? 'Coming Soon' : 'View Details'}
         <ArrowRight size={13} />
       </button>
     </div>
