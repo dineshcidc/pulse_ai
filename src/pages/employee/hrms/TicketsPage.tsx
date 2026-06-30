@@ -8,7 +8,7 @@ import {
 
 // ── Types ──────────────────────────────────────────────────────────────────
 type Priority   = 'Critical' | 'High' | 'Medium' | 'Low'
-type TStatus    = 'Open' | 'Pending' | 'Resolved' | 'Closed'
+type TStatus    = 'Open' | 'Pending' | 'Resolved' | 'Closed' | 'Cancelled'
 type ActiveCard = 'ticket-status' | 'ticket-create' | 'ticket-view' | null
 
 interface TicketComment {
@@ -53,6 +53,20 @@ const CATEGORIES = [
 ] as const
 
 const TICKETS: TicketRecord[] = [
+  {
+    id: 'TKT-2407', type: 'IT & Admin', category: 'IT - Software related queries', subject: 'Urgent: Microsoft Teams audio not working',
+    description: 'I am unable to hear audio or use microphone in Microsoft Teams during meetings. The audio settings show no input/output devices detected. I have tried reinstalling Teams but the issue persists. This is critical as I have client meetings scheduled daily.',
+    createdDate: '2026-05-22', priority: 'Critical', status: 'Open',
+    assignedTo: '', lastUpdated: '2026-05-22', hasAttachment: false,
+    comments: [],
+  },
+  {
+    id: 'TKT-2406', type: 'HR', category: 'HR - Leave related queries', subject: 'Advance leave request approval pending',
+    description: 'I am requesting 5 days of advance leave for a personal medical appointment and travel. The dates are June 15-19, 2026. I have already discussed this with my manager and have submitted all required documents. Awaiting final approval.',
+    createdDate: '2026-05-21', priority: 'Medium', status: 'Open',
+    assignedTo: '', lastUpdated: '2026-05-21', hasAttachment: true,
+    comments: [],
+  },
   {
     id: 'TKT-2401', type: 'IT & Admin', category: 'IT - Hardware related queries', subject: 'Laptop not connecting to corporate VPN',
     description: 'My laptop has been unable to connect to the corporate VPN for the past 3 days. I have tried reinstalling the Cisco AnyConnect client and resetting credentials, but the issue persists. Error code: VPN_AUTH_FAILED. This is blocking access to all internal tools and repositories.',
@@ -138,10 +152,11 @@ const CONTACT_METHODS = [
 
 // ── Style maps ───────────────────────────────────────────────────────────────
 const STATUS_STYLE: Record<TStatus, { bg: string; color: string; dot: string }> = {
-  'Open':     { bg: 'rgba(59,130,246,0.10)',  color: '#1D4ED8', dot: '#3B82F6' },
-  'Pending':  { bg: 'rgba(139,92,246,0.10)',  color: '#7C3AED', dot: '#8B5CF6' },
-  'Resolved': { bg: 'rgba(14,168,106,0.12)',  color: '#0A7040', dot: '#0EA86A' },
-  'Closed':   { bg: 'rgba(139,144,167,0.14)', color: '#6B7280', dot: '#9CA3AF' },
+  'Open':      { bg: 'rgba(59,130,246,0.10)',  color: '#1D4ED8', dot: '#3B82F6' },
+  'Pending':   { bg: 'rgba(139,92,246,0.10)',  color: '#7C3AED', dot: '#8B5CF6' },
+  'Resolved':  { bg: 'rgba(14,168,106,0.12)',  color: '#0A7040', dot: '#0EA86A' },
+  'Closed':    { bg: 'rgba(139,144,167,0.14)', color: '#6B7280', dot: '#9CA3AF' },
+  'Cancelled': { bg: 'rgba(239,68,68,0.10)',   color: '#DC2626', dot: '#EF4444' },
 }
 
 const PRIORITY_STYLE: Record<Priority, { bg: string; color: string; dot: string; border: string }> = {
@@ -214,6 +229,9 @@ export default function TicketsPage() {
   const [localComments,  setLocalComments]  = useState<TicketComment[]>([])
   const [newComment,     setNewComment]     = useState('')
   const [commentLoading, setCommentLoading] = useState(false)
+  const [showCancelModal, setShowCancelModal] = useState(false)
+  const [cancelReason, setCancelReason] = useState('')
+  const [cancelLoading, setCancelLoading] = useState(false)
 
   // ── Create Ticket form state ──
   const [tkType,        setTkType]        = useState('')
@@ -286,6 +304,17 @@ export default function TicketsPage() {
     setLocalComments(prev => [...prev, comment])
     setNewComment('')
     setCommentLoading(false)
+  }
+
+  async function handleCancelTicket() {
+    if (!cancelReason.trim()) return
+    setCancelLoading(true)
+    await new Promise(r => setTimeout(r, 900))
+    setCancelLoading(false)
+    setShowCancelModal(false)
+    setCancelReason('')
+    setActiveCard('ticket-status')
+    setViewTicket(null)
   }
 
   // ── Action card config ──
@@ -405,48 +434,65 @@ export default function TicketsPage() {
 
       {/* ── Breadcrumb ───────────────────────────────────────────────────── */}
       {activeCard !== null && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 22 }}>
-          <button
-            onClick={() => {
-              if (activeCard === 'ticket-view') { setActiveCard('ticket-status'); setViewTicket(null) }
-              else setActiveCard(null)
-            }}
-            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 30, height: 30, borderRadius: 8, border: `1px solid ${C.border}`, background: '#fff', cursor: 'pointer', flexShrink: 0, transition: 'all 0.14s' }}
-            onMouseEnter={e => { e.currentTarget.style.background = '#F7F8FC'; e.currentTarget.style.borderColor = '#C8CCE0' }}
-            onMouseLeave={e => { e.currentTarget.style.background = '#fff';    e.currentTarget.style.borderColor = C.border }}
-          >
-            <ArrowLeft size={14} strokeWidth={2} style={{ color: C.muted }} />
-          </button>
-          <span style={{ fontSize: 13, color: '#C8CCE0' }}>/</span>
-          <button
-            onClick={() => { setActiveCard(null); setViewTicket(null) }}
-            style={{ fontSize: 13, fontWeight: 500, color: C.muted, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit', transition: 'color 0.14s' }}
-            onMouseEnter={e => { e.currentTarget.style.color = C.navy }}
-            onMouseLeave={e => { e.currentTarget.style.color = C.muted }}
-          >
-            Tickets
-          </button>
-          {activeCard === 'ticket-view' ? (
-            <>
-              <span style={{ fontSize: 13, color: '#C8CCE0' }}>/</span>
-              <button
-                onClick={() => { setActiveCard('ticket-status'); setViewTicket(null) }}
-                style={{ fontSize: 13, fontWeight: 500, color: C.muted, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit', transition: 'color 0.14s' }}
-                onMouseEnter={e => { e.currentTarget.style.color = C.navy }}
-                onMouseLeave={e => { e.currentTarget.style.color = C.muted }}
-              >
-                Ticket Status
-              </button>
-              <span style={{ fontSize: 13, color: '#C8CCE0' }}>/</span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: C.navy, fontVariantNumeric: 'tabular-nums' }}>{viewTicket?.id}</span>
-            </>
-          ) : (
-            <>
-              <span style={{ fontSize: 13, color: '#C8CCE0' }}>/</span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: C.navy }}>
-                {activeCard === 'ticket-status' ? 'Ticket Status' : 'Create Ticket'}
-              </span>
-            </>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 22 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button
+              onClick={() => {
+                if (activeCard === 'ticket-view') { setActiveCard('ticket-status'); setViewTicket(null) }
+                else setActiveCard(null)
+              }}
+              style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 30, height: 30, borderRadius: 8, border: `1px solid ${C.border}`, background: '#fff', cursor: 'pointer', flexShrink: 0, transition: 'all 0.14s' }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#F7F8FC'; e.currentTarget.style.borderColor = '#C8CCE0' }}
+              onMouseLeave={e => { e.currentTarget.style.background = '#fff';    e.currentTarget.style.borderColor = C.border }}
+            >
+              <ArrowLeft size={14} strokeWidth={2} style={{ color: C.muted }} />
+            </button>
+            <span style={{ fontSize: 13, color: '#C8CCE0' }}>/</span>
+            <button
+              onClick={() => { setActiveCard(null); setViewTicket(null) }}
+              style={{ fontSize: 13, fontWeight: 500, color: C.muted, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit', transition: 'color 0.14s' }}
+              onMouseEnter={e => { e.currentTarget.style.color = C.navy }}
+              onMouseLeave={e => { e.currentTarget.style.color = C.muted }}
+            >
+              Tickets
+            </button>
+            {activeCard === 'ticket-view' ? (
+              <>
+                <span style={{ fontSize: 13, color: '#C8CCE0' }}>/</span>
+                <button
+                  onClick={() => { setActiveCard('ticket-status'); setViewTicket(null) }}
+                  style={{ fontSize: 13, fontWeight: 500, color: C.muted, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit', transition: 'color 0.14s' }}
+                  onMouseEnter={e => { e.currentTarget.style.color = C.navy }}
+                  onMouseLeave={e => { e.currentTarget.style.color = C.muted }}
+                >
+                  Ticket Status
+                </button>
+                <span style={{ fontSize: 13, color: '#C8CCE0' }}>/</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: C.navy, fontVariantNumeric: 'tabular-nums' }}>{viewTicket?.id}</span>
+              </>
+            ) : (
+              <>
+                <span style={{ fontSize: 13, color: '#C8CCE0' }}>/</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: C.navy }}>
+                  {activeCard === 'ticket-status' ? 'Ticket Status' : 'Create Ticket'}
+                </span>
+              </>
+            )}
+          </div>
+          {activeCard === 'ticket-view' && viewTicket && (viewTicket.status === 'Open' || viewTicket.status === 'Pending') && (
+            <button
+              onClick={() => setShowCancelModal(true)}
+              style={{
+                height: 38, padding: '0 16px', borderRadius: 10, border: '1px solid rgba(239,68,68,0.30)',
+                background: 'rgba(239,68,68,0.06)', color: '#DC2626', fontSize: 13, fontWeight: 600,
+                cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.13s', display: 'flex', alignItems: 'center', gap: 6,
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.12)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.06)' }}
+            >
+              <X size={14} strokeWidth={2} />
+              Cancel Ticket
+            </button>
           )}
         </div>
       )}
@@ -512,12 +558,12 @@ export default function TicketsPage() {
                 </span>
               </div>
               <div className="flex items-center gap-1.5">
-                {(['All', 'Pending', 'Resolved', 'Closed'] as const).map(s => {
+                {(['All', 'Open', 'Pending', 'Resolved', 'Closed', 'Cancelled'] as const).map(s => {
                   const isAllBtn = s === 'All'
                   const isActive = statusFilter === s
                   const ss       = isAllBtn ? null : STATUS_STYLE[s as TStatus]
                   const cnt      = isAllBtn ? basFiltered.length : basFiltered.filter(t => t.status === s).length
-                  if (!isAllBtn && cnt === 0) return null
+                  if (!isAllBtn && cnt === 0 && s !== 'Cancelled') return null
                   return (
                     <button key={s} onClick={() => setStatusFilter(s as TStatus | 'All')}
                       style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 9px', borderRadius: 99, border: 'none', cursor: 'pointer', background: isActive ? (ss ? ss.bg : 'rgba(28,32,53,0.08)') : '#F0F2F8', color: isActive ? (ss ? ss.color : C.navy) : C.muted, fontSize: 11, fontWeight: isActive ? 700 : 600, outline: 'none', transition: 'all 0.13s' }}>
@@ -1200,6 +1246,99 @@ export default function TicketsPage() {
               onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}>
               Done
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Cancel Ticket Modal ───────────────────────────────────────────── */}
+      {showCancelModal && (
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(10,12,28,0.50)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Sans', system-ui, sans-serif" }}
+          onClick={e => { if (e.target === e.currentTarget) setShowCancelModal(false) }}
+        >
+          <div style={{ background: '#fff', borderRadius: 22, width: 440, boxShadow: '0 28px 72px rgba(10,12,28,0.22)', overflow: 'hidden' }}>
+            {/* Header with close button */}
+            <div style={{ padding: '24px 28px 20px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+              <div style={{ textAlign: 'left', flex: 1 }}>
+                <div style={{ fontSize: 18, fontWeight: 800, color: C.navy, marginBottom: 6 }}>Cancel Ticket</div>
+                <div style={{ fontSize: 13, color: C.muted }}>Please provide a reason for cancellation</div>
+              </div>
+              <button
+                onClick={() => { setShowCancelModal(false); setCancelReason('') }}
+                style={{ background: '#F0F2F8', border: `1px solid ${C.border}`, borderRadius: 8, cursor: 'pointer', color: C.muted, lineHeight: 0, padding: 6, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s', flexShrink: 0 }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#E8EAF2'; e.currentTarget.style.color = C.navy }}
+                onMouseLeave={e => { e.currentTarget.style.background = '#F0F2F8'; e.currentTarget.style.color = C.muted }}
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div style={{ padding: '24px 28px' }}>
+              <div style={{ marginBottom: 8 }}>
+                <label style={{ fontSize: 11.5, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 10 }}>
+                  Cancellation Reason
+                </label>
+                <textarea
+                  value={cancelReason}
+                  onChange={e => setCancelReason(e.target.value)}
+                  placeholder="Explain why you're cancelling this ticket…"
+                  style={{
+                    width: '100%', height: 100, borderRadius: 10, padding: '12px 14px',
+                    border: `1px solid ${C.border}`, background: '#fff', fontSize: 13.5,
+                    fontWeight: 400, color: C.navy, resize: 'vertical', outline: 'none',
+                    lineHeight: 1.65, fontFamily: "'DM Sans', system-ui, sans-serif",
+                    boxSizing: 'border-box', transition: 'border-color 0.15s, box-shadow 0.15s',
+                  }}
+                  onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.10)' }}
+                  onBlur={e => { e.target.style.borderColor = C.border; e.target.style.boxShadow = 'none' }}
+                />
+              </div>
+              <div style={{ fontSize: 12, color: C.muted, marginBottom: 24 }}>
+                {cancelReason.length} characters
+              </div>
+            </div>
+
+            {/* Footer buttons */}
+            <div style={{ padding: '20px 28px 26px', borderTop: `1px solid ${C.border}`, display: 'flex', gap: 12 }}>
+              <button
+                onClick={() => { setShowCancelModal(false); setCancelReason('') }}
+                style={{
+                  flex: 1, height: 44, borderRadius: 11, fontSize: 13.5, fontWeight: 600,
+                  border: `1px solid ${C.border}`, background: '#fff', color: C.muted,
+                  cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'inherit',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = '#C8CCE0'; e.currentTarget.style.color = C.navy }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted }}
+              >
+                No, Keep It
+              </button>
+              <button
+                onClick={handleCancelTicket}
+                disabled={!cancelReason.trim() || cancelLoading}
+                style={{
+                  flex: 1, height: 44, borderRadius: 11, fontSize: 13.5, fontWeight: 700,
+                  border: 'none', background: !cancelReason.trim() || cancelLoading ? '#E8EAF2' : 'linear-gradient(135deg, #DC2626 0%, #B91C1C 100%)',
+                  color: !cancelReason.trim() || cancelLoading ? '#B0B4C8' : '#fff',
+                  cursor: !cancelReason.trim() || cancelLoading ? 'not-allowed' : 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  transition: 'opacity 0.15s', fontFamily: 'inherit',
+                }}
+                onMouseEnter={e => { if (cancelReason.trim() && !cancelLoading) e.currentTarget.style.opacity = '0.88' }}
+                onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
+              >
+                {cancelLoading ? (
+                  <>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ animation: 'tktSpin 0.8s linear infinite' }}>
+                      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                    </svg>
+                    Cancelling…
+                  </>
+                ) : (
+                  'Yes, Cancel'
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}

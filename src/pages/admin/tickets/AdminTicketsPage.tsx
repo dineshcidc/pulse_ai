@@ -53,6 +53,22 @@ const TYPES = [
 
 const TICKETS: AdminTicketRecord[] = [
   {
+    id: 'TKT-2405', employee: 'Priya Sharma', employeeCode: 'EMP009', employeeAvatar: 'PS', department: 'Engineering', role: 'Junior Developer', type: 'IT & Admin',
+    category: 'IT - Software related queries', subject: 'Need access to development staging environment',
+    description: 'I have been assigned to the new web redesign project and need immediate access to the staging environment to test the latest changes. My teammate has already been set up but I am still waiting for credentials. This is blocking my progress on assigned tasks.',
+    createdDate: '2026-05-22', priority: 'High', status: 'Open',
+    assignedTo: 'Arjun Menon', lastUpdated: '2026-05-22', hasAttachment: false,
+    comments: [],
+  },
+  {
+    id: 'TKT-2402', employee: 'Nikhil Desai', employeeCode: 'EMP010', employeeAvatar: 'ND', department: 'Product', role: 'Product Manager', type: 'Project Allocation',
+    category: 'PA–Addition/Deletion of Resource', subject: 'Team member onboarding for Q2 project',
+    description: 'Three new team members have been allocated to the Q2 initiative starting May 23. They require system access setup, project documentation, and initial onboarding sessions scheduled. Please coordinate with HR and the IT team for smooth onboarding.',
+    createdDate: '2026-05-21', priority: 'Medium', status: 'Open',
+    assignedTo: 'Raj Kumar', lastUpdated: '2026-05-21', hasAttachment: false,
+    comments: [],
+  },
+  {
     id: 'TKT-2401', employee: 'Sarah Johnson', employeeCode: 'EMP001', employeeAvatar: 'SJ', department: 'Engineering', role: 'Senior Developer', type: 'IT & Admin',
     category: 'IT - Hardware related queries', subject: 'Laptop not connecting to corporate VPN',
     description: 'My laptop has been unable to connect to the corporate VPN for the past 3 days. I have tried reinstalling the Cisco AnyConnect client and resetting credentials, but the issue persists. Error code: VPN_AUTH_FAILED. This is blocking access to all internal tools and repositories.',
@@ -177,7 +193,15 @@ const AVATAR_URL: Record<string, string> = {
   'Pooja Iyer':    'https://i.pravatar.cc/40?img=15',
 }
 
-const ALL_STATUSES: TStatus[] = ['Pending', 'Resolved', 'Closed']
+const SUPPORT_TEAM: { name: string; role: string }[] = [
+  { name: 'Arjun Menon', role: 'IT Support Lead' },
+  { name: 'Priya Mehta', role: 'HR Manager' },
+  { name: 'Sunita Rao', role: 'Finance Manager' },
+  { name: 'Raj Kumar', role: 'Project Manager' },
+  { name: 'Dev Team', role: 'Development Team' },
+]
+
+const ALL_STATUSES: TStatus[] = ['Open', 'Pending', 'Resolved', 'Closed']
 
 const C   = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7' }
 const COL = '0.8fr 1.2fr 0.85fr 1.4fr 0.9fr 1.1fr 0.5fr'
@@ -236,6 +260,9 @@ export default function AdminTicketsPage() {
   const [closeLoading,     setCloseLoading]      = useState(false)
   const [closedSuccess,    setClosedSuccess]     = useState(false)
   const [showStatusDrop,   setShowStatusDrop]    = useState(false)
+  const [assignSearchQuery, setAssignSearchQuery] = useState('')
+  const [assignLoading, setAssignLoading] = useState(false)
+  const [selectedAssignee, setSelectedAssignee] = useState<string | null>(null)
   const responseRef = useRef<HTMLTextAreaElement>(null)
 
   // ── Derived ──
@@ -287,6 +314,28 @@ export default function AdminTicketsPage() {
     setStatusLoading(false)
     setShowStatusDrop(false)
   }
+
+  async function handleAssignTicket() {
+    if (!selectedTicket || !selectedAssignee) return
+    setAssignLoading(true)
+    await new Promise(r => setTimeout(r, 900))
+    setTickets(prev => prev.map(t =>
+      t.id === selectedTicket.id
+        ? { ...t, assignedTo: selectedAssignee, status: 'Pending' as TStatus, lastUpdated: new Date().toISOString().slice(0, 10) }
+        : t
+    ))
+    setSelectedTicket(prev => prev ? { ...prev, assignedTo: selectedAssignee, status: 'Pending' as TStatus, lastUpdated: new Date().toISOString().slice(0, 10) } : prev)
+    setAssignSearchQuery('')
+    setSelectedAssignee(null)
+    setAssignLoading(false)
+  }
+
+  const filteredTeam = assignSearchQuery.trim() === ''
+    ? SUPPORT_TEAM
+    : SUPPORT_TEAM.filter(m =>
+        m.name.toLowerCase().includes(assignSearchQuery.toLowerCase()) ||
+        m.role.toLowerCase().includes(assignSearchQuery.toLowerCase())
+      )
 
   async function handleAddResponse() {
     if (!selectedTicket || !responseText.trim()) return
@@ -450,7 +499,7 @@ export default function AdminTicketsPage() {
                 <span style={{ padding: '2px 9px', borderRadius: 99, background: '#F0F2F8', fontSize: 11.5, fontWeight: 700, color: C.muted }}>{filtered.length}</span>
               </div>
               <div className="flex items-center gap-1.5">
-                {(['All', 'Pending', 'Resolved', 'Closed'] as const).map(s => {
+                {(['All', 'Open', 'Pending', 'Resolved', 'Closed'] as const).map(s => {
                   const isAllBtn = s === 'All'
                   const isActive = statusFilter === s
                   const ss       = isAllBtn ? null : STATUS_STYLE[s as TStatus]
@@ -645,7 +694,7 @@ export default function AdminTicketsPage() {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', padding: '18px 20px', gap: 16 }}>
                     {[
                       { label: 'Submitted By', value: t.employee, Icon: UserCircle },
-                      { label: 'Assigned To',  value: t.assignedTo, Icon: Users },
+                      { label: 'Assigned To',  value: t.status === 'Open' ? '--' : t.assignedTo, Icon: Users },
                       { label: 'Created',      value: fmtDate(t.createdDate), Icon: Calendar },
                       { label: 'Last Updated', value: fmtDate(t.lastUpdated), Icon: RefreshCw },
                     ].map(m => (
@@ -867,6 +916,122 @@ export default function AdminTicketsPage() {
                     </button>
                   </div>
                 </div>
+
+                {/* Assign Ticket — only for Open status */}
+                {t.status === 'Open' && (
+                  <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden' }}>
+                    <div style={{ padding: '14px 18px', borderBottom: `1px solid ${C.border}`, background: '#FAFBFE' }}>
+                      <div className="flex items-center gap-2">
+                        <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(14,168,106,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Users size={13} strokeWidth={2.2} style={{ color: '#0EA86A' }} />
+                        </div>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: C.navy }}>Assign Ticket</span>
+                      </div>
+                    </div>
+                    <div style={{ padding: '18px' }}>
+                      {/* Search input */}
+                      <div style={{ position: 'relative', marginBottom: assignSearchQuery ? 12 : 0 }}>
+                        <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#A0A5BC', pointerEvents: 'none', zIndex: 1 }} />
+                        <input
+                          type="text"
+                          value={assignSearchQuery}
+                          onChange={e => setAssignSearchQuery(e.target.value)}
+                          placeholder="Search by name or role…"
+                          style={{
+                            width: '100%', height: 40, borderRadius: 10, padding: '0 14px 0 40px',
+                            fontSize: 13.5, fontWeight: 500, color: C.navy, outline: 'none',
+                            border: `1px solid ${assignSearchQuery ? '#B0B5CC' : C.border}`,
+                            background: '#fff', fontFamily: "'DM Sans', system-ui, sans-serif",
+                            boxSizing: 'border-box', transition: 'border-color 0.15s',
+                          }}
+                          onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.10)' }}
+                          onBlur={e => { e.target.style.borderColor = assignSearchQuery ? '#B0B5CC' : C.border; e.target.style.boxShadow = 'none' }}
+                        />
+                        {assignSearchQuery && (
+                          <button
+                            onClick={() => { setAssignSearchQuery(''); setSelectedAssignee(null) }}
+                            style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: C.muted, lineHeight: 0, padding: 0 }}
+                          >
+                            <X size={13} />
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Team members list — only show when searching */}
+                      {assignSearchQuery && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 180, overflowY: 'auto', marginBottom: 12 }}>
+                          {filteredTeam.length === 0 ? (
+                            <div style={{ padding: '20px 0', textAlign: 'center' }}>
+                              <p style={{ fontSize: 13, color: C.muted, margin: 0 }}>No team members found</p>
+                            </div>
+                          ) : (
+                            filteredTeam.map(member => (
+                              <button
+                                key={member.name}
+                                onClick={() => setSelectedAssignee(member.name)}
+                                style={{
+                                  display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10,
+                                  background: selectedAssignee === member.name ? 'rgba(99,102,241,0.08)' : '#F7F8FC',
+                                  border: `1px solid ${selectedAssignee === member.name ? 'rgba(99,102,241,0.25)' : C.border}`,
+                                  cursor: 'pointer', fontFamily: 'inherit', outline: 'none', transition: 'all 0.12s', textAlign: 'left',
+                                }}
+                                onMouseEnter={e => { if (selectedAssignee !== member.name) e.currentTarget.style.background = '#ECEEF5' }}
+                                onMouseLeave={e => { if (selectedAssignee !== member.name) e.currentTarget.style.background = '#F7F8FC' }}
+                              >
+                                <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(99,102,241,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid rgba(99,102,241,0.15)' }}>
+                                  <span style={{ fontSize: 12, fontWeight: 700, color: '#5B5FDE' }}>
+                                    {member.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
+                                  </span>
+                                </div>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <div style={{ fontSize: 13.5, fontWeight: 600, color: C.navy }}>{member.name}</div>
+                                  <div style={{ fontSize: 11.5, color: C.muted, marginTop: 2 }}>{member.role}</div>
+                                </div>
+                                {selectedAssignee === member.name && (
+                                  <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#0EA86A', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                    <CheckCircle size={16} strokeWidth={2.5} style={{ color: '#fff' }} />
+                                  </div>
+                                )}
+                              </button>
+                            ))
+                          )}
+                        </div>
+                      )}
+
+                      {/* Assign Ticket Button — Full width, enabled only when user selected */}
+                      {assignSearchQuery && (
+                        <button
+                          onClick={handleAssignTicket}
+                          disabled={!selectedAssignee || assignLoading}
+                          style={{
+                            width: '100%', height: 42, borderRadius: 10, border: 'none',
+                            background: !selectedAssignee || assignLoading ? '#E8EAF2' : 'linear-gradient(135deg, #6366F1 0%, #5B5FDE 100%)',
+                            color: !selectedAssignee || assignLoading ? '#B0B4C8' : '#fff',
+                            fontSize: 13.5, fontWeight: 700, cursor: !selectedAssignee || assignLoading ? 'not-allowed' : 'pointer',
+                            fontFamily: 'inherit', transition: 'opacity 0.15s',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                          }}
+                          onMouseEnter={e => { if (selectedAssignee && !assignLoading) e.currentTarget.style.opacity = '0.88' }}
+                          onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
+                        >
+                          {assignLoading ? (
+                            <>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ animation: 'adminTktSpin 0.8s linear infinite' }}>
+                                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                              </svg>
+                              Assigning…
+                            </>
+                          ) : (
+                            <>
+                              <Users size={15} strokeWidth={2} />
+                              Assign Ticket
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {/* Add Response */}
                 <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden' }}>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Search, Clock, TrendingUp, Users, CheckCircle2, Calendar, ArrowRight, Plus, Edit, AlertCircle } from 'lucide-react'
 import ProjectDetailPage from '../../manager/projects/ProjectDetailPage'
 import AddProjectPage from './AddProjectPage'
+import EditProjectPage from './EditProjectPage'
 
 type Status = 'active' | 'on-hold' | 'completed' | 'draft' | 'yet-to-start'
 
@@ -378,10 +379,12 @@ function ProjectCard({
   project,
   st,
   onView,
+  onEdit,
 }: {
   project: Project
   st: { label: string; color: string; bg: string; border: string }
   onView: () => void
+  onEdit: () => void
 }) {
   const [hovered, setHovered] = useState(false)
 
@@ -414,6 +417,7 @@ function ProjectCard({
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           <button
+            onClick={onEdit}
             style={{
               width: 32, height: 32, borderRadius: 7, border: `1px solid ${C.border}`,
               background: hovered ? C.hover : '#fff', color: C.muted,
@@ -428,7 +432,7 @@ function ProjectCard({
             <Edit size={13} strokeWidth={1.8} />
           </button>
           <span style={{
-            fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 7,
+            fontSize: 11, fontWeight: 700, padding: '6px 10px', borderRadius: 7,
             background: st.bg, color: st.color, border: `1px solid ${st.border}`,
             letterSpacing: '0.04em', textTransform: 'uppercase' as const, flexShrink: 0, alignSelf: 'flex-start', marginTop: 2,
           }}>
@@ -517,6 +521,7 @@ export default function AdminProjectsPage() {
   const [filter, setFilter] = useState<Status>('active')
   const [search, setSearch] = useState('')
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
+  const [editingProject, setEditingProject] = useState<Project | null>(null)
   const [addingProject, setAddingProject] = useState(false)
 
   if (selectedProject) {
@@ -524,6 +529,18 @@ export default function AdminProjectsPage() {
       <ProjectDetailPage
         project={selectedProject}
         onBack={() => setSelectedProject(null)}
+      />
+    )
+  }
+
+  if (editingProject) {
+    return (
+      <EditProjectPage
+        project={editingProject}
+        onBack={() => setEditingProject(null)}
+        onSave={(updatedProject) => {
+          setEditingProject(null)
+        }}
       />
     )
   }
@@ -662,6 +679,7 @@ export default function AdminProjectsPage() {
               project={project}
               st={STATUS_CONFIG[project.status]}
               onView={() => setSelectedProject(project)}
+              onEdit={() => setEditingProject(project)}
             />
           ))}
         </div>
