@@ -5,7 +5,7 @@ import {
   DollarSign, Briefcase, X, Check, ChevronDown,
 } from 'lucide-react'
 
-type Status = 'active' | 'on-hold' | 'completed' | 'draft'
+type Status = 'active' | 'on-hold' | 'completed' | 'draft' | 'yet-to-start'
 
 interface Project {
   id: string
@@ -106,6 +106,7 @@ const STATUS_CONFIG: Record<Status, { label: string; color: string; bg: string; 
   'on-hold':   { label: 'On Hold',   color: '#92400E', bg: 'rgba(245,158,11,0.10)',  border: 'rgba(245,158,11,0.20)'  },
   'completed': { label: 'Completed', color: '#3B82F6', bg: 'rgba(59,130,246,0.10)',  border: 'rgba(59,130,246,0.20)'  },
   'draft':     { label: 'Draft',     color: '#6B7280', bg: 'rgba(107,114,128,0.10)', border: 'rgba(107,114,128,0.20)'  },
+  'yet-to-start': { label: 'Yet to start', color: '#6366F1', bg: 'rgba(99,102,241,0.10)', border: 'rgba(99,102,241,0.20)' },
 }
 
 
