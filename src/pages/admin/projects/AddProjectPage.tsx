@@ -30,12 +30,17 @@ interface RateRow {
 
 interface FormData {
   // Step 1
-  projectName:  string
-  description:  string
-  clientName:   string
-  startDate:    string
-  endDate:      string
-  status:       ProjectStatus
+  projectName:    string
+  description:    string
+  clientName:     string
+  startDate:      string
+  endDate:        string
+  plannedStart:   string
+  plannedEnd:     string
+  actualStart:    string
+  actualEnd:      string
+  sowSigned:      string
+  status:         ProjectStatus
   // Step 2
   manager:    string
   roleGroups: RoleGroup[]
@@ -48,9 +53,9 @@ interface FormData {
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const STEPS = [
-  { id: 1, label: 'Project Details', sub: 'Name, client & timeline',   Icon: FileText   },
-  { id: 2, label: 'Team Details',    sub: 'Manager & members',         Icon: Users      },
-  { id: 3, label: 'Rate Card',       sub: 'Billing & rates',           Icon: DollarSign },
+  { id: 1, label: 'Project Details', sub: 'Name, client & full timeline',   Icon: FileText   },
+  { id: 2, label: 'Team Details',    sub: 'Manager & members',              Icon: Users      },
+  { id: 3, label: 'Rate Card',       sub: 'Billing & rates',                Icon: DollarSign },
 ]
 
 const STATUSES: { id: ProjectStatus; label: string; color: string; bg: string; border: string }[] = [
@@ -163,24 +168,80 @@ function Step1({ data, set }: { data: FormData; set: (p: Partial<FormData>) => v
             ))}
           </div>
         </div>
+      </div>
 
-        <div>
-          <label style={LABEL}>Start Date</label>
-          <div style={{ position: 'relative' }}>
-            <Calendar size={14} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: C.muted, pointerEvents: 'none', zIndex: 1 }} />
-            <input type="date" value={data.startDate} onChange={e => set({ startDate: e.target.value })}
-              style={{ ...inputStyle, paddingLeft: 38, cursor: 'pointer', color: data.startDate ? C.navy : C.muted }}
-              onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.10)' }}
-              onBlur={e => { e.target.style.borderColor = C.border; e.target.style.boxShadow = 'none' }} />
+      {/* Timeline Details Section */}
+      <div style={{ marginTop: 28 }}>
+        <h3 style={{ fontSize: 14, fontWeight: 700, color: C.navy, marginBottom: 20 }}>Timeline Details</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 24 }}>
+          <div>
+            <label style={LABEL}>Start Date</label>
+            <div style={{ position: 'relative' }}>
+              <Calendar size={14} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: '#999999', pointerEvents: 'none', zIndex: 1 }} />
+              <input type="date" value={data.startDate} onChange={e => set({ startDate: e.target.value })}
+                style={{ ...inputStyle, paddingLeft: 38, cursor: 'pointer', color: data.startDate ? C.navy : C.muted }}
+                onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.10)' }}
+                onBlur={e => { e.target.style.borderColor = C.border; e.target.style.boxShadow = 'none' }} />
+            </div>
+          </div>
+          <div>
+            <label style={LABEL}>End Date</label>
+            <div style={{ position: 'relative' }}>
+              <Calendar size={14} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: '#999999', pointerEvents: 'none', zIndex: 1 }} />
+              <input type="date" value={data.endDate} onChange={e => set({ endDate: e.target.value })}
+                style={{ ...inputStyle, paddingLeft: 38, cursor: 'pointer', color: data.endDate ? C.navy : C.muted }}
+                onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.10)' }}
+                onBlur={e => { e.target.style.borderColor = C.border; e.target.style.boxShadow = 'none' }} />
+            </div>
+          </div>
+          <div>
+            <label style={LABEL}>Planned Start</label>
+            <div style={{ position: 'relative' }}>
+              <Calendar size={14} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: '#999999', pointerEvents: 'none', zIndex: 1 }} />
+              <input type="date" value={data.plannedStart} onChange={e => set({ plannedStart: e.target.value })}
+                style={{ ...inputStyle, paddingLeft: 38, cursor: 'pointer', color: data.plannedStart ? C.navy : C.muted }}
+                onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.10)' }}
+                onBlur={e => { e.target.style.borderColor = C.border; e.target.style.boxShadow = 'none' }} />
+            </div>
+          </div>
+          <div>
+            <label style={LABEL}>Planned End</label>
+            <div style={{ position: 'relative' }}>
+              <Calendar size={14} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: '#999999', pointerEvents: 'none', zIndex: 1 }} />
+              <input type="date" value={data.plannedEnd} onChange={e => set({ plannedEnd: e.target.value })}
+                style={{ ...inputStyle, paddingLeft: 38, cursor: 'pointer', color: data.plannedEnd ? C.navy : C.muted }}
+                onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.10)' }}
+                onBlur={e => { e.target.style.borderColor = C.border; e.target.style.boxShadow = 'none' }} />
+            </div>
+          </div>
+          <div>
+            <label style={LABEL}>Actual Start</label>
+            <div style={{ position: 'relative' }}>
+              <Calendar size={14} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: '#999999', pointerEvents: 'none', zIndex: 1 }} />
+              <input type="date" value={data.actualStart} onChange={e => set({ actualStart: e.target.value })}
+                style={{ ...inputStyle, paddingLeft: 38, cursor: 'pointer', color: data.actualStart ? C.navy : C.muted }}
+                onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.10)' }}
+                onBlur={e => { e.target.style.borderColor = C.border; e.target.style.boxShadow = 'none' }} />
+            </div>
+          </div>
+          <div>
+            <label style={LABEL}>Actual End</label>
+            <div style={{ position: 'relative' }}>
+              <Calendar size={14} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: '#999999', pointerEvents: 'none', zIndex: 1 }} />
+              <input type="date" value={data.actualEnd} onChange={e => set({ actualEnd: e.target.value })}
+                style={{ ...inputStyle, paddingLeft: 38, cursor: 'pointer', color: data.actualEnd ? C.navy : C.muted }}
+                onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.10)' }}
+                onBlur={e => { e.target.style.borderColor = C.border; e.target.style.boxShadow = 'none' }} />
+            </div>
           </div>
         </div>
 
         <div>
-          <label style={LABEL}>End Date</label>
+          <label style={LABEL}>SoW Signed</label>
           <div style={{ position: 'relative' }}>
-            <Calendar size={14} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: C.muted, pointerEvents: 'none', zIndex: 1 }} />
-            <input type="date" value={data.endDate} onChange={e => set({ endDate: e.target.value })}
-              style={{ ...inputStyle, paddingLeft: 38, cursor: 'pointer', color: data.endDate ? C.navy : C.muted }}
+            <Calendar size={14} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: '#999999', pointerEvents: 'none', zIndex: 1 }} />
+            <input type="date" value={data.sowSigned} onChange={e => set({ sowSigned: e.target.value })}
+              style={{ ...inputStyle, paddingLeft: 38, cursor: 'pointer', color: data.sowSigned ? C.navy : C.muted }}
               onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.10)' }}
               onBlur={e => { e.target.style.borderColor = C.border; e.target.style.boxShadow = 'none' }} />
           </div>
@@ -617,7 +678,9 @@ export default function AddProjectPage({ onBack, onSave }: { onBack: () => void;
   const [submitting, setSubmitting] = useState(false)
 
   const [form, setFormRaw] = useState<FormData>({
-    projectName: '', description: '', clientName: '', startDate: '', endDate: '', status: 'planning',
+    projectName: '', description: '', clientName: '', startDate: '', endDate: '',
+    plannedStart: '', plannedEnd: '', actualStart: '', actualEnd: '', sowSigned: '',
+    status: 'planning',
     manager: '', roleGroups: [],
     billingType: 'hourly', poNumber: '', paymentTerms: '', rates: [],
   })
@@ -644,6 +707,9 @@ export default function AddProjectPage({ onBack, onSave }: { onBack: () => void;
         @keyframes apFadeIn { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:translateY(0) } }
         @keyframes apSpin    { from { transform:rotate(0deg) } to { transform:rotate(360deg) } }
         @keyframes apPop     { 0%{transform:scale(0.7);opacity:0} 70%{transform:scale(1.1)} 100%{transform:scale(1);opacity:1} }
+        input[type="date"]::-webkit-calendar-picker-indicator { display: none; }
+        input[type="date"]::-webkit-outer-spin-button,
+        input[type="date"]::-webkit-inner-spin-button { display: none; }
       `}</style>
 
       {/* Breadcrumb */}

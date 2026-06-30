@@ -174,7 +174,7 @@ const CAT_BADGE: Record<string, { bg: string; color: string }> = {
   'PA-Project Closure':                         { bg: 'rgba(124,58,237,0.10)',  color: '#7C3AED' },
 }
 
-const C      = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7' }
+const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7' }
 
 const inputBase: React.CSSProperties = {
   width: '100%', height: 44, borderRadius: 10, padding: '0 14px',
@@ -371,7 +371,6 @@ export default function TicketsPage() {
                   className="tkt-action-card text-left"
                   onClick={() => {
                     setActiveCard(a.id)
-                    setActiveType('All')
                     setSearchQuery('')
                     setStatusFilter('All')
                   }}

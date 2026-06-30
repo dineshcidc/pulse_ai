@@ -2,7 +2,7 @@ import { useState } from 'react'
 import {
   ArrowLeft, Users, Clock, Calendar,
   Edit2, Trash2, Plus, CheckCircle, XCircle, Mail,
-  DollarSign, Briefcase, Code2, Tag, X, Check, ChevronDown,
+  DollarSign, Briefcase, X, Check, ChevronDown,
 } from 'lucide-react'
 
 type Status = 'active' | 'on-hold' | 'completed' | 'draft'
@@ -21,6 +21,11 @@ interface Project {
   progress: number
   description: string
   color: string
+  plannedStart?: string
+  plannedEnd?: string
+  actualStart?: string
+  actualEnd?: string
+  sowSigned?: string
 }
 
 interface AllocatedEmployee {
@@ -110,7 +115,7 @@ const PROJECT_CODES: Record<string, string> = {
   p3: 'PRJ-2026-003',
 }
 
-const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', hover: '#F0F2F8', bg: '#F7F8FC', surface: '#F7F8FC' }
+const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', hover: '#F0F2F8', bg: '#F7F8FC' }
 
 const TABS = [
   { id: 'details',    label: 'Project Details'    },
@@ -186,10 +191,6 @@ function OverviewCard({ project, st }: { project: Project; st: typeof STATUS_CON
                   <Calendar size={12} style={{ color: C.muted }} />
                   <span style={{ fontSize: 12, color: C.muted, fontWeight: 500 }}>{project.startDate} → {project.endDate}</span>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <Tag size={12} style={{ color: C.muted }} />
-                  <span style={{ fontSize: 12, color: C.muted, fontWeight: 500 }}>{PROJECT_CODES[project.id] ?? 'PRJ-2026-000'}</span>
-                </div>
               </div>
 
               {/* Team avatar stack */}
@@ -245,7 +246,7 @@ function OverviewCard({ project, st }: { project: Project; st: typeof STATUS_CON
                 key={label}
                 style={{
                   background: bg, borderRadius: 12, padding: '12px 16px',
-                  minWidth: 80, textAlign: 'center' as const,
+                  minWidth: 80, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 }}
               >
                 <Icon size={16} style={{ color, marginBottom: 6 }} strokeWidth={1.8} />
@@ -265,7 +266,6 @@ function OverviewCard({ project, st }: { project: Project; st: typeof STATUS_CON
 ══════════════════════════════════════════════════════ */
 function DetailsTab({ project }: { project: Project }) {
   const st = STATUS_CONFIG[project.status]
-  const code = PROJECT_CODES[project.id] ?? 'PRJ-2026-000'
 
   const InfoRow = ({ label, value, icon: Icon }: { label: string; value: React.ReactNode; icon?: React.ElementType }) => (
     <div
@@ -288,46 +288,88 @@ function DetailsTab({ project }: { project: Project }) {
   )
 
   return (
-    <div className="grid grid-cols-2 gap-5">
-      {/* Left card */}
-      <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, padding: '6px 24px 8px' }}>
-        <div style={{ fontSize: 11.5, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.07em', padding: '16px 0 4px' }}>
-          Basic Information
-        </div>
-        <InfoRow label="Project Name"  value={project.name}    icon={Briefcase}  />
-        <InfoRow label="Client Name"   value={project.client}  icon={Users}      />
-        <InfoRow label="Project Code"  value={<span style={{ fontFamily: 'monospace', background: '#F0F2F8', padding: '2px 8px', borderRadius: 5, fontSize: 12.5 }}>{code}</span>} icon={Code2} />
-        <InfoRow label="Status"
-          value={
-            <span style={{ fontSize: 11.5, fontWeight: 700, padding: '4px 10px', borderRadius: 6, background: st.bg, color: st.color, border: `1px solid ${st.border}`, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-              {st.label}
-            </span>
-          }
-          icon={CheckCircle}
-        />
-        <InfoRow label="Team Size"     value={`${project.members} members`} icon={Users} />
-        <InfoRow label="Hours Logged"  value={`${project.hoursLogged} hours`} icon={Clock} />
-        <div style={{ paddingBottom: 8 }} />
-      </div>
-
-      {/* Right card */}
-      <div>
-        <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, padding: '6px 24px 8px', marginBottom: 16 }}>
-          <div style={{ fontSize: 11.5, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.07em', padding: '16px 0 4px' }}>
-            Timeline
+    <div>
+      <div className="grid grid-cols-2 gap-5 mb-5">
+        {/* Left card */}
+        <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, padding: '16px 24px 20px' }}>
+          <div style={{ fontSize: 11.5, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.07em', padding: '16px 0 16px' }}>
+            Basic Information
           </div>
-          <InfoRow label="Start Date"  value={project.startDate} icon={Calendar} />
-          <InfoRow label="End Date"    value={project.endDate}   icon={Calendar} />
+          <InfoRow label="Project Name"  value={project.name}    icon={Briefcase}  />
+          <div style={{ height: 8 }} />
+          <InfoRow label="Client Name"   value={project.client}  icon={Users}      />
+          <div style={{ height: 8 }} />
+          <InfoRow label="Status"
+            value={
+              <span style={{ fontSize: 11.5, fontWeight: 700, padding: '4px 10px', borderRadius: 6, background: st.bg, color: st.color, border: `1px solid ${st.border}`, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                {st.label}
+              </span>
+            }
+            icon={CheckCircle}
+          />
+          <div style={{ height: 8 }} />
+          <InfoRow label="Team Size"     value={`${project.members} members`} icon={Users} />
+          <div style={{ height: 8 }} />
+          <InfoRow label="Hours Logged"  value={`${project.hoursLogged} hours`} icon={Clock} />
           <div style={{ paddingBottom: 8 }} />
         </div>
 
-        {/* Description — below Timeline in right column */}
+        {/* Right card */}
         <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, padding: '16px 24px' }}>
-          <div style={{ fontSize: 11.5, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10 }}>
-            Project Description
+          <div style={{ fontSize: 11.5, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 16 }}>
+            Timeline
           </div>
-          <p style={{ fontSize: 13, color: '#3D4266', lineHeight: 1.75, margin: 0 }}>{project.description}</p>
+
+          {/* Visual Timeline Bar */}
+          <div style={{ background: '#F7F8FC', borderRadius: 12, padding: '16px 20px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, marginBottom: 4 }}>Start Date</div>
+              <div style={{ fontSize: 13.5, fontWeight: 500, color: '#3D4266' }}>{project.startDate}</div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+              <div style={{ width: 32, height: 2, background: 'linear-gradient(90deg, #6366F1, #4F46E5)', borderRadius: 1 }} />
+              <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#6366F1', border: '3px solid #fff', boxShadow: '0 0 0 2px #6366F1' }} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0, textAlign: 'right' as const }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, marginBottom: 4 }}>End Date</div>
+              <div style={{ fontSize: 13.5, fontWeight: 500, color: '#3D4266' }}>{project.endDate}</div>
+            </div>
+          </div>
+
+          {/* Detailed Timeline Info */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div style={{ padding: '12px 0' }}>
+              <div style={{ fontSize: 10, fontWeight: 600, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 }}>Planned Start</div>
+              <div style={{ fontSize: 13, fontWeight: 500, color: '#3D4266' }}>{project.plannedStart || project.startDate}</div>
+            </div>
+            <div style={{ padding: '12px 0' }}>
+              <div style={{ fontSize: 10, fontWeight: 600, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 }}>Planned End</div>
+              <div style={{ fontSize: 13, fontWeight: 500, color: '#3D4266' }}>{project.plannedEnd || project.endDate}</div>
+            </div>
+            <div style={{ padding: '12px 0' }}>
+              <div style={{ fontSize: 10, fontWeight: 600, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 }}>Actual Start</div>
+              <div style={{ fontSize: 13, fontWeight: 500, color: project.actualStart ? '#3D4266' : C.muted }}>{project.actualStart || '—'}</div>
+            </div>
+            <div style={{ padding: '12px 0' }}>
+              <div style={{ fontSize: 10, fontWeight: 600, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 }}>Actual End</div>
+              <div style={{ fontSize: 13, fontWeight: 500, color: project.actualEnd ? '#3D4266' : C.muted }}>{project.actualEnd || '—'}</div>
+            </div>
+          </div>
+
+          {/* SoW Signed */}
+          <div style={{ marginTop: 16, padding: '12px 14px', background: 'rgba(14,168,106,0.08)', border: '1px solid rgba(14,168,106,0.15)', borderRadius: 10 }}>
+            <div style={{ fontSize: 10, fontWeight: 600, color: '#0A8A58', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 }}>SoW Signed</div>
+            <div style={{ fontSize: 13, fontWeight: 500, color: project.sowSigned ? '#0A8A58' : '#8B90A7' }}>{project.sowSigned || 'Not signed'}</div>
+          </div>
         </div>
+      </div>
+
+      {/* Project Description — Full Width */}
+      <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, padding: '16px 24px' }}>
+        <div style={{ fontSize: 11.5, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10 }}>
+          Project Description
+        </div>
+        <p style={{ fontSize: 13, color: '#3D4266', lineHeight: 1.75, margin: 0 }}>{project.description}</p>
       </div>
     </div>
   )
@@ -683,7 +725,7 @@ function AllocationTab() {
             overflow: 'hidden', animation: 'fadeIn 0.18s ease',
           }}>
             {/* Header */}
-            <div style={{ padding: '20px 24px', borderBottom: `1px solid ${C.border}`, background: C.surface, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ padding: '20px 24px', borderBottom: `1px solid ${C.border}`, background: C.bg, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
                 <div style={{ fontSize: 16, fontWeight: 800, color: C.navy, letterSpacing: '-0.2px' }}>Add Team Member</div>
                 <div style={{ fontSize: 12.5, color: C.muted, marginTop: 4 }}>Select an employee and set allocation percentage</div>
@@ -721,7 +763,7 @@ function AllocationTab() {
                         key={emp.id}
                         onMouseDown={() => { setSelectedEmployee(emp); setEmployeeSearch(''); setShowEmployeeList(false) }}
                         style={{ width: '100%', padding: '12px 14px', border: 'none', borderBottom: idx < arr.length - 1 ? `1px solid ${C.border}` : 'none', background: '#fff', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.1s', display: 'flex', alignItems: 'center', gap: 10 }}
-                        onMouseEnter={e => { e.currentTarget.style.background = C.surface }}
+                        onMouseEnter={e => { e.currentTarget.style.background = C.bg }}
                         onMouseLeave={e => { e.currentTarget.style.background = '#fff' }}
                       >
                         <img src={`https://i.pravatar.cc/32?img=${emp.avatar}`} alt={emp.name} style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />

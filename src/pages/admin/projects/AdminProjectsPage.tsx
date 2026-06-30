@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Search, Clock, TrendingUp, Users, CheckCircle2, Calendar, ArrowRight, Building2, Plus, Edit, AlertCircle } from 'lucide-react'
+import { Search, Clock, TrendingUp, Users, CheckCircle2, Calendar, ArrowRight, Plus, Edit, AlertCircle } from 'lucide-react'
 import ProjectDetailPage from '../../manager/projects/ProjectDetailPage'
 import AddProjectPage from './AddProjectPage'
 
@@ -20,6 +20,11 @@ interface Project {
   progress: number
   description: string
   color: string
+  plannedStart?: string
+  plannedEnd?: string
+  actualStart?: string
+  actualEnd?: string
+  sowSigned?: string
 }
 
 const PROJECTS: Project[] = [
@@ -38,6 +43,9 @@ const PROJECTS: Project[] = [
     progress: 5,
     description: 'Early-stage analytics dashboard for real-time workforce insights and performance metrics. Currently in design phase with initial requirements gathering.',
     color: '#A78BFA',
+    plannedStart: 'Jul 1, 2026',
+    plannedEnd: 'Sep 30, 2026',
+    sowSigned: 'Jun 12, 2026',
   },
   {
     id: 'p1',
@@ -54,6 +62,11 @@ const PROJECTS: Project[] = [
     progress: 65,
     description: 'Next-generation workforce management SaaS platform built for enterprise teams. The platform integrates AI-driven scheduling, real-time attendance analytics, and automated payroll workflows. Designed to scale across multi-location organisations with role-based access and compliance reporting.',
     color: '#6366F1',
+    plannedStart: 'May 1, 2026',
+    plannedEnd: 'Aug 31, 2026',
+    actualStart: 'May 5, 2026',
+    actualEnd: '',
+    sowSigned: 'Jun 12, 2026',
   },
   {
     id: 'p2',
@@ -70,6 +83,11 @@ const PROJECTS: Project[] = [
     progress: 42,
     description: 'A customer-facing digital banking portal redesigned to modernise the end-to-end user experience for HDFC Bank retail clients. The project covers integrated payment workflows, account management dashboards, and secure two-factor authentication. Built with accessibility and mobile-first responsiveness as core design principles.',
     color: '#0EA86A',
+    plannedStart: 'Mar 1, 2026',
+    plannedEnd: 'Jul 31, 2026',
+    actualStart: 'Mar 8, 2026',
+    actualEnd: '',
+    sowSigned: 'Jun 12, 2026',
   },
   {
     id: 'p3',
@@ -86,6 +104,9 @@ const PROJECTS: Project[] = [
     progress: 25,
     description: "End-to-end migration of TechCorp's legacy on-premise ERP system to a cloud-native architecture on Microsoft Azure. The project includes data integrity validation, parallel-run testing, and a phased department-by-department rollout strategy. Full cutover is planned following six months of stabilisation and user acceptance testing.",
     color: '#F5A623',
+    plannedStart: 'Jan 1, 2026',
+    plannedEnd: 'Dec 31, 2026',
+    sowSigned: 'Jun 12, 2026',
   },
   {
     id: 'p4',
@@ -102,6 +123,9 @@ const PROJECTS: Project[] = [
     progress: 48,
     description: 'A unified CRM platform tailored for retail chains managing multi-store customer relationships and loyalty programs. The system includes customer segmentation, campaign management, and real-time purchase analytics. Integrates with POS systems across 120+ store locations for seamless data synchronisation.',
     color: '#EC4899',
+    plannedStart: 'Apr 1, 2026',
+    plannedEnd: 'Sep 30, 2026',
+    sowSigned: 'Jun 12, 2026',
   },
   {
     id: 'p5',
@@ -118,6 +142,11 @@ const PROJECTS: Project[] = [
     progress: 100,
     description: 'A personal finance tracking mobile application for FinServe Group customers, enabling budget management, investment portfolio tracking, and automated expense categorisation. Delivered ahead of schedule with full iOS and Android parity. Post-launch onboarded over 40,000 users within the first month.',
     color: '#14B8A6',
+    plannedStart: 'Oct 1, 2025',
+    plannedEnd: 'Mar 31, 2026',
+    actualStart: 'Oct 5, 2025',
+    actualEnd: 'Mar 15, 2026',
+    sowSigned: 'Jun 12, 2026',
   },
   {
     id: 'p6',
@@ -134,6 +163,10 @@ const PROJECTS: Project[] = [
     progress: 38,
     description: 'Enterprise-grade multi-cloud synchronisation middleware enabling seamless data orchestration across AWS, Azure, and GCP environments. Features include automated conflict resolution, real-time sync dashboards, and compliance-ready audit trails. Designed to handle petabyte-scale workloads for Fortune 500 clients.',
     color: '#3B82F6',
+    plannedStart: 'Feb 1, 2026',
+    plannedEnd: 'Oct 31, 2026',
+    actualStart: 'Feb 10, 2026',
+    sowSigned: 'Jun 12, 2026',
   },
   {
     id: 'p7',
@@ -150,6 +183,9 @@ const PROJECTS: Project[] = [
     progress: 20,
     description: 'A comprehensive Hospital Management System covering patient registration, outpatient and inpatient workflows, pharmacy management, and insurance claim processing. Currently on hold pending regulatory clearance from the national health authority. Development is 20% complete with core patient modules delivered.',
     color: '#8B5CF6',
+    plannedStart: 'Mar 1, 2026',
+    plannedEnd: 'Nov 30, 2026',
+    sowSigned: 'Jun 12, 2026',
   },
   {
     id: 'p8',
@@ -166,6 +202,10 @@ const PROJECTS: Project[] = [
     progress: 55,
     description: 'A real-time infrastructure monitoring dashboard providing unified visibility across servers, containers, and network topology for InfraTech Corp. Features include anomaly detection alerts, custom SLA threshold configuration, and automated incident ticket generation. Built on a WebSocket-driven event stream architecture.',
     color: '#F59E0B',
+    plannedStart: 'May 1, 2026',
+    plannedEnd: 'Jul 31, 2026',
+    actualStart: 'May 8, 2026',
+    sowSigned: 'Jun 12, 2026',
   },
   {
     id: 'p9',
@@ -182,6 +222,11 @@ const PROJECTS: Project[] = [
     progress: 100,
     description: 'A full-featured Learning Management System for BrightLearn Academy supporting live classes, recorded content, assignment submissions, and AI-powered student progress analytics. Successfully migrated 85,000 students from legacy systems with zero downtime. Rated 4.8/5 by educators during post-launch review.',
     color: '#0EA86A',
+    plannedStart: 'Jul 1, 2025',
+    plannedEnd: 'Jan 31, 2026',
+    actualStart: 'Jul 5, 2025',
+    actualEnd: 'Jan 20, 2026',
+    sowSigned: 'Jun 12, 2026',
   },
 ]
 
@@ -338,13 +383,9 @@ function ProjectCard({
         <div style={{ display: 'flex', alignItems: 'stretch', gap: 12, flex: 1, minWidth: 0 }}>
           <div style={{ width: 3, borderRadius: 99, background: project.color, flexShrink: 0 }} />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <h3 style={{ fontSize: 15, fontWeight: 700, color: '#1C2035', lineHeight: 1.35, marginBottom: 4 }}>
+            <h3 style={{ fontSize: 15, fontWeight: 700, color: '#1C2035', lineHeight: 1.35, marginBottom: 6 }}>
               {project.name}
             </h3>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 6 }}>
-              <Building2 size={11} strokeWidth={1.8} style={{ color: C.muted, flexShrink: 0 }} />
-              <span style={{ fontSize: 11.5, fontWeight: 600, color: C.muted }}>{project.department}</span>
-            </div>
             <p style={{ fontSize: 12, color: '#8B90A7', lineHeight: 1.6, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {project.description}
             </p>
