@@ -538,7 +538,7 @@ export default function AdminProjectsPage() {
       <EditProjectPage
         project={editingProject}
         onBack={() => setEditingProject(null)}
-        onSave={(updatedProject) => {
+        onSave={() => {
           setEditingProject(null)
         }}
       />
