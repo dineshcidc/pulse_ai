@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import {
-  ArrowLeft, ChevronRight, Check,
-  FileText, Users, DollarSign,
-  Plus, X, Calendar,
+  ArrowLeft, Check,
+  Calendar,
   ChevronDown,
 } from 'lucide-react'
 
@@ -56,16 +55,7 @@ const STATUSES: { id: ProjectStatus; label: string; color: string; bg: string; b
   { id: 'draft',         label: 'Draft',         color: '#6B7280', bg: 'rgba(107,114,128,0.08)',  border: 'rgba(107,114,128,0.25)'  },
 ]
 
-const BILLING_TYPES: { id: BillingType; label: string; desc: string }[] = [
-  { id: 'hourly',   label: 'Hourly',   desc: 'Billed per hour logged'      },
-  { id: 'fixed',    label: 'Fixed',    desc: 'One-time fixed project fee'  },
-  { id: 'retainer', label: 'Retainer', desc: 'Monthly recurring engagement'},
-]
-
-const CURRENCIES = ['USD', 'INR', 'EUR', 'GBP', 'AED']
-const PAYMENT_TERMS_OPTIONS = ['Net 15', 'Net 30', 'Net 45', 'Net 60', 'Immediate']
 const MANAGER_LIST = ['Priya Mehta', 'Arjun Menon', 'Raj Kumar', 'Sunita Rao', 'Dev Team Lead']
-const ROLE_LIST    = ['Frontend Developer', 'Backend Developer', 'Full Stack Developer', 'UI/UX Designer', 'QA Engineer', 'DevOps Engineer', 'Business Analyst', 'Scrum Master']
 
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', surface: '#F7F8FC' }
 
@@ -82,9 +72,6 @@ const LABEL: React.CSSProperties = {
   letterSpacing: '0.06em', textTransform: 'uppercase',
   display: 'block', marginBottom: 7,
 }
-
-let _id = 100
-const uid = () => ++_id
 
 function Select({ value, options, onChange, placeholder }: { value: string; options: string[]; onChange: (v: string) => void; placeholder?: string }) {
   const [open, setOpen] = useState(false)

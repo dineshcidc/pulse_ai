@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type ComponentProps } from 'react'
 import { Search, Clock, TrendingUp, Users, CheckCircle2, Calendar, ArrowRight, Plus, Edit, AlertCircle } from 'lucide-react'
 import ProjectDetailPage from '../../manager/projects/ProjectDetailPage'
 import AddProjectPage from './AddProjectPage'
@@ -268,6 +268,8 @@ const FILTER_TABS: { id: Status; label: string }[] = [
 
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', hover: '#F0F2F8' }
 
+type DetailProject = ComponentProps<typeof ProjectDetailPage>['project']
+
 /* ── Count-up hook ── */
 function useCountUp(target: number, duration = 900, delay = 0) {
   const [value, setValue] = useState(0)
@@ -520,7 +522,7 @@ function ProjectCard({
 export default function AdminProjectsPage() {
   const [filter, setFilter] = useState<Status>('active')
   const [search, setSearch] = useState('')
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
+  const [selectedProject, setSelectedProject] = useState<DetailProject | null>(null)
   const [editingProject, setEditingProject] = useState<Project | null>(null)
   const [addingProject, setAddingProject] = useState(false)
 
@@ -678,7 +680,11 @@ export default function AdminProjectsPage() {
               key={project.id}
               project={project}
               st={STATUS_CONFIG[project.status]}
-              onView={() => setSelectedProject(project)}
+              onView={() => {
+                if (project.status !== 'yet-to-start') {
+                  setSelectedProject(project as DetailProject)
+                }
+              }}
               onEdit={() => setEditingProject(project)}
             />
           ))}
