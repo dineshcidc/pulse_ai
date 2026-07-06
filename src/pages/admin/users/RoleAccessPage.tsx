@@ -5,7 +5,17 @@ import {
 } from 'lucide-react'
 
 type Role = 'Employee' | 'Manager' | 'Admin'
-type Tab  = 'permissions' | 'users'
+type Tab  = 'permissions' | 'users' | 'roles'
+
+interface RoleRow {
+  id: string
+  name: string
+  permissions: number
+  created: string
+  color: string
+  bg: string
+  Icon: React.FC<{ size?: number; color?: string }>
+}
 type PermSection = 'can' | 'restricted'
 
 interface PermItem { id: string; label: string }
@@ -32,6 +42,12 @@ const INIT_USERS: UserRow[] = [
   { id: 13, name: 'Arjun Patel',     avatar: 52, empId: 'EMP-0052', email: 'arjun.p@concertIDC.com',    department: 'QA & Testing',  role: 'Employee', lastChanged: 'May 23, 2023' },
   { id: 14, name: 'Nina Volkov',     avatar: 18, empId: 'EMP-0018', email: 'nina.v@concertIDC.com',     department: 'IT Operations', role: 'Admin',    lastChanged: 'Jan 04, 2020' },
   { id: 15, name: 'Chris Thompson',  avatar: 63, empId: 'EMP-0063', email: 'chris.t@concertIDC.com',    department: 'Engineering',   role: 'Employee', lastChanged: 'Mar 18, 2024' },
+]
+
+const INIT_ROLES: RoleRow[] = [
+  { id: 'r1', name: 'Employee',        permissions: 9,  created: 'Jan 12, 2023', color: '#4338CA', bg: '#EEF2FF', Icon: Users },
+  { id: 'r2', name: 'Project Manager', permissions: 15, created: 'Mar 05, 2023', color: '#047857', bg: '#ECFDF5', Icon: ShieldCheck },
+  { id: 'r3', name: 'Admin',           permissions: 24, created: 'Nov 08, 2021', color: '#6D28D9', bg: '#F5F3FF', Icon: Crown },
 ]
 
 const ROLE_CFG: Record<Role, {
@@ -167,6 +183,17 @@ export default function RoleAccessPage() {
   const [selectedNew, setSelectedNew] = useState<Role | null>(null)
   const [saving,      setSaving]      = useState(false)
   const [toast,       setToast]       = useState<string | null>(null)
+
+  /* ── roles tab state ── */
+  const [roleRows,   setRoleRows]   = useState<RoleRow[]>(INIT_ROLES)
+  const [roleSearch, setRoleSearch] = useState('')
+  const filteredRoles = roleRows.filter(r => !roleSearch || r.name.toLowerCase().includes(roleSearch.toLowerCase()))
+
+  function deleteRole(id: string) {
+    const r = roleRows.find(x => x.id === id)
+    setRoleRows(prev => prev.filter(x => x.id !== id))
+    if (r) { setToast(`Role "${r.name}" deleted`); setTimeout(() => setToast(null), 3000) }
+  }
 
   /* ── permissions state ── */
   const [rolePerms, setRolePerms] = useState<RolePermsMap>(initRolePerms)
@@ -513,6 +540,7 @@ export default function RoleAccessPage() {
       <div style={{ display: 'flex', gap: 2, marginBottom: 24, borderBottom: `2px solid ${C.border}` }}>
         {([
           { id: 'users',       label: 'User Assignments'     },
+          { id: 'roles',       label: 'Roles'                },
           { id: 'permissions', label: 'Permissions Overview' },
         ] as { id: Tab; label: string }[]).map(t => (
           <button key={t.id} className="tab-btn"
@@ -527,6 +555,142 @@ export default function RoleAccessPage() {
           </button>
         ))}
       </div>
+
+      {/* ══ TAB: Roles ══ */}
+      {tab === 'roles' && (
+        <div>
+          {/* Search + Add Role bar */}
+          <div style={{
+            background: '#fff', border: `1px solid ${C.border}`,
+            borderRadius: 14, padding: '12px 16px', marginBottom: 14,
+            display: 'flex', alignItems: 'center', gap: 10,
+          }}>
+            <div style={{ position: 'relative', flex: 1 }}>
+              <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: C.muted, pointerEvents: 'none' }} />
+              <input value={roleSearch} onChange={e => setRoleSearch(e.target.value)}
+                placeholder="Search roles…"
+                style={{
+                  width: '100%', height: 38, paddingLeft: 30, paddingRight: 10,
+                  border: `1px solid ${C.border}`, borderRadius: 8,
+                  fontSize: 13, color: C.navy, background: '#fff', outline: 'none',
+                  fontFamily: "'DM Sans',system-ui,sans-serif", boxSizing: 'border-box',
+                }}
+                onFocus={e => { e.currentTarget.style.borderColor = '#8B5CF6' }}
+                onBlur={e => { e.currentTarget.style.borderColor = C.border }}
+              />
+            </div>
+            <button
+              onClick={() => { setToast('Add Role — coming soon'); setTimeout(() => setToast(null), 2500) }}
+              style={{
+                height: 38, padding: '0 16px', borderRadius: 8, border: 'none',
+                background: C.navy, color: '#fff', fontSize: 13, fontWeight: 700,
+                cursor: 'pointer', fontFamily: 'inherit', display: 'inline-flex',
+                alignItems: 'center', gap: 7, flexShrink: 0, transition: 'background 0.15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#2A3050' }}
+              onMouseLeave={e => { e.currentTarget.style.background = C.navy }}
+            >
+              <Plus size={15} strokeWidth={2.5} /> Add Role
+            </button>
+          </div>
+
+          {/* Table */}
+          <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 18, overflow: 'hidden', boxShadow: '0 1px 6px rgba(28,32,53,0.04)' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ background: C.surface }}>
+                  {['Role Name', 'Permissions', 'Created Date', 'Action'].map((h, i) => (
+                    <th key={h} style={{
+                      padding: '11px 18px', textAlign: i === 3 ? 'center' : 'left',
+                      fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.05em',
+                      borderBottom: `1px solid ${C.border}`,
+                    }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filteredRoles.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} style={{ padding: '48px 20px', textAlign: 'center' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                        <div style={{ width: 44, height: 44, borderRadius: 12, background: C.surface, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <ShieldCheck size={20} color={C.muted} />
+                        </div>
+                        <p style={{ margin: 0, fontSize: 13.5, fontWeight: 600, color: C.navy }}>No roles found</p>
+                        <p style={{ margin: 0, fontSize: 12.5, color: C.muted }}>Try adjusting your search</p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredRoles.map((r, i) => (
+                    <tr key={r.id} className="tr-row"
+                      style={{ borderTop: i === 0 ? 'none' : `1px solid ${C.border}`, background: '#fff', transition: 'background 0.12s' }}>
+
+                      {/* Role Name */}
+                      <td style={{ padding: '13px 18px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <div style={{ width: 34, height: 34, borderRadius: 9, background: r.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <r.Icon size={16} color={r.color} />
+                          </div>
+                          <span style={{ fontSize: 13.5, fontWeight: 600, color: C.navy }}>{r.name}</span>
+                        </div>
+                      </td>
+
+                      {/* Permissions */}
+                      <td style={{ padding: '13px 18px' }}>
+                        <span style={{
+                          fontSize: 12, fontWeight: 700, color: r.color,
+                          background: r.bg, borderRadius: 6, padding: '3px 10px',
+                        }}>{r.permissions} permissions</span>
+                      </td>
+
+                      {/* Created Date */}
+                      <td style={{ padding: '13px 18px' }}>
+                        <span style={{ fontSize: 12.5, color: C.muted }}>{r.created}</span>
+                      </td>
+
+                      {/* Action */}
+                      <td style={{ padding: '13px 18px', textAlign: 'center' }}>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                          <button
+                            title="Edit role"
+                            onClick={() => { setToast(`Edit "${r.name}" — coming soon`); setTimeout(() => setToast(null), 2500) }}
+                            style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${C.border}`, background: '#fff', color: C.muted, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.12s' }}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = '#8B5CF6'; e.currentTarget.style.color = '#6D28D9' }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted }}
+                          >
+                            <Pencil size={13} />
+                          </button>
+                          <button
+                            title="Delete role"
+                            onClick={() => deleteRole(r.id)}
+                            style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${C.border}`, background: '#fff', color: C.muted, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.12s' }}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(239,68,68,0.4)'; e.currentTarget.style.color = '#EF4444' }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted }}
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+
+            {/* Footer */}
+            <div style={{
+              padding: '12px 20px', borderTop: `1px solid ${C.border}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              background: C.surface,
+            }}>
+              <span style={{ fontSize: 12.5, color: C.muted }}>
+                Showing <strong style={{ color: C.navy }}>{filteredRoles.length}</strong> of <strong style={{ color: C.navy }}>{roleRows.length}</strong> roles
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ══ TAB 1: Permissions Overview ══ */}
       {tab === 'permissions' && (

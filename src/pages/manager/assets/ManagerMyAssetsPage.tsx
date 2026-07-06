@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Package, Laptop, Monitor, Smartphone, Eye, RotateCcw } from 'lucide-react'
+import { Package, Laptop, Monitor, Smartphone, Mouse, Eye, RotateCcw, Plus } from 'lucide-react'
+import EmployeeReturnRequestDetailsPage, { type EmployeeReturnRequest } from '../../employee/assets/EmployeeReturnRequestDetailsPage'
 
 interface Asset {
   id: string
@@ -52,7 +53,48 @@ const ASSETS: Asset[] = [
   },
 ]
 
-type AssetsTab = 'current' | 'requests'
+function fmtDate(d: string) {
+  return new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+}
+
+const RETURN_STATUS_STYLE: Record<string, { bg: string; color: string; dot: string }> = {
+  'Pending': { bg: 'rgba(245,158,11,0.10)', color: '#B45309', dot: '#F59E0B' },
+  'Accepted': { bg: 'rgba(14,168,106,0.12)', color: '#0A7040', dot: '#0EA86A' },
+}
+
+const RETURN_COL_GRID = '1.1fr 0.9fr 1fr 1fr 1.4fr 1.9fr 0.9fr 0.6fr'
+
+const INITIAL_RETURN_REQUESTS: EmployeeReturnRequest[] = [
+  {
+    id: 'mrr-001',
+    requestId: 'RR-2026-0110',
+    employeeName: 'Rohan Mehta',
+    employeeCode: 'CC001',
+    category: 'Laptop',
+    assetName: 'MacBook Pro 14" M2',
+    assetCode: 'LT-2024-0042',
+    returnReason: 'Upgraded to a new company laptop; returning the previous device.',
+    requestedDate: '2026-06-27',
+    status: 'Accepted',
+    decisionNote: 'Approved for Return. Kindly ensure the system and charger are packed safely and sent to the Office Admin',
+    decisionDate: '2026-06-29',
+    decisionBy: 'System Admin',
+  },
+  {
+    id: 'mrr-002',
+    requestId: 'RR-2026-0112',
+    employeeName: 'Rohan Mehta',
+    employeeCode: 'CC001',
+    category: 'Monitor',
+    assetName: 'Dell 27" 4K Ultra HD',
+    assetCode: 'MN-2024-0089',
+    returnReason: 'Monitor developed a flickering issue and needs replacement.',
+    requestedDate: '2026-07-03',
+    status: 'Pending',
+  },
+]
+
+type AssetsTab = 'current' | 'requests' | 'return'
 
 interface ManagerAssetRequest {
   id: string
@@ -77,9 +119,10 @@ interface ManagerMyAssetPageProps {
   }>
   myRequests?: ManagerAssetRequest[]
   onAcceptRequest?: (requestId: string) => void
+  onNavigate?: (id: string) => void
 }
 
-export default function ManagerMyAssetsPage({ assets, myRequests, onAcceptRequest }: ManagerMyAssetPageProps) {
+export default function ManagerMyAssetsPage({ assets, myRequests, onAcceptRequest, onNavigate }: ManagerMyAssetPageProps) {
   const [activeTab, setActiveTab] = useState<AssetsTab>('current')
 
   const defaultAssets: Asset[] = assets ? assets.map((a: any) => ({
@@ -96,10 +139,21 @@ export default function ManagerMyAssetsPage({ assets, myRequests, onAcceptReques
   const [returnReason, setReturnReason] = useState('')
   const [acceptedRequestIds, setAcceptedRequestIds] = useState<Set<string>>(new Set(['ar-011']))
   const [requestStatusFilter, setRequestStatusFilter] = useState<'All' | 'Pending' | 'Allocated'>('All')
+  const [returnRequests] = useState<EmployeeReturnRequest[]>(INITIAL_RETURN_REQUESTS)
+  const [viewReturnRequest, setViewReturnRequest] = useState<EmployeeReturnRequest | null>(null)
 
   const handleAcceptWithTracking = (requestId: string) => {
     setAcceptedRequestIds(prev => new Set([...prev, requestId]))
     onAcceptRequest?.(requestId)
+  }
+
+  if (viewReturnRequest) {
+    return (
+      <EmployeeReturnRequestDetailsPage
+        request={viewReturnRequest}
+        onBack={() => setViewReturnRequest(null)}
+      />
+    )
   }
 
   return (
@@ -137,7 +191,8 @@ export default function ManagerMyAssetsPage({ assets, myRequests, onAcceptReques
       </div>
 
       {/* ── Tabs ───────────────────────────────────────────────────────── */}
-      <div style={{ marginBottom: 24, background: '#fff', border: `1px solid ${C.border}`, borderRadius: 12, padding: 6, width: 'fit-content' }}>
+      <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+      <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 12, padding: 6, width: 'fit-content' }}>
         <div style={{ display: 'flex', gap: 8 }}>
           <button
             onClick={() => setActiveTab('current')}
@@ -191,11 +246,69 @@ export default function ManagerMyAssetsPage({ assets, myRequests, onAcceptReques
           >
             My Requests
           </button>
+          <button
+            onClick={() => setActiveTab('return')}
+            style={{
+              padding: '6px 12px',
+              fontSize: 13,
+              fontWeight: 600,
+              color: activeTab === 'return' ? '#fff' : C.muted,
+              background: activeTab === 'return' ? '#1c2035' : 'transparent',
+              border: 'none',
+              borderRadius: 6,
+              cursor: 'pointer',
+              transition: 'all 0.15s',
+            }}
+            onMouseEnter={e => {
+              if (activeTab !== 'return') {
+                e.currentTarget.style.background = '#F7F8FC'
+              }
+            }}
+            onMouseLeave={e => {
+              if (activeTab !== 'return') {
+                e.currentTarget.style.background = 'transparent'
+              }
+            }}
+          >
+            Return Request
+          </button>
         </div>
       </div>
 
+        {activeTab === 'requests' && (
+          <button
+            onClick={() => onNavigate?.('create-asset-request')}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '9px 18px',
+              fontSize: 13,
+              fontWeight: 600,
+              color: '#6366F1',
+              background: 'rgba(99,102,241,0.06)',
+              border: '1.5px dashed #A5A9F5',
+              borderRadius: 10,
+              cursor: 'pointer',
+              transition: 'all 0.15s',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = 'rgba(99,102,241,0.12)'
+              e.currentTarget.style.borderColor = '#6366F1'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = 'rgba(99,102,241,0.06)'
+              e.currentTarget.style.borderColor = '#A5A9F5'
+            }}
+          >
+            <Plus size={16} strokeWidth={2.2} />
+            Create Asset Request
+          </button>
+        )}
+      </div>
+
       {/* ── Assets Table ─────────────────────────────────────────────────── */}
-      {activeTab === 'current' ? (
+      {activeTab === 'current' && (
       <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, overflow: 'hidden' }}>
         {/* Table Header */}
         <div
@@ -258,6 +371,9 @@ export default function ManagerMyAssetsPage({ assets, myRequests, onAcceptReques
               {asset.category === 'Monitor' && (
                 <Monitor size={14} style={{ color: '#3B82F6' }} />
               )}
+              {asset.category === 'Mouse' && (
+                <Mouse size={14} style={{ color: '#10B981' }} />
+              )}
               {asset.category === 'Phone' && (
                 <Smartphone size={14} style={{ color: '#10B981' }} />
               )}
@@ -270,6 +386,35 @@ export default function ManagerMyAssetsPage({ assets, myRequests, onAcceptReques
               {asset.dateFrom}
             </span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <button
+                onClick={() => setViewPopup(asset)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 32,
+                  height: 32,
+                  color: C.muted,
+                  background: '#fff',
+                  border: `1px solid ${C.border}`,
+                  borderRadius: 8,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = '#5B5FDE'
+                  e.currentTarget.style.background = 'rgba(99,102,241,0.08)'
+                  e.currentTarget.style.borderColor = 'rgba(99,102,241,0.30)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = C.muted
+                  e.currentTarget.style.background = '#fff'
+                  e.currentTarget.style.borderColor = C.border
+                }}
+                title="View details"
+              >
+                <Eye size={14} strokeWidth={1.8} />
+              </button>
               <button
                 onClick={() => setReturnPopup(asset)}
                 style={{
@@ -303,7 +448,10 @@ export default function ManagerMyAssetsPage({ assets, myRequests, onAcceptReques
           </div>
         ))}
       </div>
-      ) : (
+      )}
+
+      {activeTab === 'requests' && (
+        <>
         <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, overflow: 'hidden' }}>
           {/* Filter Section */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', borderBottom: `1px solid ${C.border}` }}>
@@ -347,7 +495,7 @@ export default function ManagerMyAssetsPage({ assets, myRequests, onAcceptReques
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: '1.1fr 0.85fr 0.95fr 1fr 1.8fr 1.3fr 1.1fr 0.95fr 0.8fr',
+              gridTemplateColumns: 'minmax(0,1.1fr) minmax(0,0.85fr) minmax(0,0.95fr) minmax(0,1fr) minmax(0,1.8fr) minmax(0,1.3fr) minmax(0,1.1fr) minmax(0,0.95fr) minmax(0,0.8fr)',
               gap: 20,
               padding: '14px 20px',
               background: '#f7f8fc',
@@ -412,7 +560,7 @@ export default function ManagerMyAssetsPage({ assets, myRequests, onAcceptReques
                 <div key={req.id}
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: '1.1fr 0.85fr 0.95fr 1fr 1.8fr 1.3fr 1.1fr 0.95fr 0.8fr',
+                    gridTemplateColumns: 'minmax(0,1.1fr) minmax(0,0.85fr) minmax(0,0.95fr) minmax(0,1fr) minmax(0,1.8fr) minmax(0,1.3fr) minmax(0,1.1fr) minmax(0,0.95fr) minmax(0,0.8fr)',
                     gap: 20,
                     padding: '16px 20px',
                     borderBottom: isLast ? 'none' : `1px solid ${C.border}`,
@@ -429,7 +577,9 @@ export default function ManagerMyAssetsPage({ assets, myRequests, onAcceptReques
                   <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 500, color: req.status === 'Pending' && req.pendingWith === 'System Admin' ? C.muted : C.navy }}>
                     {req.status === 'Pending' && req.pendingWith === 'System Admin' ? '—' : (
                       <>
-                        {req.category === 'IT Hardware' && <Laptop size={14} style={{ color: '#6366F1' }} />}
+                        {req.category === 'Laptop' && <Laptop size={14} style={{ color: '#6366F1' }} />}
+                        {req.category === 'Mouse' && <Mouse size={14} style={{ color: '#10B981' }} />}
+                        {req.category === 'Monitor' && <Monitor size={14} style={{ color: '#3B82F6' }} />}
                         {req.category}
                       </>
                     )}
@@ -561,34 +711,94 @@ export default function ManagerMyAssetsPage({ assets, myRequests, onAcceptReques
                         >
                           ✓
                         </button>
-                        <button
-                          style={{
-                            width: 28,
-                            height: 28,
-                            borderRadius: 6,
-                            border: 'none',
-                            background: 'rgba(232,72,85,0.10)',
-                            color: '#C0202E',
-                            cursor: 'pointer',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            transition: 'all 0.14s',
-                            fontSize: 11,
-                            fontWeight: 600,
-                          }}
-                          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(232,72,85,0.18)' }}
-                          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(232,72,85,0.10)' }}
-                          title="Reject request"
-                        >
-                          ✕
-                        </button>
                       </>
                     )}
                   </div>
                 </div>
               )
             })
+          )}
+        </div>
+
+        {/* Info note */}
+        <div style={{ marginTop: 14, padding: '13px 16px', background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.20)', borderRadius: 10, display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+          <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'rgba(99,102,241,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: '#6366F1' }}>ℹ</span>
+          </div>
+          <p style={{ fontSize: 12.5, color: '#4F46E5', fontWeight: 500, margin: 0, lineHeight: 1.55 }}>
+            <strong style={{ fontWeight: 700 }}>Note:</strong> Once you approve this asset request, the request will be marked as <strong style={{ fontWeight: 700 }}>Closed</strong>, and the asset details will automatically be added to the employee's current asset list. Please review and approve the request.
+          </p>
+        </div>
+        </>
+      )}
+
+      {/* ── TAB: Return Request ─────────────────────────────────────────── */}
+      {activeTab === 'return' && (
+        <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, overflow: 'hidden' }}>
+          <div className="grid" style={{ gridTemplateColumns: RETURN_COL_GRID, padding: '14px 20px', background: '#f7f8fc', borderBottom: `1px solid ${C.border}` }}>
+            {['Request ID', 'Date', 'Category', 'Asset Code', 'Asset Name', 'Return Reason', 'Status', 'Action'].map(h => (
+              <span key={h} style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</span>
+            ))}
+          </div>
+
+          {returnRequests.length === 0 ? (
+            <div className="flex flex-col items-center justify-center" style={{ padding: '60px 20px' }}>
+              <div className="flex items-center justify-center rounded-2xl mb-4" style={{ width: 54, height: 54, background: '#F0F2F8' }}>
+                <RotateCcw size={22} strokeWidth={1.5} style={{ color: '#B0B4C8' }} />
+              </div>
+              <p style={{ fontSize: 14, fontWeight: 600, color: C.navy, marginBottom: 5 }}>No return requests found</p>
+              <p style={{ fontSize: 13, color: C.muted }}>You haven't submitted any asset return requests yet</p>
+            </div>
+          ) : (
+            returnRequests.map((rr, idx) => {
+              const ss = RETURN_STATUS_STYLE[rr.status]
+              const isLast = idx === returnRequests.length - 1
+
+              let catIcon = null
+              if (rr.category === 'Laptop') catIcon = <Laptop size={14} style={{ color: '#6366F1' }} />
+              else if (rr.category === 'Monitor') catIcon = <Monitor size={14} style={{ color: '#3B82F6' }} />
+              else if (rr.category === 'Phone') catIcon = <Smartphone size={14} style={{ color: '#10B981' }} />
+              else if (rr.category === 'Mouse') catIcon = <Mouse size={14} style={{ color: '#10B981' }} />
+
+              return (
+                <div key={rr.id} className="ast-row grid items-center"
+                  style={{ gridTemplateColumns: RETURN_COL_GRID, padding: '16px 20px', borderBottom: isLast ? 'none' : `1px solid ${C.border}`, background: '#fff', transition: 'background 0.12s' }}>
+                  <span style={{ fontSize: 12.5, fontWeight: 700, color: C.navy, fontVariantNumeric: 'tabular-nums' }}>{rr.requestId}</span>
+                  <span style={{ fontSize: 12, color: '#5A6080', fontWeight: 500 }}>{fmtDate(rr.requestedDate)}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 500, color: C.navy }}>
+                    {catIcon}
+                    {rr.category}
+                  </span>
+                  <span style={{ fontSize: 12.5, fontWeight: 500, color: C.muted, fontFamily: 'monospace' }}>{rr.assetCode}</span>
+                  <span style={{ fontSize: 12.5, color: C.navy, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{rr.assetName}</span>
+                  <span style={{ fontSize: 12, color: '#5A6080', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={rr.returnReason}>{rr.returnReason.length > 32 ? rr.returnReason.slice(0, 32).trimEnd() + '...' : rr.returnReason}</span>
+                  <span className="inline-flex items-center gap-1.5 rounded-full"
+                    style={{ padding: '4px 10px', background: ss.bg, color: ss.color, fontSize: 11.5, fontWeight: 600, width: 'fit-content', whiteSpace: 'nowrap', border: `1px solid ${ss.dot}40` }}>
+                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: ss.dot, display: 'inline-block', flexShrink: 0 }} />
+                    {rr.status}
+                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <button
+                      onClick={() => setViewReturnRequest(rr)}
+                      title="View details"
+                      style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${C.border}`, background: '#fff', color: C.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.color = '#6366F1'; e.currentTarget.style.background = 'rgba(99,102,241,0.08)'; e.currentTarget.style.borderColor = 'rgba(99,102,241,0.30)' }}
+                      onMouseLeave={(e) => { e.currentTarget.style.color = C.muted; e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = C.border }}
+                    >
+                      <Eye size={14} strokeWidth={1.8} />
+                    </button>
+                  </div>
+                </div>
+              )
+            })
+          )}
+
+          {returnRequests.length > 0 && (
+            <div style={{ padding: '11px 20px', borderTop: `1px solid ${C.border}`, background: '#FAFBFE' }}>
+              <span style={{ fontSize: 12, color: C.muted, fontWeight: 500 }}>
+                Showing <strong style={{ color: C.navy }}>{returnRequests.length}</strong> return request{returnRequests.length !== 1 ? 's' : ''}
+              </span>
+            </div>
           )}
         </div>
       )}

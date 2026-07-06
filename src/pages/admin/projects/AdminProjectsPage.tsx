@@ -1,10 +1,10 @@
 import { useState, useEffect, type ComponentProps } from 'react'
-import { Search, Clock, TrendingUp, Users, CheckCircle2, Calendar, ArrowRight, Plus, Edit, AlertCircle } from 'lucide-react'
+import { Search, Clock, TrendingUp, Users, CheckCircle2, Calendar, ArrowRight, Plus, Edit, AlertCircle, ChevronDown } from 'lucide-react'
 import ProjectDetailPage from '../../manager/projects/ProjectDetailPage'
 import AddProjectPage from './AddProjectPage'
 import EditProjectPage from './EditProjectPage'
 
-type Status = 'active' | 'on-hold' | 'completed' | 'draft' | 'yet-to-start'
+type Status = 'active' | 'on-hold' | 'completed' | 'draft' | 'yet-to-start' | 'in-progress' | 'cancelled'
 
 interface Project {
   id: string
@@ -248,6 +248,46 @@ const PROJECTS: Project[] = [
     plannedEnd: 'Dec 31, 2026',
     sowSigned: 'Jun 12, 2026',
   },
+  {
+    id: 'p11',
+    name: 'Retail POS Modernization',
+    client: 'ShopSphere Retail',
+    department: 'Engineering',
+    status: 'in-progress',
+    startDate: 'Apr 2026',
+    endDate: 'Oct 2026',
+    members: 7,
+    avatars: [12, 26, 39, 45, 53, 58, 66],
+    hoursLogged: 186,
+    pendingApprovals: 2,
+    progress: 48,
+    description: 'Modernizing ShopSphere\'s in-store point-of-sale platform with a cloud-native architecture, offline-first billing, and unified inventory sync across 120+ outlets. Currently mid-development with core checkout and payment modules under active build.',
+    color: '#0891B2',
+    plannedStart: 'Apr 1, 2026',
+    plannedEnd: 'Oct 31, 2026',
+    actualStart: 'Apr 8, 2026',
+    sowSigned: 'Mar 20, 2026',
+  },
+  {
+    id: 'p12',
+    name: 'AR Showroom Experience',
+    client: 'DriveMax Motors',
+    department: 'Product',
+    status: 'cancelled',
+    startDate: 'Feb 2026',
+    endDate: 'May 2026',
+    members: 4,
+    avatars: [9, 21, 37, 49],
+    hoursLogged: 64,
+    pendingApprovals: 0,
+    progress: 22,
+    description: 'An augmented-reality virtual showroom letting customers configure and view vehicles in 3D from home. Project cancelled after a client-side budget review; discovery and early prototyping work was completed before wind-down.',
+    color: '#E84855',
+    plannedStart: 'Feb 1, 2026',
+    plannedEnd: 'May 31, 2026',
+    actualStart: 'Feb 10, 2026',
+    sowSigned: 'Jan 15, 2026',
+  },
 ]
 
 const STATUS_CONFIG: Record<Status, { label: string; color: string; bg: string; border: string }> = {
@@ -256,14 +296,18 @@ const STATUS_CONFIG: Record<Status, { label: string; color: string; bg: string; 
   'completed':    { label: 'Completed',    color: '#3B82F6', bg: 'rgba(59,130,246,0.10)',  border: 'rgba(59,130,246,0.20)'  },
   'yet-to-start': { label: 'Yet to start', color: '#6366F1', bg: 'rgba(99,102,241,0.10)',  border: 'rgba(99,102,241,0.20)'  },
   'draft':        { label: 'Draft',        color: '#6B7280', bg: 'rgba(107,114,128,0.10)', border: 'rgba(107,114,128,0.20)'  },
+  'in-progress':  { label: 'In Progress',  color: '#0891B2', bg: 'rgba(8,145,178,0.10)',   border: 'rgba(8,145,178,0.20)'   },
+  'cancelled':    { label: 'Cancelled',    color: '#E84855', bg: 'rgba(232,72,85,0.10)',   border: 'rgba(232,72,85,0.20)'   },
 }
 
 const FILTER_TABS: { id: Status; label: string }[] = [
   { id: 'active',      label: 'Active'       },
+  { id: 'in-progress', label: 'In Progress'  },
   { id: 'on-hold',     label: 'On Hold'      },
   { id: 'completed',   label: 'Completed'    },
   { id: 'yet-to-start', label: 'Yet to start' },
   { id: 'draft',       label: 'Draft'        },
+  { id: 'cancelled',   label: 'Cancelled'    },
 ]
 
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', hover: '#F0F2F8' }
@@ -521,6 +565,7 @@ function ProjectCard({
 /* ── Main page ── */
 export default function AdminProjectsPage() {
   const [filter, setFilter] = useState<Status>('active')
+  const [filterOpen, setFilterOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [selectedProject, setSelectedProject] = useState<DetailProject | null>(null)
   const [editingProject, setEditingProject] = useState<Project | null>(null)
@@ -624,7 +669,7 @@ export default function AdminProjectsPage() {
         className="flex items-center gap-3 mb-5"
         style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, padding: '12px 14px' }}
       >
-        <div className="relative" style={{ flex: '0 0 460px' }}>
+        <div className="relative" style={{ flex: 1 }}>
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: C.muted }} />
           <input
             type="text"
@@ -632,34 +677,69 @@ export default function AdminProjectsPage() {
             onChange={e => setSearch(e.target.value)}
             placeholder="Search projects, clients or departments..."
             style={{
-              width: '100%', height: 36, paddingLeft: 32, paddingRight: 12,
+              width: '100%', height: 42, paddingLeft: 32, paddingRight: 12,
               border: `1px solid ${C.border}`, borderRadius: 9,
-              fontSize: 13, color: C.navy, background: C.hover, outline: 'none',
+              fontSize: 13, color: C.navy, background: '#fff', outline: 'none',
               fontFamily: 'inherit',
             }}
-            onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.background = '#fff' }}
-            onBlur={e => { e.target.style.borderColor = C.border; e.target.style.background = C.hover }}
+            onFocus={e => { e.target.style.borderColor = '#6366F1' }}
+            onBlur={e => { e.target.style.borderColor = C.border }}
           />
         </div>
 
-        <div className="flex items-center gap-1.5 ml-auto">
-          {FILTER_TABS.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setFilter(tab.id)}
-              style={{
-                height: 34, padding: '0 14px', borderRadius: 8, border: 'none',
-                fontSize: 12.5, fontWeight: 600, cursor: 'pointer',
-                background: filter === tab.id ? C.navy : C.hover,
-                color: filter === tab.id ? '#fff' : C.muted,
-                transition: 'all 0.15s', fontFamily: 'inherit',
-              }}
-              onMouseEnter={e => { if (filter !== tab.id) { e.currentTarget.style.background = '#E4E6EF'; e.currentTarget.style.color = C.navy } }}
-              onMouseLeave={e => { if (filter !== tab.id) { e.currentTarget.style.background = C.hover; e.currentTarget.style.color = C.muted } }}
-            >
-              {tab.label}
-            </button>
-          ))}
+        {/* Status filter — custom dropdown */}
+        <div className="relative" style={{ flex: '0 0 160px' }}>
+          <button
+            onClick={() => setFilterOpen(o => !o)}
+            style={{
+              width: '100%', height: 42, padding: '0 12px', borderRadius: 9,
+              border: `1px solid ${filterOpen ? '#6366F1' : C.border}`,
+              background: C.hover, cursor: 'pointer', fontFamily: 'inherit',
+              display: 'flex', alignItems: 'center', gap: 8,
+              transition: 'border-color 0.15s',
+            }}
+          >
+            <span style={{ flex: 1, textAlign: 'left', fontSize: 13, fontWeight: 600, color: C.navy, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {STATUS_CONFIG[filter].label}
+            </span>
+            <ChevronDown size={15} style={{ color: C.muted, flexShrink: 0, transition: 'transform 0.18s', transform: filterOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+          </button>
+
+          {filterOpen && (
+            <>
+              <div style={{ position: 'fixed', inset: 0, zIndex: 40 }} onClick={() => setFilterOpen(false)} />
+              <div
+                style={{
+                  position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, zIndex: 50,
+                  background: '#fff', border: `1px solid ${C.border}`, borderRadius: 11,
+                  boxShadow: '0 12px 32px rgba(28,32,53,0.12)', padding: 5,
+                }}
+              >
+                {FILTER_TABS.map(tab => {
+                  const isSel = filter === tab.id
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => { setFilter(tab.id); setFilterOpen(false) }}
+                      style={{
+                        width: '100%', height: 36, padding: '0 10px', borderRadius: 7, border: 'none',
+                        display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer',
+                        background: isSel ? C.hover : 'transparent',
+                        fontFamily: 'inherit', transition: 'background 0.12s',
+                      }}
+                      onMouseEnter={e => { if (!isSel) e.currentTarget.style.background = C.hover }}
+                      onMouseLeave={e => { if (!isSel) e.currentTarget.style.background = 'transparent' }}
+                    >
+                      <span style={{ flex: 1, textAlign: 'left', fontSize: 13, fontWeight: isSel ? 700 : 500, color: C.navy }}>{tab.label}</span>
+                      <span style={{ minWidth: 22, height: 20, padding: '0 7px', borderRadius: 99, background: isSel ? '#EEF0FE' : C.hover, color: isSel ? '#6366F1' : C.muted, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        {PROJECTS.filter(p => p.status === tab.id).length}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </>
+          )}
         </div>
       </div>
 

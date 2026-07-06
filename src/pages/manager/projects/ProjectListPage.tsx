@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
-import { Search, Clock, TrendingUp, Users, AlertCircle, Calendar, ArrowRight } from 'lucide-react'
+import { Search, Clock, TrendingUp, Users, AlertCircle, Calendar, ArrowRight, ChevronDown } from 'lucide-react'
 import ProjectDetailPage from './ProjectDetailPage'
 
-type Status = 'active' | 'on-hold' | 'completed' | 'draft'
+type Status = 'active' | 'in-progress' | 'on-hold' | 'completed'
 
 interface Project {
   id: string
@@ -66,20 +66,50 @@ const PROJECTS: Project[] = [
     description: 'End-to-end migration of TechCorp\'s legacy on-premise ERP system to a cloud-native architecture on Microsoft Azure. The project includes data integrity validation, parallel-run testing, and a phased department-by-department rollout strategy. Full cutover is planned following six months of stabilisation and user acceptance testing.',
     color: '#F5A623',
   },
+  {
+    id: 'p4',
+    name: 'ShopSphere POS Revamp',
+    client: 'ShopSphere Retail',
+    status: 'in-progress',
+    startDate: 'Apr 2026',
+    endDate: 'Sep 2026',
+    members: 6,
+    avatars: [7, 19, 24, 31, 40, 52],
+    hoursLogged: 174,
+    pendingApprovals: 2,
+    progress: 58,
+    description: 'Modernising ShopSphere\'s in-store point-of-sale platform with a cloud-native architecture, offline-first billing, and unified inventory sync across 120+ outlets. Currently mid-development with core checkout and payment modules under active build.',
+    color: '#0891B2',
+  },
+  {
+    id: 'p5',
+    name: 'Acme Analytics Dashboard',
+    client: 'Acme Corp',
+    status: 'completed',
+    startDate: 'Oct 2025',
+    endDate: 'Mar 2026',
+    members: 5,
+    avatars: [3, 14, 27, 36, 48],
+    hoursLogged: 312,
+    pendingApprovals: 0,
+    progress: 100,
+    description: 'A unified business-intelligence dashboard delivering real-time KPIs, cohort analytics, and automated executive reporting for Acme Corp. Delivered on schedule with full data-pipeline integration, role-based access, and export-ready visualisations across all departments.',
+    color: '#3B82F6',
+  },
 ]
 
 const STATUS_CONFIG: Record<Status, { label: string; color: string; bg: string; border: string }> = {
-  'active':    { label: 'Active',    color: '#0A8A58', bg: 'rgba(14,168,106,0.10)',  border: 'rgba(14,168,106,0.20)'  },
-  'on-hold':   { label: 'On Hold',   color: '#92400E', bg: 'rgba(245,158,11,0.10)',  border: 'rgba(245,158,11,0.20)'  },
-  'completed': { label: 'Completed', color: '#3B82F6', bg: 'rgba(59,130,246,0.10)',  border: 'rgba(59,130,246,0.20)'  },
-  'draft':     { label: 'Draft',     color: '#6B7280', bg: 'rgba(107,114,128,0.10)', border: 'rgba(107,114,128,0.20)'  },
+  'active':      { label: 'Active',      color: '#0A8A58', bg: 'rgba(14,168,106,0.10)', border: 'rgba(14,168,106,0.20)' },
+  'in-progress': { label: 'In Progress', color: '#0891B2', bg: 'rgba(8,145,178,0.10)',  border: 'rgba(8,145,178,0.20)'  },
+  'on-hold':     { label: 'On Hold',     color: '#92400E', bg: 'rgba(245,158,11,0.10)', border: 'rgba(245,158,11,0.20)' },
+  'completed':   { label: 'Completed',   color: '#3B82F6', bg: 'rgba(59,130,246,0.10)', border: 'rgba(59,130,246,0.20)' },
 }
 
-const FILTER_TABS: { id: 'all' | Status; label: string }[] = [
-  { id: 'all',       label: 'All Projects' },
-  { id: 'active',    label: 'Active'       },
-  { id: 'on-hold',   label: 'On Hold'      },
-  { id: 'completed', label: 'Completed'    },
+const FILTER_TABS: { id: Status; label: string }[] = [
+  { id: 'active',      label: 'Active'      },
+  { id: 'in-progress', label: 'In Progress' },
+  { id: 'on-hold',     label: 'On Hold'     },
+  { id: 'completed',   label: 'Completed'   },
 ]
 
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', hover: '#F0F2F8' }
@@ -164,7 +194,8 @@ function StatCard({ label, subtext, value, icon: Icon, color, bg, border, delay 
 
 /* ── Main page ── */
 export default function ProjectListPage() {
-  const [filter, setFilter] = useState<'all' | Status>('all')
+  const [filter, setFilter] = useState<Status>('active')
+  const [filterOpen, setFilterOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
 
@@ -173,15 +204,15 @@ export default function ProjectListPage() {
   }
 
   const filtered = PROJECTS.filter(p => {
-    const matchesFilter = filter === 'all' || p.status === filter
+    const matchesFilter = p.status === filter
     const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase()) ||
                           p.client.toLowerCase().includes(search.toLowerCase())
     return matchesFilter && matchesSearch
   })
 
-  const totalMembers = PROJECTS.reduce((a, p) => a + p.members, 0)
   const totalPending = PROJECTS.reduce((acc, p) => acc + p.pendingApprovals, 0)
   const activeCount  = PROJECTS.filter(p => p.status === 'active').length
+  const onHoldCount  = PROJECTS.filter(p => p.status === 'on-hold').length
 
   return (
     <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
@@ -215,7 +246,7 @@ export default function ProjectListPage() {
       <div className="grid grid-cols-4 gap-4 mb-6">
         <StatCard label="Total Projects"  subtext="assigned to you"        value={PROJECTS.length} icon={TrendingUp}  color="#6366F1" bg="rgba(99,102,241,0.09)"  border="rgba(99,102,241,0.15)"  delay={0}   />
         <StatCard label="Active"          subtext="currently running"       value={activeCount}     icon={Clock}       color="#0EA86A" bg="rgba(14,168,106,0.09)" border="rgba(14,168,106,0.15)" delay={80}  />
-        <StatCard label="Team Members"    subtext="across all projects"     value={totalMembers}    icon={Users}       color="#F5A623" bg="rgba(245,166,35,0.09)" border="rgba(245,166,35,0.15)" delay={160} />
+        <StatCard label="On Hold"         subtext="temporarily paused"      value={onHoldCount}     icon={AlertCircle} color="#F5A623" bg="rgba(245,166,35,0.09)" border="rgba(245,166,35,0.15)" delay={160} />
         <StatCard label="Pending Actions" subtext="need your attention"     value={totalPending}    icon={AlertCircle} color="#E84855" bg="rgba(232,72,85,0.09)"  border="rgba(232,72,85,0.15)"  delay={240} />
       </div>
 
@@ -224,8 +255,8 @@ export default function ProjectListPage() {
         className="flex items-center gap-3 mb-5"
         style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, padding: '12px 14px' }}
       >
-        {/* Search — wider */}
-        <div className="relative" style={{ flex: '0 0 460px' }}>
+        {/* Search — full width */}
+        <div className="relative" style={{ flex: 1 }}>
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: C.muted }} />
           <input
             type="text"
@@ -233,36 +264,69 @@ export default function ProjectListPage() {
             onChange={e => setSearch(e.target.value)}
             placeholder="Search projects or clients..."
             style={{
-              width: '100%', height: 36, paddingLeft: 32, paddingRight: 12,
+              width: '100%', height: 42, paddingLeft: 32, paddingRight: 12,
               border: `1px solid ${C.border}`, borderRadius: 9,
-              fontSize: 13, color: C.navy, background: C.hover, outline: 'none',
+              fontSize: 13, color: C.navy, background: '#fff', outline: 'none',
               fontFamily: 'inherit',
             }}
-            onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.background = '#fff' }}
-            onBlur={e => { e.target.style.borderColor = C.border; e.target.style.background = C.hover }}
+            onFocus={e => { e.target.style.borderColor = '#6366F1' }}
+            onBlur={e => { e.target.style.borderColor = C.border }}
           />
         </div>
 
-        {/* Status filter tabs */}
-        <div className="flex items-center gap-1.5 ml-auto">
-          {FILTER_TABS.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setFilter(tab.id)}
-              style={{
-                height: 34, padding: '0 14px', borderRadius: 8, border: 'none',
-                fontSize: 12.5, fontWeight: 600, cursor: 'pointer',
-                background: filter === tab.id ? C.navy : C.hover,
-                color: filter === tab.id ? '#fff' : C.muted,
-                transition: 'all 0.15s',
-                fontFamily: 'inherit',
-              }}
-              onMouseEnter={e => { if (filter !== tab.id) { e.currentTarget.style.background = '#E4E6EF'; e.currentTarget.style.color = C.navy } }}
-              onMouseLeave={e => { if (filter !== tab.id) { e.currentTarget.style.background = C.hover; e.currentTarget.style.color = C.muted } }}
-            >
-              {tab.label}
-            </button>
-          ))}
+        {/* Status filter — custom dropdown */}
+        <div className="relative" style={{ flex: '0 0 160px' }}>
+          <button
+            onClick={() => setFilterOpen(o => !o)}
+            style={{
+              width: '100%', height: 42, padding: '0 12px', borderRadius: 9,
+              border: `1px solid ${filterOpen ? '#6366F1' : C.border}`,
+              background: C.hover, cursor: 'pointer', fontFamily: 'inherit',
+              display: 'flex', alignItems: 'center', gap: 8,
+              transition: 'border-color 0.15s',
+            }}
+          >
+            <span style={{ flex: 1, textAlign: 'left', fontSize: 13, fontWeight: 600, color: C.navy, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {STATUS_CONFIG[filter].label}
+            </span>
+            <ChevronDown size={15} style={{ color: C.muted, flexShrink: 0, transition: 'transform 0.18s', transform: filterOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+          </button>
+
+          {filterOpen && (
+            <>
+              <div style={{ position: 'fixed', inset: 0, zIndex: 40 }} onClick={() => setFilterOpen(false)} />
+              <div
+                style={{
+                  position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, zIndex: 50,
+                  background: '#fff', border: `1px solid ${C.border}`, borderRadius: 11,
+                  boxShadow: '0 12px 32px rgba(28,32,53,0.12)', padding: 5,
+                }}
+              >
+                {FILTER_TABS.map(tab => {
+                  const isSel = filter === tab.id
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => { setFilter(tab.id); setFilterOpen(false) }}
+                      style={{
+                        width: '100%', height: 36, padding: '0 10px', borderRadius: 7, border: 'none',
+                        display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer',
+                        background: isSel ? C.hover : 'transparent',
+                        fontFamily: 'inherit', transition: 'background 0.12s',
+                      }}
+                      onMouseEnter={e => { if (!isSel) e.currentTarget.style.background = C.hover }}
+                      onMouseLeave={e => { if (!isSel) e.currentTarget.style.background = 'transparent' }}
+                    >
+                      <span style={{ flex: 1, textAlign: 'left', fontSize: 13, fontWeight: isSel ? 700 : 500, color: C.navy }}>{tab.label}</span>
+                      <span style={{ minWidth: 22, height: 20, padding: '0 7px', borderRadius: 99, background: isSel ? '#EEF0FE' : C.hover, color: isSel ? '#6366F1' : C.muted, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        {PROJECTS.filter(p => p.status === tab.id).length}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </>
+          )}
         </div>
       </div>
 

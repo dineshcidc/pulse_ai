@@ -5,7 +5,7 @@ import {
   DollarSign, Briefcase, X, Check, ChevronDown,
 } from 'lucide-react'
 
-type Status = 'active' | 'on-hold' | 'completed' | 'draft'
+type Status = 'active' | 'on-hold' | 'completed' | 'draft' | 'in-progress' | 'cancelled'
 
 interface Project {
   id: string
@@ -106,6 +106,8 @@ const STATUS_CONFIG: Record<Status, { label: string; color: string; bg: string; 
   'on-hold':   { label: 'On Hold',   color: '#92400E', bg: 'rgba(245,158,11,0.10)',  border: 'rgba(245,158,11,0.20)'  },
   'completed': { label: 'Completed', color: '#3B82F6', bg: 'rgba(59,130,246,0.10)',  border: 'rgba(59,130,246,0.20)'  },
   'draft':     { label: 'Draft',     color: '#6B7280', bg: 'rgba(107,114,128,0.10)', border: 'rgba(107,114,128,0.20)'  },
+  'in-progress': { label: 'In Progress', color: '#0891B2', bg: 'rgba(8,145,178,0.10)', border: 'rgba(8,145,178,0.20)' },
+  'cancelled':   { label: 'Cancelled',   color: '#E84855', bg: 'rgba(232,72,85,0.10)', border: 'rgba(232,72,85,0.20)' },
 }
 
 
@@ -320,10 +322,6 @@ function DetailsTab({ project }: { project: Project }) {
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, marginBottom: 4 }}>Start Date</div>
               <div style={{ fontSize: 13.5, fontWeight: 500, color: '#3D4266' }}>{project.startDate}</div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-              <div style={{ width: 32, height: 2, background: 'linear-gradient(90deg, #6366F1, #4F46E5)', borderRadius: 1 }} />
-              <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#6366F1', border: '3px solid #fff', boxShadow: '0 0 0 2px #6366F1' }} />
             </div>
             <div style={{ flex: 1, minWidth: 0, textAlign: 'right' as const }}>
               <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, marginBottom: 4 }}>End Date</div>

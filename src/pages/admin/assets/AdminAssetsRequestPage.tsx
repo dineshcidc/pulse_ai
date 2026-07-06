@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import { Monitor, Smartphone, Plus, Ticket, Eye } from 'lucide-react'
+import { Monitor, Smartphone, Plus, Ticket, Eye, RotateCcw } from 'lucide-react'
+import AdminAssetAllocatedDetailsPage from './AdminAssetAllocatedDetailsPage'
+import AdminAssetReturnDetailsPage, { type ReturnRequest } from './AdminAssetReturnDetailsPage'
 
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', hover: '#F0F2F8', surface: '#F7F8FC' }
 
@@ -26,8 +28,8 @@ const INITIAL_REQUESTS: AssetRequest[] = [
     employeeName: 'Sarah Johnson',
     employeeCode: 'CC002',
     category: 'Laptop',
-    assetDescription: undefined,
-    assetCode: undefined,
+    assetDescription: 'MacBook Pro 16" - M3 Max',
+    assetCode: 'LAP-002',
     status: 'pending',
     requestedDate: '2026-06-01',
     raisedByName: 'John Doe',
@@ -56,8 +58,8 @@ const INITIAL_REQUESTS: AssetRequest[] = [
     employeeName: 'Priya Sharma',
     employeeCode: 'CC004',
     category: 'Phone',
-    assetDescription: undefined,
-    assetCode: undefined,
+    assetDescription: 'iPhone 15 Pro',
+    assetCode: 'PHN-001',
     status: 'pending',
     requestedDate: '2026-06-03',
     raisedByName: 'Michael Brown',
@@ -66,6 +68,89 @@ const INITIAL_REQUESTS: AssetRequest[] = [
     acceptedDate: '2026-06-07',
   },
 ]
+
+const INITIAL_RETURN_REQUESTS: ReturnRequest[] = [
+  {
+    id: 'rr-001',
+    requestId: 'RR-2026-0101',
+    employeeName: 'Arjun Menon',
+    employeeCode: 'CC007',
+    employeeRole: 'Senior Developer',
+    raisedByName: 'Arjun Menon',
+    raisedByCode: 'CC007',
+    raisedByRole: 'Senior Developer',
+    raisedByType: 'Employee',
+    category: 'Laptop',
+    assetName: 'MacBook Pro 14" M2',
+    assetCode: 'LAP-002',
+    returnReason: 'Switching to a company-provided desktop setup. No longer need the laptop for daily work.',
+    requestedDate: '2026-06-28',
+    status: 'Pending',
+  },
+  {
+    id: 'rr-002',
+    requestId: 'RR-2026-0102',
+    employeeName: 'Priya Sharma',
+    employeeCode: 'CC004',
+    employeeRole: 'Product Manager',
+    raisedByName: 'Rohan Mehta',
+    raisedByCode: 'CC001',
+    raisedByRole: 'Engineering Manager',
+    raisedByType: 'Manager',
+    category: 'Monitor',
+    assetName: 'Dell 27" 4K Monitor',
+    assetCode: 'MON-004',
+    returnReason: 'Employee relocated to another branch; asset to be reallocated to the local inventory.',
+    requestedDate: '2026-06-30',
+    status: 'Pending',
+  },
+  {
+    id: 'rr-003',
+    requestId: 'RR-2026-0098',
+    employeeName: 'Neha Patel',
+    employeeCode: 'CC006',
+    employeeRole: 'QA Engineer',
+    raisedByName: 'Neha Patel',
+    raisedByCode: 'CC006',
+    raisedByRole: 'QA Engineer',
+    raisedByType: 'Employee',
+    category: 'Phone',
+    assetName: 'iPhone 15 Pro',
+    assetCode: 'PHN-001',
+    returnReason: 'Device screen is cracked and needs replacement. Returning the damaged unit.',
+    requestedDate: '2026-06-20',
+    status: 'Approved',
+    decisionNote: 'Approved for Return. Kindly ensure the system and charger are packed safely and sent to the Office Admin',
+    decisionDate: '2026-06-22',
+    decisionBy: 'System Admin',
+  },
+  {
+    id: 'rr-004',
+    requestId: 'RR-2026-0095',
+    employeeName: 'David Brown',
+    employeeCode: 'CC009',
+    employeeRole: 'Tech Lead',
+    raisedByName: 'David Brown',
+    raisedByCode: 'CC009',
+    raisedByRole: 'Tech Lead',
+    raisedByType: 'Employee',
+    category: 'Laptop',
+    assetName: 'MacBook Pro 16" M3',
+    assetCode: 'LAP-006',
+    returnReason: 'Requesting return as I received an upgraded model.',
+    requestedDate: '2026-06-15',
+    status: 'Rejected',
+    decisionNote: 'Return rejected — the upgraded model has not been allocated yet. Please continue using the current device.',
+    decisionDate: '2026-06-17',
+    decisionBy: 'System Admin',
+  },
+]
+
+const RETURN_STATUS_STYLES: Record<ReturnRequest['status'], { bg: string; color: string; dot: string }> = {
+  Pending: { bg: 'rgba(245,158,11,0.10)', color: '#B45309', dot: '#F59E0B' },
+  Approved: { bg: 'rgba(14,168,106,0.12)', color: '#0A7040', dot: '#0EA86A' },
+  Rejected: { bg: 'rgba(232,72,85,0.10)', color: '#C0202E', dot: '#E84855' },
+}
 
 function fmtDate(d: string) {
   return new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
@@ -81,6 +166,19 @@ const getCategoryIcon = (category?: string) => {
 export default function AdminAssetsRequestPage() {
   const [requests, setRequests] = useState<AssetRequest[]>(INITIAL_REQUESTS)
   const [selectedRequest, setSelectedRequest] = useState<AssetRequest | null>(null)
+  const [viewDetails, setViewDetails] = useState<AssetRequest | null>(null)
+  const [returnRequests, setReturnRequests] = useState<ReturnRequest[]>(INITIAL_RETURN_REQUESTS)
+  const [viewReturn, setViewReturn] = useState<ReturnRequest | null>(null)
+  const [returnFilter, setReturnFilter] = useState<'All' | 'Pending' | 'Approved' | 'Rejected'>('All')
+
+  const handleReturnDecision = (id: string, decision: 'Approved' | 'Rejected', note: string) => {
+    const today = new Date().toISOString().split('T')[0]
+    const patch = { status: decision, decisionNote: note, decisionDate: today, decisionBy: 'System Admin' as const }
+    setReturnRequests((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)))
+    setViewReturn((prev) => (prev && prev.id === id ? { ...prev, ...patch } : prev))
+  }
+
+  const filteredReturns = returnRequests.filter((r) => returnFilter === 'All' || r.status === returnFilter)
   const [selectedTicket, setSelectedTicket] = useState<AssetRequest | null>(null)
   const [activeTab, setActiveTab] = useState<'allocation' | 'return' | 'closed'>('allocation')
   const [addAssetModal, setAddAssetModal] = useState<AssetRequest | null>(null)
@@ -124,6 +222,25 @@ export default function AdminAssetsRequestPage() {
       { code: 'PHN-001', description: 'iPhone 15 Pro' },
       { code: 'PHN-002', description: 'Samsung Galaxy S24 Ultra' },
     ],
+  }
+
+  if (viewDetails) {
+    return (
+      <AdminAssetAllocatedDetailsPage
+        request={viewDetails}
+        onBack={() => setViewDetails(null)}
+      />
+    )
+  }
+
+  if (viewReturn) {
+    return (
+      <AdminAssetReturnDetailsPage
+        request={viewReturn}
+        onBack={() => setViewReturn(null)}
+        onDecision={handleReturnDecision}
+      />
+    )
   }
 
   return (
@@ -211,31 +328,108 @@ export default function AdminAssetsRequestPage() {
           ))}
         </div>
 
-        {/* ── Tab Content ─────────────────────────────────────────────── */}
+        {/* ── Tab Content: Asset Return Requests ──────────────────────── */}
         {activeTab === 'closed' && (
-          <div style={{ padding: '60px 40px', textAlign: 'center', animation: 'fadeIn 0.3s ease' }}>
-            <div
-              style={{
-                width: 56,
-                height: 56,
-                borderRadius: 14,
-                background: C.hover,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: 16,
-                marginLeft: 'auto',
-                marginRight: 'auto',
-              }}
-            >
-              <Ticket size={24} style={{ color: C.muted }} />
+          <div style={{ animation: 'fadeIn 0.3s ease' }}>
+            {/* Filter Row */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 18px', borderBottom: `1px solid ${C.border}`, background: C.surface }}>
+              <span style={{ fontSize: 12.5, fontWeight: 700, color: C.navy }}>
+                Return Requests
+                <span style={{ marginLeft: 8, padding: '2px 8px', borderRadius: 99, background: '#fff', border: `1px solid ${C.border}`, fontSize: 11, fontWeight: 700, color: C.muted }}>{returnRequests.length}</span>
+              </span>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {(['All', 'Pending', 'Approved', 'Rejected'] as const).map((s) => {
+                  const active = returnFilter === s
+                  const cnt = s === 'All' ? returnRequests.length : returnRequests.filter((r) => r.status === s).length
+                  const style = s === 'All' ? { bg: 'rgba(28,32,53,0.08)', color: C.navy, dot: '#B0B4C8' } : RETURN_STATUS_STYLES[s]
+                  return (
+                    <button
+                      key={s}
+                      onClick={() => setReturnFilter(s)}
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 99,
+                        border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 11, fontWeight: active ? 700 : 600,
+                        background: active ? style.bg : '#fff', color: active ? style.color : C.muted,
+                        boxShadow: active ? 'none' : `inset 0 0 0 1px ${C.border}`, transition: 'all 0.13s',
+                      }}
+                    >
+                      {s !== 'All' && <span style={{ width: 5, height: 5, borderRadius: '50%', background: active ? style.dot : '#C0C4D6', display: 'inline-block' }} />}
+                      {s}
+                      <span style={{ fontSize: 10, fontWeight: 700, padding: '0 5px', borderRadius: 99, background: active ? 'rgba(255,255,255,0.55)' : '#F0F2F8', color: active ? style.color : '#9CA3AF' }}>{cnt}</span>
+                    </button>
+                  )
+                })}
+              </div>
             </div>
-            <p style={{ fontSize: 14, fontWeight: 600, color: C.navy, marginBottom: 4 }}>
-              No asset returns available
-            </p>
-            <p style={{ fontSize: 12.5, color: C.muted }}>
-              Currently there are no asset return requests
-            </p>
+
+            {filteredReturns.length === 0 ? (
+              <div style={{ padding: '60px 40px', textAlign: 'center' }}>
+                <div style={{ width: 56, height: 56, borderRadius: 14, background: C.hover, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16, marginLeft: 'auto', marginRight: 'auto' }}>
+                  <RotateCcw size={24} style={{ color: C.muted }} />
+                </div>
+                <p style={{ fontSize: 14, fontWeight: 600, color: C.navy, marginBottom: 4 }}>No return requests found</p>
+                <p style={{ fontSize: 12.5, color: C.muted }}>There are no {returnFilter !== 'All' ? returnFilter.toLowerCase() : ''} asset return requests</p>
+              </div>
+            ) : (
+              <>
+                {/* Table Header */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.3fr) minmax(0,0.9fr) minmax(0,0.9fr) minmax(0,1.1fr) minmax(0,2.6fr) minmax(0,1fr) minmax(0,0.6fr)', gap: 14, padding: '14px 18px', background: C.surface, borderBottom: `1px solid ${C.border}` }}>
+                  {['Employee', 'Request Date', 'Category', 'Asset Code', 'Return Reason', 'Status', 'Action'].map((col) => (
+                    <span key={col} style={{ fontSize: 10.5, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{col}</span>
+                  ))}
+                </div>
+
+                {/* Table Rows */}
+                {filteredReturns.map((req, idx) => {
+                  const st = RETURN_STATUS_STYLES[req.status]
+                  return (
+                    <div
+                      key={req.id}
+                      className="req-row"
+                      style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.3fr) minmax(0,0.9fr) minmax(0,0.9fr) minmax(0,1.1fr) minmax(0,2.6fr) minmax(0,1fr) minmax(0,0.6fr)', gap: 14, padding: '14px 18px', borderBottom: idx < filteredReturns.length - 1 ? `1px solid ${C.border}` : 'none', alignItems: 'center' }}
+                    >
+                      {/* Employee */}
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: C.navy }}>{req.employeeName}</div>
+                        <div style={{ fontSize: 11, color: C.muted, fontWeight: 500, marginTop: 2 }}>{req.employeeCode}</div>
+                      </div>
+
+                      {/* Request Date */}
+                      <span style={{ fontSize: 12.5, fontWeight: 500, color: C.navy }}>{fmtDate(req.requestedDate)}</span>
+
+                      {/* Category */}
+                      <span style={{ fontSize: 12.5, fontWeight: 500, color: C.navy, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        {getCategoryIcon(req.category)}
+                        {req.category}
+                      </span>
+
+                      {/* Asset Code */}
+                      <span style={{ fontSize: 12.5, fontWeight: 500, color: C.muted, fontFamily: 'monospace' }}>{req.assetCode}</span>
+
+                      {/* Return Reason */}
+                      <span style={{ fontSize: 12, color: '#5A6080', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={req.returnReason}>{req.returnReason.length > 50 ? req.returnReason.slice(0, 50).trimEnd() + '...' : req.returnReason}</span>
+
+                      {/* Status */}
+                      <span style={{ padding: '5px 10px', background: st.bg, color: st.color, fontSize: 11, fontWeight: 600, borderRadius: 20, width: 'fit-content', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 5, border: `1px solid ${st.dot}33` }}>
+                        <span style={{ width: 5, height: 5, borderRadius: '50%', background: st.dot, display: 'inline-block' }} />
+                        {req.status}
+                      </span>
+
+                      {/* Action */}
+                      <button
+                        onClick={() => setViewReturn(req)}
+                        title="View details"
+                        style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${C.border}`, background: '#fff', color: C.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(99,102,241,0.08)'; e.currentTarget.style.borderColor = 'rgba(99,102,241,0.30)'; e.currentTarget.style.color = '#6366F1' }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted }}
+                      >
+                        <Eye size={14} strokeWidth={1.8} />
+                      </button>
+                    </div>
+                  )
+                })}
+              </>
+            )}
           </div>
         )}
 
@@ -425,7 +619,7 @@ export default function AdminAssetsRequestPage() {
               </button>
             ) : (
               <button
-                onClick={() => setSelectedRequest(req)}
+                onClick={() => setViewDetails(req)}
                 style={{
                   width: 28,
                   height: 28,

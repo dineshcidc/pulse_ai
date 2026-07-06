@@ -7,7 +7,7 @@ import {
 } from 'lucide-react'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-type ProjectStatus = 'active' | 'on-hold' | 'planning' | 'completed'
+type ProjectStatus = 'yet-to-start' | 'started' | 'in-progress' | 'on-hold' | 'completed' | 'cancelled'
 type BillingType   = 'hourly' | 'fixed' | 'retainer'
 
 interface RoleMember {
@@ -55,14 +55,17 @@ interface FormData {
 const STEPS = [
   { id: 1, label: 'Project Details', sub: 'Name, client & full timeline',   Icon: FileText   },
   { id: 2, label: 'Team Details',    sub: 'Manager & members',              Icon: Users      },
-  { id: 3, label: 'Rate Card',       sub: 'Billing & rates',                Icon: DollarSign },
+  // Rate Card hidden for now — keep for later re-enable
+  // { id: 3, label: 'Rate Card',       sub: 'Billing & rates',                Icon: DollarSign },
 ]
 
 const STATUSES: { id: ProjectStatus; label: string; color: string; bg: string; border: string }[] = [
-  { id: 'planning',   label: 'Planning',   color: '#6366F1', bg: 'rgba(99,102,241,0.08)',  border: 'rgba(99,102,241,0.25)'  },
-  { id: 'active',     label: 'Active',     color: '#0A8A58', bg: 'rgba(14,168,106,0.08)',  border: 'rgba(14,168,106,0.25)'  },
-  { id: 'on-hold',    label: 'On Hold',    color: '#B45309', bg: 'rgba(245,158,11,0.08)',  border: 'rgba(245,158,11,0.25)'  },
-  { id: 'completed',  label: 'Completed',  color: '#1D4ED8', bg: 'rgba(59,130,246,0.08)',  border: 'rgba(59,130,246,0.25)'  },
+  { id: 'yet-to-start', label: 'Yet to Start', color: '#6B7280', bg: 'rgba(107,114,128,0.08)', border: 'rgba(107,114,128,0.25)' },
+  { id: 'started',      label: 'Started',      color: '#6366F1', bg: 'rgba(99,102,241,0.08)',  border: 'rgba(99,102,241,0.25)'  },
+  { id: 'in-progress',  label: 'In Progress',  color: '#0891B2', bg: 'rgba(8,145,178,0.08)',   border: 'rgba(8,145,178,0.25)'   },
+  { id: 'on-hold',      label: 'On Hold',      color: '#B45309', bg: 'rgba(245,158,11,0.08)',  border: 'rgba(245,158,11,0.25)'  },
+  { id: 'completed',    label: 'Completed',    color: '#0A8A58', bg: 'rgba(14,168,106,0.08)',  border: 'rgba(14,168,106,0.25)'  },
+  { id: 'cancelled',    label: 'Cancelled',    color: '#E84855', bg: 'rgba(232,72,85,0.08)',   border: 'rgba(232,72,85,0.25)'   },
 ]
 
 const BILLING_TYPES: { id: BillingType; label: string; desc: string }[] = [
@@ -120,12 +123,24 @@ function Step1({ data, set }: { data: FormData; set: (p: Partial<FormData>) => v
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
       <div className="grid grid-cols-2 gap-5">
-        <div style={{ gridColumn: '1 / -1' }}>
+        <div>
           <label style={LABEL}>Project Name <Req /></label>
           <div style={{ position: 'relative' }}>
             <Briefcase size={14} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: C.muted, pointerEvents: 'none' }} />
             <input value={data.projectName} onChange={e => set({ projectName: e.target.value })}
               placeholder="e.g. Pulse.AI Platform v3"
+              style={{ ...inputStyle, paddingLeft: 38 }}
+              onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.10)' }}
+              onBlur={e => { e.target.style.borderColor = C.border; e.target.style.boxShadow = 'none' }} />
+          </div>
+        </div>
+
+        <div>
+          <label style={LABEL}>Client Name <Req /></label>
+          <div style={{ position: 'relative' }}>
+            <Building2 size={14} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: C.muted, pointerEvents: 'none' }} />
+            <input value={data.clientName} onChange={e => set({ clientName: e.target.value })}
+              placeholder="e.g. HDFC Bank"
               style={{ ...inputStyle, paddingLeft: 38 }}
               onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.10)' }}
               onBlur={e => { e.target.style.borderColor = C.border; e.target.style.boxShadow = 'none' }} />
@@ -142,24 +157,12 @@ function Step1({ data, set }: { data: FormData; set: (p: Partial<FormData>) => v
             onBlur={e => { e.target.style.borderColor = C.border; e.target.style.boxShadow = 'none' }} />
         </div>
 
-        <div>
-          <label style={LABEL}>Client Name <Req /></label>
-          <div style={{ position: 'relative' }}>
-            <Building2 size={14} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: C.muted, pointerEvents: 'none' }} />
-            <input value={data.clientName} onChange={e => set({ clientName: e.target.value })}
-              placeholder="e.g. HDFC Bank"
-              style={{ ...inputStyle, paddingLeft: 38 }}
-              onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.10)' }}
-              onBlur={e => { e.target.style.borderColor = C.border; e.target.style.boxShadow = 'none' }} />
-          </div>
-        </div>
-
-        <div>
+        <div style={{ gridColumn: '1 / -1' }}>
           <label style={LABEL}>Project Status</label>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {STATUSES.map(s => (
               <button key={s.id} onClick={() => set({ status: s.id })}
-                style={{ height: 40, borderRadius: 9, border: `1px solid ${data.status === s.id ? s.border : C.border}`, background: data.status === s.id ? s.bg : '#fff', color: data.status === s.id ? s.color : C.muted, fontSize: 12.5, fontWeight: data.status === s.id ? 700 : 500, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: 'inherit', transition: 'all 0.13s', outline: 'none' }}
+                style={{ height: 40, borderRadius: 9, border: `1px solid ${data.status === s.id ? s.border : C.border}`, background: data.status === s.id ? s.bg : '#fff', color: data.status === s.id ? s.color : C.muted, fontSize: 12.5, fontWeight: data.status === s.id ? 700 : 500, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: 'inherit', transition: 'all 0.13s', outline: 'none', padding: '0 14px' }}
                 onMouseEnter={e => { if (data.status !== s.id) e.currentTarget.style.background = C.surface }}
                 onMouseLeave={e => { if (data.status !== s.id) e.currentTarget.style.background = '#fff' }}>
                 <span style={{ width: 7, height: 7, borderRadius: '50%', background: data.status === s.id ? s.color : '#D0D4E4', display: 'inline-block', flexShrink: 0, transition: 'background 0.13s' }} />
@@ -680,7 +683,7 @@ export default function AddProjectPage({ onBack, onSave }: { onBack: () => void;
   const [form, setFormRaw] = useState<FormData>({
     projectName: '', description: '', clientName: '', startDate: '', endDate: '',
     plannedStart: '', plannedEnd: '', actualStart: '', actualEnd: '', sowSigned: '',
-    status: 'planning',
+    status: 'yet-to-start',
     manager: '', roleGroups: [],
     billingType: 'hourly', poNumber: '', paymentTerms: '', rates: [],
   })

@@ -136,7 +136,7 @@ function PageContent({
   if (activeItem === 'my-profile')       return <MyProfilePage />
   if (activeItem === 'org-structure')    return <OrgStructurePage />
   if (activeItem === 'tickets')          return <TicketsPage />
-  if (activeItem === 'my-assets')            return <ManagerMyAssetsPage assets={myAssets} myRequests={myRequests} onAcceptRequest={onAcceptRequest} />
+  if (activeItem === 'my-assets')            return <ManagerMyAssetsPage assets={myAssets} myRequests={myRequests} onAcceptRequest={onAcceptRequest} onNavigate={onNavigate} />
   if (activeItem === 'team-asset-requests')  return <ManagerAssetRequestsPage onAddAsset={onAddAsset} teamOnly teamRequests={teamRequests} onNavigate={onNavigate} />
   if (activeItem === 'create-asset-request') return <ManagerCreateAssetRequestPage onRequestCreated={onRequestCreated} onNavigate={onNavigate} />
   if (activeItem === 'asset-request-details') return <ManagerAssetRequestDetailsPage onNavigate={onNavigate} />
@@ -175,6 +175,13 @@ export default function ManagerDashboard({ onLogout }: { onLogout: () => void })
       description: 'Dell 27" 4K Ultra HD',
       dateFrom: '15/01/2024',
     },
+    {
+      id: 'ast-003',
+      code: 'AR-2026-0461',
+      category: 'Mouse',
+      description: 'HP LaserJet Printer',
+      dateFrom: '20/03/2024',
+    },
   ])
 
   const [myRequests, setMyRequests] = useState<ManagerAssetRequest[]>([
@@ -183,7 +190,7 @@ export default function ManagerDashboard({ onLogout }: { onLogout: () => void })
       requestId: 'AR-2026-0460',
       assetName: 'iPhone 15 Pro',
       assetCode: 'PH-2024-0215',
-      category: 'IT Hardware',
+      category: 'Laptop',
       status: 'Allocated',
       employeeName: 'John Doe',
       employeeCode: 'CC001',
@@ -195,7 +202,7 @@ export default function ManagerDashboard({ onLogout }: { onLogout: () => void })
       requestId: 'AR-2026-0461',
       assetName: 'HP LaserJet Printer',
       assetCode: 'PR-2024-0087',
-      category: 'IT Hardware',
+      category: 'Mouse',
       status: 'Allocated',
       employeeName: 'John Doe',
       employeeCode: 'CC001',
@@ -207,7 +214,7 @@ export default function ManagerDashboard({ onLogout }: { onLogout: () => void })
       requestId: 'AR-2026-0462',
       assetName: 'Wireless Headphones',
       assetCode: 'AC-2024-0312',
-      category: 'IT Hardware',
+      category: 'Laptop',
       status: 'Pending',
       employeeName: 'John Doe',
       employeeCode: 'CC001',

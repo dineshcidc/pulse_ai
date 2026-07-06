@@ -179,8 +179,8 @@ export default function AdminAssetsListPage({ onNavigate }: { onNavigate?: (id: 
               width: '100%',
               padding: '10px 12px',
               borderRadius: 10,
-              border: selectedCategory === 'All' ? '1.5px solid #6366F1' : `1px solid ${C.border}`,
-              background: selectedCategory === 'All' ? 'rgba(99,102,241,0.10)' : '#fff',
+              border: selectedCategory === 'All' ? '1.5px solid #6366F1' : '1.5px solid transparent',
+              background: selectedCategory === 'All' ? 'rgba(99,102,241,0.10)' : 'transparent',
               color: selectedCategory === 'All' ? '#6366F1' : C.navy,
               fontSize: 12.5,
               fontWeight: 600,
@@ -195,13 +195,11 @@ export default function AdminAssetsListPage({ onNavigate }: { onNavigate?: (id: 
             onMouseEnter={e => {
               if (selectedCategory !== 'All') {
                 e.currentTarget.style.background = C.surface
-                e.currentTarget.style.borderColor = '#C8CCE0'
               }
             }}
             onMouseLeave={e => {
               if (selectedCategory !== 'All') {
-                e.currentTarget.style.background = '#fff'
-                e.currentTarget.style.borderColor = C.border
+                e.currentTarget.style.background = 'transparent'
               }
             }}
           >
@@ -218,8 +216,8 @@ export default function AdminAssetsListPage({ onNavigate }: { onNavigate?: (id: 
                 width: '100%',
                 padding: '10px 12px',
                 borderRadius: 10,
-                border: selectedCategory === category ? '1.5px solid #6366F1' : `1px solid ${C.border}`,
-                background: selectedCategory === category ? 'rgba(99,102,241,0.10)' : '#fff',
+                border: selectedCategory === category ? '1.5px solid #6366F1' : '1.5px solid transparent',
+                background: selectedCategory === category ? 'rgba(99,102,241,0.10)' : 'transparent',
                 color: selectedCategory === category ? '#6366F1' : C.navy,
                 fontSize: 12.5,
                 fontWeight: 600,
@@ -234,13 +232,11 @@ export default function AdminAssetsListPage({ onNavigate }: { onNavigate?: (id: 
               onMouseEnter={e => {
                 if (selectedCategory !== category) {
                   e.currentTarget.style.background = C.surface
-                  e.currentTarget.style.borderColor = '#C8CCE0'
                 }
               }}
               onMouseLeave={e => {
                 if (selectedCategory !== category) {
-                  e.currentTarget.style.background = '#fff'
-                  e.currentTarget.style.borderColor = C.border
+                  e.currentTarget.style.background = 'transparent'
                 }
               }}
             >
