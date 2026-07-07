@@ -2,6 +2,7 @@ import { useState } from 'react'
 import {
   Search, Users, ShieldCheck, Crown, Check, X,
   ChevronDown, ArrowLeftRight, GripVertical, Pencil, Trash2, Plus,
+  Wallet, Settings, ShieldAlert,
 } from 'lucide-react'
 
 type Role = 'Employee' | 'Manager' | 'Admin'
@@ -12,6 +13,7 @@ interface RoleRow {
   name: string
   permissions: number
   created: string
+  createdBy: { name: string; code: string }
   color: string
   bg: string
   Icon: React.FC<{ size?: number; color?: string }>
@@ -45,9 +47,9 @@ const INIT_USERS: UserRow[] = [
 ]
 
 const INIT_ROLES: RoleRow[] = [
-  { id: 'r1', name: 'Employee',        permissions: 9,  created: 'Jan 12, 2023', color: '#4338CA', bg: '#EEF2FF', Icon: Users },
-  { id: 'r2', name: 'Project Manager', permissions: 15, created: 'Mar 05, 2023', color: '#047857', bg: '#ECFDF5', Icon: ShieldCheck },
-  { id: 'r3', name: 'Admin',           permissions: 24, created: 'Nov 08, 2021', color: '#6D28D9', bg: '#F5F3FF', Icon: Crown },
+  { id: 'r1', name: 'Employee',        permissions: 9,  created: 'Jan 12, 2023', createdBy: { name: 'Nina Volkov',    code: 'EMP-0018' }, color: '#4338CA', bg: '#EEF2FF', Icon: Users },
+  { id: 'r2', name: 'Project Manager', permissions: 15, created: 'Mar 05, 2023', createdBy: { name: 'Nina Volkov',    code: 'EMP-0018' }, color: '#047857', bg: '#ECFDF5', Icon: ShieldCheck },
+  { id: 'r3', name: 'Admin',           permissions: 24, created: 'Nov 08, 2021', createdBy: { name: 'System',         code: 'SYS-0001' }, color: '#6D28D9', bg: '#F5F3FF', Icon: Crown },
 ]
 
 const ROLE_CFG: Record<Role, {
@@ -75,6 +77,64 @@ const ROLE_META: Record<Role, {
   Employee: { Icon: Users,       tagline: 'Standard access for day-to-day work' },
   Manager:  { Icon: ShieldCheck, tagline: 'Team-level oversight and approvals'  },
   Admin:    { Icon: Crown,       tagline: 'Full system control and configuration' },
+}
+
+/* ── Add-Role popup config ── */
+type AddRoleName = 'Admin' | 'Manager' | 'Employee' | 'Finance Manager' | 'System Admin'
+
+interface AddRoleMeta {
+  Icon: React.FC<{ size?: number; color?: string }>
+  color: string; bg: string; border: string; tagline: string
+}
+
+const ADD_ROLE_META: Record<AddRoleName, AddRoleMeta> = {
+  Admin:             { Icon: Crown,       color: '#6D28D9', bg: '#F5F3FF', border: 'rgba(139,92,246,0.2)',  tagline: 'Full system control & configuration' },
+  Manager:           { Icon: ShieldCheck, color: '#047857', bg: '#ECFDF5', border: 'rgba(16,185,129,0.22)', tagline: 'Team-level oversight & approvals'     },
+  Employee:          { Icon: Users,       color: '#4338CA', bg: '#EEF2FF', border: 'rgba(99,102,241,0.2)',  tagline: 'Standard day-to-day access'          },
+  'Finance Manager': { Icon: Wallet,      color: '#B45309', bg: '#FFF7ED', border: 'rgba(245,158,11,0.24)', tagline: 'Payroll, billing & financial reports' },
+  'System Admin':    { Icon: Settings,    color: '#0E7490', bg: '#ECFEFF', border: 'rgba(6,182,212,0.24)',  tagline: 'Asset allocation & system provisioning' },
+}
+
+const ADD_ROLE_ORDER: AddRoleName[] = ['Admin', 'Manager', 'Employee', 'Finance Manager', 'System Admin']
+
+interface CustomRole {
+  id: string; name: string
+  Icon: React.FC<{ size?: number; color?: string }>
+  color: string; bg: string; border: string; tagline: string
+  can: string[]; restricted: string[]; userCount: number
+}
+
+/* Dummy permission sets for the two new roles */
+const DUMMY_PERMS: Record<'Finance Manager' | 'System Admin', { can: string[]; restricted: string[] }> = {
+  'Finance Manager': {
+    can: [
+      'View & process payroll runs',
+      'Approve expense reimbursements',
+      'Manage invoices & billing',
+      'View financial reports & budgets',
+      'Export payroll & tax data',
+    ],
+    restricted: [
+      'Create or delete users',
+      'Edit system configuration',
+      'Manage organisation-wide policies',
+    ],
+  },
+  'System Admin': {
+    can: [
+      'Manage Assets List & inventory',
+      'Approve Asset Allocation requests',
+      'Process System Allocation Request',
+      'Handle Asset Return requests',
+      'Provision & assign system accounts',
+      'View asset allocation reports',
+    ],
+    restricted: [
+      'Approve payroll runs',
+      'View employee salary details',
+      'Manage organisation-wide policies',
+    ],
+  },
 }
 
 function initRolePerms(): RolePermsMap {
@@ -195,6 +255,63 @@ export default function RoleAccessPage() {
     if (r) { setToast(`Role "${r.name}" deleted`); setTimeout(() => setToast(null), 3000) }
   }
 
+  /* ── custom roles created via the Add Role popup (shown in Permissions Overview) ── */
+  const [customRoles, setCustomRoles] = useState<CustomRole[]>([])
+  const [newRoleId,   setNewRoleId]   = useState<string | null>(null)
+
+  /* ── add-role popup state ── */
+  const [addRoleOpen,  setAddRoleOpen]  = useState(false)
+  const [pickRole,     setPickRole]     = useState<AddRoleName | null>(null)
+  const [permsLoading, setPermsLoading] = useState(false)
+  const [creatingRole, setCreatingRole] = useState(false)
+
+  function openAddRole() {
+    setAddRoleOpen(true); setPickRole(null); setPermsLoading(false); setCreatingRole(false)
+  }
+  function closeAddRole() {
+    if (creatingRole) return
+    setAddRoleOpen(false); setPickRole(null); setPermsLoading(false)
+  }
+  function selectAddRole(name: AddRoleName) {
+    if (name === pickRole) return
+    setPickRole(name); setPermsLoading(true)
+    setTimeout(() => setPermsLoading(false), 700)
+  }
+  /* permissions for a picked role — reuse live perms for the 3 base roles, dummy for the rest */
+  function permsForRole(name: AddRoleName): { can: string[]; restricted: string[] } {
+    if (name === 'Admin' || name === 'Manager' || name === 'Employee') {
+      return {
+        can:        rolePerms[name].can.map(p => p.label),
+        restricted: rolePerms[name].restricted.map(p => p.label),
+      }
+    }
+    return DUMMY_PERMS[name]
+  }
+  async function confirmCreateRole() {
+    if (!pickRole || permsLoading || creatingRole) return
+    setCreatingRole(true)
+    await new Promise(r => setTimeout(r, 950))
+    const meta  = ADD_ROLE_META[pickRole]
+    const perms = permsForRole(pickRole)
+    const id    = `cr${Date.now()}`
+    setRoleRows(prev => [...prev, {
+      id, name: pickRole,
+      permissions: perms.can.length + perms.restricted.length,
+      created: 'Jul 07, 2026', createdBy: { name: 'Nina Volkov', code: 'EMP-0018' },
+      color: meta.color, bg: meta.bg, Icon: meta.Icon,
+    }])
+    setCustomRoles(prev => [...prev, {
+      id, name: pickRole, Icon: meta.Icon,
+      color: meta.color, bg: meta.bg, border: meta.border, tagline: meta.tagline,
+      can: perms.can, restricted: perms.restricted, userCount: 0,
+    }])
+    const created = pickRole
+    setCreatingRole(false); setAddRoleOpen(false); setPickRole(null)
+    setTab('permissions'); setNewRoleId(id)
+    setTimeout(() => setNewRoleId(null), 2600)
+    setToast(`Role "${created}" created`); setTimeout(() => setToast(null), 3500)
+  }
+
   /* ── permissions state ── */
   const [rolePerms, setRolePerms] = useState<RolePermsMap>(initRolePerms)
   const [dragItem,  setDragItem]  = useState<{ role: Role; section: PermSection; id: string } | null>(null)
@@ -203,6 +320,14 @@ export default function RoleAccessPage() {
   const [editVal,   setEditVal]   = useState('')
   const [addTarget, setAddTarget] = useState<{ role: Role; section: PermSection } | null>(null)
   const [addVal,    setAddVal]    = useState('')
+  const [collapsedCards, setCollapsedCards] = useState<Set<string>>(new Set())
+  function toggleCard(role: string) {
+    setCollapsedCards(prev => {
+      const next = new Set(prev)
+      next.has(role) ? next.delete(role) : next.add(role)
+      return next
+    })
+  }
 
   /* ── derived ── */
   const counts: Record<Role, number> = {
@@ -580,7 +705,7 @@ export default function RoleAccessPage() {
               />
             </div>
             <button
-              onClick={() => { setToast('Add Role — coming soon'); setTimeout(() => setToast(null), 2500) }}
+              onClick={openAddRole}
               style={{
                 height: 38, padding: '0 16px', borderRadius: 8, border: 'none',
                 background: C.navy, color: '#fff', fontSize: 13, fontWeight: 700,
@@ -599,9 +724,9 @@ export default function RoleAccessPage() {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ background: C.surface }}>
-                  {['Role Name', 'Permissions', 'Created Date', 'Action'].map((h, i) => (
+                  {['Role Name', 'Permissions', 'Created Date', 'Created By', 'Action'].map((h, i) => (
                     <th key={h} style={{
-                      padding: '11px 18px', textAlign: i === 3 ? 'center' : 'left',
+                      padding: '11px 18px', textAlign: i === 4 ? 'center' : 'left',
                       fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.05em',
                       borderBottom: `1px solid ${C.border}`,
                     }}>{h}</th>
@@ -611,7 +736,7 @@ export default function RoleAccessPage() {
               <tbody>
                 {filteredRoles.length === 0 ? (
                   <tr>
-                    <td colSpan={4} style={{ padding: '48px 20px', textAlign: 'center' }}>
+                    <td colSpan={5} style={{ padding: '48px 20px', textAlign: 'center' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
                         <div style={{ width: 44, height: 44, borderRadius: 12, background: C.surface, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <ShieldCheck size={20} color={C.muted} />
@@ -647,6 +772,14 @@ export default function RoleAccessPage() {
                       {/* Created Date */}
                       <td style={{ padding: '13px 18px' }}>
                         <span style={{ fontSize: 12.5, color: C.muted }}>{r.created}</span>
+                      </td>
+
+                      {/* Created By */}
+                      <td style={{ padding: '13px 18px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: C.navy }}>{r.createdBy.name}</span>
+                          <span style={{ fontSize: 11.5, color: C.muted, fontFamily: 'monospace' }}>{r.createdBy.code}</span>
+                        </div>
                       </td>
 
                       {/* Action */}
@@ -708,17 +841,18 @@ export default function RoleAccessPage() {
           </div>
 
           {/* Role cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, alignItems: 'stretch' }}>
             {(['Employee', 'Manager', 'Admin'] as Role[]).map(role => {
               const cfg     = ROLE_CFG[role]
               const meta    = ROLE_META[role]
               const Icon    = meta.Icon
               const isCardTarget = dragOver?.role === role
+              const isCollapsed  = collapsedCards.has(role)
 
               return (
                 <div key={role} style={{
                   background: '#fff',
-                  border: `2px solid ${isCardTarget ? cfg.accent : C.border}`,
+                  border: `1px solid ${isCardTarget ? cfg.accent : C.border}`,
                   borderRadius: 16, overflow: 'hidden',
                   transition: 'border-color 0.15s, box-shadow 0.15s',
                   boxShadow: isCardTarget ? `0 0 0 4px ${cfg.light}` : 'none',
@@ -741,9 +875,27 @@ export default function RoleAccessPage() {
                       background: '#fff', border: `1px solid ${cfg.border}`,
                       borderRadius: 7, padding: '2px 9px',
                     }}>{counts[role]} users</span>
+                    {/* Accordion toggle */}
+                    <button
+                      onClick={() => toggleCard(role)}
+                      title={isCollapsed ? 'Expand' : 'Collapse'}
+                      aria-expanded={!isCollapsed}
+                      style={{
+                        flexShrink: 0, width: 26, height: 26, borderRadius: 7,
+                        background: '#fff', border: `1px solid ${cfg.border}`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        cursor: 'pointer', color: cfg.color, padding: 0,
+                      }}
+                    >
+                      <ChevronDown
+                        size={14}
+                        style={{ transition: 'transform 0.18s', transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}
+                      />
+                    </button>
                   </div>
 
                   {/* Card body */}
+                  {!isCollapsed && (
                   <div style={{ padding: '14px 12px 18px', display: 'flex', flexDirection: 'column', gap: 20 }}>
 
                     {/* Can do */}
@@ -795,6 +947,87 @@ export default function RoleAccessPage() {
                       </div>
                     )}
                   </div>
+                  )}
+                </div>
+              )
+            })}
+
+            {/* ── Custom roles created via Add Role ── */}
+            {customRoles.map(cr => {
+              const isCollapsed = collapsedCards.has(cr.id)
+              const isNew       = newRoleId === cr.id
+              return (
+                <div key={cr.id} style={{
+                  background: '#fff',
+                  border: `1px solid ${isNew ? cr.color : C.border}`,
+                  borderRadius: 16, overflow: 'hidden',
+                  boxShadow: isNew ? `0 0 0 4px ${cr.bg}` : 'none',
+                  transition: 'border-color 0.15s, box-shadow 0.15s',
+                }}>
+                  {/* Card header */}
+                  <div style={{ padding: '13px 16px', background: cr.bg, display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ width: 34, height: 34, borderRadius: 9, flexShrink: 0, background: '#fff', border: `1px solid ${cr.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <cr.Icon size={16} color={cr.color} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: cr.color, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cr.name}</p>
+                      <p style={{ margin: '1px 0 0', fontSize: 10.5, color: cr.color, opacity: 0.65, lineHeight: 1.3 }}>{cr.tagline}</p>
+                    </div>
+                    <span style={{ fontSize: 12, fontWeight: 800, color: cr.color, background: '#fff', border: `1px solid ${cr.border}`, borderRadius: 7, padding: '2px 9px', flexShrink: 0 }}>{cr.userCount} users</span>
+                    <button
+                      onClick={() => toggleCard(cr.id)}
+                      title={isCollapsed ? 'Expand' : 'Collapse'}
+                      aria-expanded={!isCollapsed}
+                      style={{ flexShrink: 0, width: 26, height: 26, borderRadius: 7, background: '#fff', border: `1px solid ${cr.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: cr.color, padding: 0 }}
+                    >
+                      <ChevronDown size={14} style={{ transition: 'transform 0.18s', transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }} />
+                    </button>
+                  </div>
+
+                  {/* Card body */}
+                  {!isCollapsed && (
+                  <div style={{ padding: '14px 14px 16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    {/* Can do */}
+                    <div>
+                      <p style={{ margin: '0 0 8px', fontSize: 10, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Can do · {cr.can.length}</p>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                        {cr.can.map((label, i) => (
+                          <span key={i} style={{
+                            display: 'inline-flex', alignItems: 'center', gap: 5,
+                            padding: '5px 9px', borderRadius: 8, fontSize: 11, fontWeight: 500,
+                            color: '#065F46', background: 'rgba(16,185,129,0.09)', border: '1px solid rgba(16,185,129,0.22)',
+                          }}>
+                            <Check size={9} color="#059669" strokeWidth={3} /> {label}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div style={{ borderTop: `1px solid ${C.border}` }} />
+
+                    {/* Restricted */}
+                    <div>
+                      <p style={{ margin: '0 0 8px', fontSize: 10, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Restricted · {cr.restricted.length}</p>
+                      {cr.restricted.length > 0 ? (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                          {cr.restricted.map((label, i) => (
+                            <span key={i} style={{
+                              display: 'inline-flex', alignItems: 'center', gap: 5,
+                              padding: '5px 9px', borderRadius: 8, fontSize: 11, fontWeight: 500,
+                              color: C.navy, background: C.surface, border: `1px solid ${C.border}`,
+                            }}>
+                              <X size={8} color={C.muted} strokeWidth={2.5} /> {label}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <div style={{ padding: '8px 10px', borderRadius: 8, background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.14)' }}>
+                          <p style={{ margin: 0, fontSize: 11, color: '#047857', fontWeight: 600 }}>Full access — no restrictions</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  )}
                 </div>
               )
             })}
@@ -943,6 +1176,188 @@ export default function RoleAccessPage() {
           </div>
         </div>
       )}
+
+      {/* ── Add Role Modal ── */}
+      {addRoleOpen && (() => {
+        const meta  = pickRole ? ADD_ROLE_META[pickRole] : null
+        const perms = pickRole ? permsForRole(pickRole) : null
+        const total = perms ? perms.can.length + perms.restricted.length : 0
+        const showPerms = !!pickRole && !permsLoading && !!perms
+        return (
+          <div style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            background: 'rgba(10,12,28,0.5)', backdropFilter: 'blur(6px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
+            fontFamily: "'DM Sans',system-ui,sans-serif",
+          }}
+            onClick={e => { if (e.target === e.currentTarget) closeAddRole() }}
+          >
+            <div style={{
+              background: '#fff', borderRadius: 22, width: 720, maxWidth: '100%',
+              maxHeight: '90vh', display: 'flex', flexDirection: 'column',
+              boxShadow: '0 32px 80px rgba(10,12,28,0.2)', overflow: 'hidden',
+              animation: 'raModal 0.18s ease',
+            }}>
+              {/* Header */}
+              <div style={{ padding: '20px 24px', borderBottom: `1px solid ${C.border}`, background: C.surface, display: 'flex', alignItems: 'center', gap: 13 }}>
+                <div style={{ width: 42, height: 42, borderRadius: 12, background: '#F5F3FF', border: '1px solid rgba(139,92,246,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <ShieldAlert size={20} color="#6D28D9" />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ margin: 0, fontSize: 15.5, fontWeight: 700, color: C.navy }}>Add New Role</p>
+                  <p style={{ margin: '3px 0 0', fontSize: 12.5, color: C.muted }}>Pick a role to inherit its predefined permission set.</p>
+                </div>
+                <button onClick={closeAddRole} disabled={creatingRole}
+                  style={{ background: 'none', border: 'none', cursor: creatingRole ? 'not-allowed' : 'pointer', color: C.muted, display: 'flex', padding: 4, borderRadius: 6, opacity: creatingRole ? 0.4 : 1 }}>
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Scrollable body */}
+              <div style={{ padding: '18px 24px', overflowY: 'auto' }}>
+                {/* Step 1 — role picker */}
+                <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Select a role
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
+                  {ADD_ROLE_ORDER.map(name => {
+                    const m        = ADD_ROLE_META[name]
+                    const Icon     = m.Icon
+                    const isSel    = pickRole === name
+                    return (
+                      <button key={name}
+                        onClick={() => selectAddRole(name)}
+                        disabled={creatingRole}
+                        style={{
+                          textAlign: 'left', padding: '12px 13px', borderRadius: 13,
+                          cursor: creatingRole ? 'not-allowed' : 'pointer',
+                          border: `1.5px solid ${isSel ? m.color : C.border}`,
+                          background: isSel ? m.bg : '#fff',
+                          display: 'flex', alignItems: 'center', gap: 11,
+                          boxShadow: isSel ? `0 0 0 4px ${m.bg}` : 'none',
+                          transition: 'border-color 0.14s, background 0.14s, box-shadow 0.14s',
+                        }}
+                        onMouseEnter={e => { if (!isSel && !creatingRole) e.currentTarget.style.background = C.surface }}
+                        onMouseLeave={e => { if (!isSel) e.currentTarget.style.background = '#fff' }}
+                      >
+                        <div style={{ width: 36, height: 36, borderRadius: 10, flexShrink: 0, background: m.bg, border: `1px solid ${m.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Icon size={17} color={m.color} />
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: isSel ? m.color : C.navy, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</p>
+                          <p style={{ margin: '2px 0 0', fontSize: 10.5, color: C.muted, lineHeight: 1.3 }}>{m.tagline}</p>
+                        </div>
+                        {isSel && (
+                          <div style={{ width: 20, height: 20, borderRadius: '50%', background: m.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <Check size={11} color="#fff" strokeWidth={3} />
+                          </div>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+
+                {/* Step 2 — permissions */}
+                {pickRole && (
+                  <div style={{ marginTop: 20 }}>
+                    <div style={{ borderTop: `1px solid ${C.border}`, marginBottom: 16 }} />
+
+                    {permsLoading ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '26px 0' }}>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={meta!.color} strokeWidth="2.5" strokeLinecap="round"
+                          style={{ animation: 'raSpin 0.75s linear infinite' }}>
+                          <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                        </svg>
+                        <p style={{ margin: 0, fontSize: 12.5, color: C.muted }}>Loading permissions for <strong style={{ color: C.navy }}>{pickRole}</strong>…</p>
+                      </div>
+                    ) : showPerms && (
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                          <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: C.navy }}>
+                            Assigned permissions
+                          </p>
+                          <span style={{ fontSize: 11.5, fontWeight: 700, color: meta!.color, background: meta!.bg, border: `1px solid ${meta!.border}`, borderRadius: 7, padding: '2px 9px' }}>
+                            {total} total
+                          </span>
+                        </div>
+
+                        {/* Can do badges */}
+                        <p style={{ margin: '0 0 7px', fontSize: 10, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                          Can do · {perms!.can.length}
+                        </p>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                          {perms!.can.map((label, i) => (
+                            <span key={i} style={{
+                              display: 'inline-flex', alignItems: 'center', gap: 5,
+                              padding: '5px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 500,
+                              color: '#065F46', background: 'rgba(16,185,129,0.09)', border: '1px solid rgba(16,185,129,0.22)',
+                            }}>
+                              <Check size={10} color="#059669" strokeWidth={3} /> {label}
+                            </span>
+                          ))}
+                        </div>
+
+                        {/* Restricted badges */}
+                        {perms!.restricted.length > 0 ? (
+                          <>
+                            <p style={{ margin: '15px 0 7px', fontSize: 10, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                              Restricted · {perms!.restricted.length}
+                            </p>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                              {perms!.restricted.map((label, i) => (
+                                <span key={i} style={{
+                                  display: 'inline-flex', alignItems: 'center', gap: 5,
+                                  padding: '5px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 500,
+                                  color: C.navy, background: C.surface, border: `1px solid ${C.border}`,
+                                }}>
+                                  <X size={9} color={C.muted} strokeWidth={2.5} /> {label}
+                                </span>
+                              ))}
+                            </div>
+                          </>
+                        ) : (
+                          <div style={{ marginTop: 14, padding: '9px 12px', borderRadius: 9, background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.14)' }}>
+                            <p style={{ margin: 0, fontSize: 11.5, color: '#047857', fontWeight: 600 }}>Full access — no restrictions</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div style={{ padding: '16px 24px', borderTop: `1px solid ${C.border}`, display: 'flex', gap: 10 }}>
+                <button onClick={closeAddRole} disabled={creatingRole}
+                  style={{ flex: 1, height: 42, borderRadius: 10, fontSize: 13.5, fontWeight: 600, border: `1px solid ${C.border}`, background: '#fff', color: C.muted, cursor: creatingRole ? 'not-allowed' : 'pointer' }}>
+                  Cancel
+                </button>
+                <button onClick={confirmCreateRole} disabled={!showPerms || creatingRole}
+                  style={{
+                    flex: 2, height: 42, borderRadius: 10, fontSize: 13.5, fontWeight: 700, border: 'none',
+                    background: !showPerms ? C.hover : creatingRole ? '#818CF8' : 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)',
+                    color: !showPerms ? C.muted : '#fff',
+                    cursor: !showPerms || creatingRole ? 'not-allowed' : 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    transition: 'opacity 0.15s',
+                  }}>
+                  {creatingRole ? (
+                    <>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"
+                        style={{ animation: 'raSpin 0.75s linear infinite' }}>
+                        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                      </svg>
+                      Creating…
+                    </>
+                  ) : (
+                    <><Plus size={15} strokeWidth={2.5} /> Create Role</>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* ── Change Role Modal ── */}
       {modalUser && (

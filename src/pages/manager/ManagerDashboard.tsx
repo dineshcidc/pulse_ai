@@ -21,6 +21,7 @@ import ProjectListPage from './projects/ProjectListPage'
 import TeamDashboardPage from './projects/TeamDashboardPage'
 import TeamTimesheetsPage from './projects/TeamTimesheetsPage'
 import TeamLeaveRequestsPage from './projects/TeamLeaveRequestsPage'
+import TeamAttendanceRequestsPage from './projects/TeamAttendanceRequestsPage'
 import ProjectAnnouncementsPage from './projects/ProjectAnnouncementsPage'
 import ManagerMyAssetsPage from './assets/ManagerMyAssetsPage'
 import ManagerAssetRequestsPage from './assets/ManagerAssetRequestsPage'
@@ -66,6 +67,7 @@ const PAGE_LABELS: Record<string, string> = {
   'team-dashboard':         'Team Dashboard',
   'team-timesheets':        'Team Timesheets',
   'team-leave':             'Team Leave Requests',
+  'team-attendance':        'Team Attendance Request',
   'project-announcements':  'Project Announcements',
   'my-assets':              'My Assets',
   'team-asset-requests':    'Team Asset Requests',
@@ -152,6 +154,7 @@ function PageContent({
   if (activeItem === 'team-dashboard')        return <TeamDashboardPage onNavigate={onNavigate} />
   if (activeItem === 'team-timesheets')       return <TeamTimesheetsPage />
   if (activeItem === 'team-leave')            return <TeamLeaveRequestsPage />
+  if (activeItem === 'team-attendance')       return <TeamAttendanceRequestsPage />
   if (activeItem === 'project-announcements') return <ProjectAnnouncementsPage />
 
   return <ComingSoon id={activeItem} />

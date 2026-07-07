@@ -64,11 +64,20 @@ const ATT_CIRC   = 2 * Math.PI * ATT_RADIUS
 const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December']
 const DAY_ABBR    = ['Su','Mo','Tu','We','Th','Fr','Sa']
 
+/* Dummy already-marked times for a Present day */
+const MARKED_IN  = '09:15'
+const MARKED_OUT = '18:30'
+
+/* Yesterday — highlighted red (Absent) to demonstrate the Attendance Submission flow */
+const _yest = new Date(); _yest.setDate(_yest.getDate() - 1)
+const YESTERDAY_KEY = `${_yest.getFullYear()}-${_yest.getMonth() + 1}-${_yest.getDate()}`
+
 const SPECIAL_STATUS: Record<string, 'absent' | 'submitted'> = {
   '2026-5-8':  'absent',
   '2026-5-15': 'absent',
   '2026-5-11': 'submitted',
   '2026-5-12': 'submitted',
+  [YESTERDAY_KEY]: 'absent',
 }
 
 function getDayStatus(year: number, month: number, day: number): 'present' | 'absent' | 'holiday' | 'submitted' | 'today' | 'future' {
@@ -161,6 +170,43 @@ export default function DashboardPage({ managerMode = false, onNavigateTeam }: D
   const [policyExpanded, setPolicyExpanded] = useState<string[]>(['cidc_policies'])
   const [selectedPolicy, setSelectedPolicy] = useState<string>('cidc_policies')
 
+  /* ── Attendance Submission popup ── */
+  const [attDate,       setAttDate]       = useState<{ year: number; month: number; day: number } | null>(null)
+  const [attMode,       setAttMode]       = useState<'absent' | 'present'>('absent')
+  const [attEdit,       setAttEdit]       = useState(false)
+  const [reqIn,         setReqIn]         = useState('')
+  const [reqOut,        setReqOut]        = useState('')
+  const [remarks,       setRemarks]       = useState('')
+  const [attSubmitting, setAttSubmitting] = useState(false)
+  const [attToast,      setAttToast]      = useState<string | null>(null)
+  const [submittedDates, setSubmittedDates] = useState<Set<string>>(new Set())
+
+  function openAtt(year: number, month: number, day: number, mode: 'absent' | 'present') {
+    setAttDate({ year, month, day }); setAttMode(mode); setAttEdit(false)
+    if (mode === 'present') { setReqIn(MARKED_IN); setReqOut(MARKED_OUT) }
+    else                    { setReqIn(''); setReqOut('') }
+    setRemarks('')
+  }
+  function closeAtt() {
+    if (attSubmitting) return
+    setAttDate(null)
+  }
+  async function submitAtt() {
+    if (!reqIn || !attDate || attSubmitting) return
+    const key      = `${attDate.year}-${attDate.month + 1}-${attDate.day}`
+    const isUpdate = attMode === 'present'
+    setAttSubmitting(true)
+    await new Promise(r => setTimeout(r, 900))
+    if (!isUpdate) setSubmittedDates(prev => new Set(prev).add(key))
+    setAttSubmitting(false); setAttDate(null); setAttEdit(false)
+    setAttToast(isUpdate ? 'Attendance update request submitted successfully' : 'Attendance correction request submitted successfully')
+    setTimeout(() => setAttToast(null), 3800)
+  }
+
+  const attDateLabel = attDate
+    ? new Date(attDate.year, attDate.month, attDate.day).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+    : ''
+
   function calPrev() {
     if (calMonth === 0) { setCalMonth(11); setCalYear(y => y - 1) }
     else setCalMonth(m => m - 1)
@@ -190,6 +236,13 @@ export default function DashboardPage({ managerMode = false, onNavigateTeam }: D
         .stat-card:hover { box-shadow: 0 4px 20px rgba(28,32,53,0.08); transform: translateY(-1px); }
         .alert-dismiss { opacity: 0; transition: opacity 0.15s; }
         .alert-row:hover .alert-dismiss { opacity: 1; }
+        .att-absent { transition: filter 0.14s; }
+        .att-absent:hover { filter: brightness(0.95); }
+        .att-present { transition: filter 0.14s; }
+        .att-present:hover { filter: brightness(0.96); }
+        @keyframes asModal { from { opacity:0; transform:scale(0.96) } to { opacity:1; transform:scale(1) } }
+        @keyframes asToast { 0%{opacity:0;transform:translateY(8px)} 10%{opacity:1;transform:translateY(0)} 88%{opacity:1} 100%{opacity:0} }
+        @keyframes asSpin  { to { transform: rotate(360deg) } }
       `}</style>
 
       {/* ── Welcome banner ── */}
@@ -895,13 +948,19 @@ export default function DashboardPage({ managerMode = false, onNavigateTeam }: D
                   <div className="grid grid-cols-7 gap-x-1.5 gap-y-2.5">
                     {cells.map((day, idx) => {
                       if (!day) return <div key={`e-${idx}`} />
-                      const status = getDayStatus(calYear, calMonth, day)
-                      const s      = CAL_COLORS[status]
+                      const key       = `${calYear}-${calMonth + 1}-${day}`
+                      const status    = submittedDates.has(key) ? 'submitted' : getDayStatus(calYear, calMonth, day)
+                      const s         = CAL_COLORS[status]
+                      const isAbsent  = status === 'absent'
+                      const isPresent = status === 'present' || status === 'today'
+                      const clickable = isAbsent || isPresent
                       return (
                         <div
                           key={day}
-                          className="flex items-center justify-center rounded-lg"
-                          style={{ height: 36, background: s.bg, color: s.color, fontSize: 12, fontWeight: s.fw, cursor: 'default' }}
+                          onClick={isAbsent ? () => openAtt(calYear, calMonth, day, 'absent') : isPresent ? () => openAtt(calYear, calMonth, day, 'present') : undefined}
+                          title={isAbsent ? 'Absent — click to submit attendance correction' : isPresent ? 'Present — click to view / update attendance' : undefined}
+                          className={`flex items-center justify-center rounded-lg${isAbsent ? ' att-absent' : isPresent ? ' att-present' : ''}`}
+                          style={{ height: 36, background: s.bg, color: s.color, fontSize: 12, fontWeight: s.fw, cursor: clickable ? 'pointer' : 'default' }}
                         >
                           {day}
                         </div>
@@ -1258,6 +1317,161 @@ export default function DashboardPage({ managerMode = false, onNavigateTeam }: D
 
         </div>
       </div>
+
+      {/* ══ Attendance Submission / Details Modal ══ */}
+      {attDate && (() => {
+        const isPresent    = attMode === 'present'
+        const accent       = isPresent ? '#0A8A58' : '#E84855'
+        const accentBg     = isPresent ? 'rgba(14,168,106,0.1)' : 'rgba(232,72,85,0.1)'
+        const accentBorder = isPresent ? 'rgba(14,168,106,0.22)' : 'rgba(232,72,85,0.2)'
+        const fmt12 = (t: string) => {
+          if (!t) return '--'
+          const [h, m] = t.split(':').map(Number)
+          const ap = h >= 12 ? 'PM' : 'AM'
+          const h12 = h % 12 === 0 ? 12 : h % 12
+          return `${h12}:${String(m).padStart(2, '0')} ${ap}`
+        }
+        const timeInput = (val: string, set: (v: string) => void) => (
+          <input type="time" value={val} onChange={e => set(e.target.value)}
+            style={{ width: '100%', height: 40, padding: '0 12px', borderRadius: 9, border: `1px solid ${C.border}`, fontSize: 13, color: C.navy, background: '#fff', outline: 'none', fontFamily: "'DM Sans',system-ui,sans-serif", boxSizing: 'border-box' }}
+            onFocus={e => { e.currentTarget.style.borderColor = '#6366F1' }}
+            onBlur={e => { e.currentTarget.style.borderColor = C.border }}
+          />
+        )
+        const infoRows = [
+          { label: 'Date',     value: <span style={{ fontSize: 13, fontWeight: 600, color: C.navy }}>{attDateLabel}</span> },
+          { label: 'Employee', value: (
+              <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: C.navy }}>John Doe</span>
+                <span style={{ fontSize: 11, color: C.muted, fontFamily: 'monospace' }}>EMP-0042</span>
+              </span>
+            ) },
+          { label: 'Attendance Status', value: (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: accent }} />
+                <span style={{ fontSize: 13, fontWeight: 700, color: accent }}>{isPresent ? 'Present' : 'Absent'}</span>
+              </span>
+            ) },
+          { label: 'Marked Time', value: (
+              <span style={{ fontSize: 12.5, color: C.muted }}>
+                In: <strong style={{ color: C.navy }}>{isPresent ? fmt12(MARKED_IN) : '--'}</strong>&nbsp;&nbsp;·&nbsp;&nbsp;Out: <strong style={{ color: C.navy }}>{isPresent ? fmt12(MARKED_OUT) : '--'}</strong>
+              </span>
+            ) },
+        ]
+        return (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            background: 'rgba(10,12,28,0.5)', backdropFilter: 'blur(6px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
+            fontFamily: "'DM Sans', system-ui, sans-serif",
+          }}
+          onClick={e => { if (e.target === e.currentTarget) closeAtt() }}
+        >
+          <div style={{
+            background: '#fff', borderRadius: 22, width: 520, maxWidth: '100%',
+            maxHeight: '92vh', display: 'flex', flexDirection: 'column',
+            boxShadow: '0 32px 80px rgba(10,12,28,0.2)', overflow: 'hidden',
+            animation: 'asModal 0.18s ease',
+          }}>
+            {/* Header */}
+            <div style={{ padding: '18px 22px', borderBottom: `1px solid ${C.border}`, background: '#F7F8FC', display: 'flex', alignItems: 'center', gap: 13 }}>
+              <div style={{ width: 42, height: 42, borderRadius: 12, background: accentBg, border: `1px solid ${accentBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <CalendarDays size={20} style={{ color: accent }} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ margin: 0, fontSize: 15.5, fontWeight: 700, color: C.navy }}>{isPresent ? (attEdit ? 'Update Attendance' : 'Attendance Details') : 'Attendance Submission'}</p>
+                <p style={{ margin: '3px 0 0', fontSize: 12.5, color: C.muted }}>{isPresent ? (attEdit ? 'Edit the attendance times and add a remark.' : 'Review and update your attendance for this day.') : 'Request a correction for a day you missed marking attendance.'}</p>
+              </div>
+            </div>
+
+            {/* Body */}
+            <div style={{ padding: '18px 22px', overflowY: 'auto' }}>
+              {/* Read-only info card */}
+              <div style={{ borderRadius: 12, background: '#F7F8FC', border: `1px solid ${C.border}`, padding: '4px 14px', marginBottom: 18 }}>
+                {infoRows.map((row, i) => (
+                  <div key={row.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '11px 0', borderTop: i === 0 ? 'none' : `1px solid ${C.border}` }}>
+                    <span style={{ fontSize: 12, color: C.muted, fontWeight: 500 }}>{row.label}</span>
+                    {row.value}
+                  </div>
+                ))}
+              </div>
+
+              {/* Editable times + Remarks — absent (correction) mode, or present edit mode */}
+              {(!isPresent || attEdit) && (
+                <>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+                    <div>
+                      <p style={{ margin: '0 0 6px', fontSize: 11, fontWeight: 600, color: C.muted }}>{isPresent ? 'In Time' : 'Requested In Time'} <span style={{ color: '#E84855' }}>*</span></p>
+                      {timeInput(reqIn, setReqIn)}
+                    </div>
+                    <div>
+                      <p style={{ margin: '0 0 6px', fontSize: 11, fontWeight: 600, color: C.muted }}>{isPresent ? 'Out Time' : 'Requested Out Time'}</p>
+                      {timeInput(reqOut, setReqOut)}
+                    </div>
+                  </div>
+
+                  <div>
+                    <p style={{ margin: '0 0 6px', fontSize: 11, fontWeight: 600, color: C.muted }}>{isPresent ? 'Remarks' : 'Remarks / Reason'}</p>
+                    <textarea value={remarks} onChange={e => setRemarks(e.target.value)} rows={3}
+                      placeholder={isPresent ? 'Reason for updating attendance…' : 'Explain why the attendance was missed…'}
+                      style={{ width: '100%', padding: '10px 12px', borderRadius: 9, border: `1px solid ${C.border}`, fontSize: 13, color: C.navy, background: '#fff', outline: 'none', resize: 'vertical', fontFamily: "'DM Sans',system-ui,sans-serif", boxSizing: 'border-box', lineHeight: 1.5 }}
+                      onFocus={e => { e.currentTarget.style.borderColor = '#6366F1' }}
+                      onBlur={e => { e.currentTarget.style.borderColor = C.border }}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div style={{ padding: '14px 22px', borderTop: `1px solid ${C.border}`, display: 'flex', gap: 10 }}>
+              <button onClick={closeAtt} disabled={attSubmitting}
+                style={{ flex: 1, height: 42, borderRadius: 10, fontSize: 13.5, fontWeight: 600, border: `1px solid ${C.border}`, background: '#fff', color: C.muted, cursor: attSubmitting ? 'not-allowed' : 'pointer' }}>
+                Cancel
+              </button>
+              <button
+                onClick={() => { if (isPresent && !attEdit) { setAttEdit(true); return } submitAtt() }}
+                disabled={!reqIn || attSubmitting}
+                style={{
+                  flex: 2, height: 42, borderRadius: 10, fontSize: 13.5, fontWeight: 700, border: 'none',
+                  background: !reqIn ? C.hover : attSubmitting ? '#818CF8' : '#6366F1',
+                  color: !reqIn ? C.muted : '#fff',
+                  cursor: !reqIn || attSubmitting ? 'not-allowed' : 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                }}>
+                {attSubmitting ? (
+                  <>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ animation: 'asSpin 0.75s linear infinite' }}>
+                      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                    </svg>
+                    Submitting…
+                  </>
+                ) : (isPresent
+                    ? (attEdit ? 'Submit' : 'Update Attendance')
+                    : 'Submit Request')}
+              </button>
+            </div>
+          </div>
+        </div>
+        )
+      })()}
+
+      {/* ══ Success Toast ══ */}
+      {attToast && (
+        <div style={{
+          position: 'fixed', bottom: 30, left: '50%', transform: 'translateX(-50%)',
+          zIndex: 10000, animation: 'asToast 3.8s ease forwards',
+          background: C.navy, color: '#fff', borderRadius: 12,
+          padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 10,
+          boxShadow: '0 8px 32px rgba(10,12,28,0.22)', fontFamily: "'DM Sans', system-ui, sans-serif", whiteSpace: 'nowrap',
+        }}>
+          <span style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(74,222,128,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+          </span>
+          <span style={{ fontSize: 13.5, fontWeight: 500 }}>{attToast}</span>
+        </div>
+      )}
     </div>
   )
 }

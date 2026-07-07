@@ -13,7 +13,7 @@ import {
   Building2,
   Settings,
   FolderKanban,
-  IndianRupee,
+  // IndianRupee, // hidden with Payroll section
   Package,
   Receipt,
   Ticket,
@@ -38,6 +38,7 @@ const MY_PROJECTS_ITEM: NavItem = {
     { id: 'project-list',           label: 'Project List'           },
     { id: 'team-timesheets',        label: 'Team Timesheets'        },
     { id: 'team-leave',             label: 'Team Leave Requests'    },
+    { id: 'team-attendance',        label: 'Team Attendance Request'},
     { id: 'project-announcements',  label: 'Project Announcements'  },
   ],
 }
@@ -207,12 +208,12 @@ function buildAdminNav(): NavSection[] {
         },
       ],
     },
-    {
-      label: 'PAYROLL',
-      items: [
-        { id: 'admin-payroll', label: 'Payroll', Icon: IndianRupee },
-      ],
-    },
+    // { // PAYROLL section hidden for now
+    //   label: 'PAYROLL',
+    //   items: [
+    //     { id: 'admin-payroll', label: 'Payroll', Icon: IndianRupee },
+    //   ],
+    // },
   ]
 }
 
