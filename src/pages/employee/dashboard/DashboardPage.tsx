@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import {
   Briefcase, Clock, CalendarDays, Ticket, Megaphone,
   ChevronDown, X, Shield, FileText, FolderOpen, ExternalLink,
-  ChevronRight,
 } from 'lucide-react'
 
 interface DashboardPageProps {
@@ -155,7 +154,7 @@ const C = {
   hover:  '#F0F2F8',
 }
 
-export default function DashboardPage({ managerMode = false, onNavigateTeam }: DashboardPageProps = {}) {
+export default function DashboardPage({ managerMode = false }: DashboardPageProps = {}) {
   const [alertsOpen, setAlertsOpen]     = useState(true)
   const [alerts, setAlerts]             = useState(INITIAL_ALERTS)
   const [pageSize, setPageSize]         = useState(5)
