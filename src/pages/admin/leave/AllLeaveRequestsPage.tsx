@@ -128,8 +128,8 @@ const TABS: { id: LeaveStatus; label: string }[] = [
   { id: 'Rejected', label: 'Rejected' },
 ]
 
-const PROJECTS = ['All Projects',  'Pulse.AI v2', 'HDFC Portal', 'TechCorp ERP']
 const MANAGERS = ['All Managers',  ...Array.from(new Set(DATA.map(d => d.reportingManager)))]
+const LEAVE_TYPES = ['All Types', 'Bereavement Holiday', 'Birthday Leave', 'Election Day Leave', 'Floating Holiday', 'LWP', 'Paternity Leave', 'Planned Leave', 'Unplanned Leave']
 
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', hover: '#F0F2F8', surface: '#F7F8FC' }
 
@@ -271,20 +271,20 @@ function ViewModal({ item, onClose }: { item: LeaveRequest; onClose: () => void 
 export default function AllLeaveRequestsPage() {
   const [tab,       setTab]       = useState<LeaveStatus>('Pending')
   const [search,    setSearch]    = useState('')
-  const [project,   setProject]   = useState('All Projects')
   const [manager,   setManager]   = useState('All Managers')
+  const [leaveType, setLeaveType] = useState('All Types')
   const [fromDate,  setFromDate]  = useState('')
   const [sFocus,    setSFocus]    = useState(false)
   const [viewItem,  setViewItem]  = useState<LeaveRequest | null>(null)
 
   const filtered = DATA.filter(r => {
     const q  = search.toLowerCase()
-    const ms = !q || r.employee.toLowerCase().includes(q) || r.project.toLowerCase().includes(q) || r.empId.toLowerCase().includes(q)
+    const ms = !q || r.employee.toLowerCase().includes(q) || r.empId.toLowerCase().includes(q)
     const mt = r.status === tab
-    const mp = project   === 'All Projects' || r.project          === project
     const mg = manager   === 'All Managers' || r.reportingManager === manager
+    const ml = leaveType === 'All Types'    || r.leaveType        === leaveType
     const mf = !fromDate || r.fromDate >= fromDate
-    return ms && mt && mp && mg && mf
+    return ms && mt && mg && ml && mf
   })
 
   const counts: Record<LeaveStatus, number> = {
@@ -293,11 +293,11 @@ export default function AllLeaveRequestsPage() {
     Rejected: DATA.filter(r => r.status === 'Rejected').length,
   }
 
-  const anyFilter = !!(search || project !== 'All Projects' || manager !== 'All Managers' || fromDate)
+  const anyFilter = !!(search || manager !== 'All Managers' || leaveType !== 'All Types' || fromDate)
 
   function clearAll() {
-    setSearch(''); setProject('All Projects')
-    setManager('All Managers'); setFromDate('')
+    setSearch('')
+    setManager('All Managers'); setLeaveType('All Types'); setFromDate('')
   }
 
   return (
@@ -357,7 +357,7 @@ export default function AllLeaveRequestsPage() {
             <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: C.muted, pointerEvents: 'none' }} />
             <input value={search} onChange={e => setSearch(e.target.value)}
               onFocus={() => setSFocus(true)} onBlur={() => setSFocus(false)}
-              placeholder="Search employee, project, ID…"
+              placeholder="Search employee, ID…"
               style={{
                 width: '100%', height: 36, paddingLeft: 30, paddingRight: 10,
                 border: `1px solid ${sFocus ? '#7C3AED' : C.border}`, borderRadius: 8,
@@ -367,8 +367,8 @@ export default function AllLeaveRequestsPage() {
             />
           </div>
 
-          <Dropdown value={project}   options={PROJECTS} onChange={setProject}   minW={138} />
-          <Dropdown value={manager}   options={MANAGERS} onChange={setManager}   minW={152} />
+          <Dropdown value={manager}   options={MANAGERS}    onChange={setManager}   minW={152} />
+          <Dropdown value={leaveType} options={LEAVE_TYPES} onChange={setLeaveType} minW={150} />
 
           {anyFilter && (
             <button onClick={clearAll}
@@ -404,7 +404,7 @@ export default function AllLeaveRequestsPage() {
                 <div style={{ flex: 1, padding: '20px 24px', display: 'flex', alignItems: 'center', minWidth: 0, gap: 28 }}>
 
                   {/* Employee */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: '0 0 210px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1.4, minWidth: 0 }}>
                     <img src={`https://i.pravatar.cc/38?img=${r.avatar}`} alt={r.employee}
                       style={{ width: 38, height: 38, borderRadius: '50%', flexShrink: 0, objectFit: 'cover' }} />
                     <div style={{ minWidth: 0 }}>
@@ -416,7 +416,7 @@ export default function AllLeaveRequestsPage() {
                   <div style={{ width: 1, height: 44, background: C.border, flexShrink: 0 }} />
 
                   {/* Leave type + dates */}
-                  <div style={{ flex: '0 0 180px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div style={{ flex: 1.3, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
                     <span style={{
                       display: 'inline-flex', alignItems: 'center', gap: 5,
                       padding: '2px 9px', borderRadius: 5,
@@ -435,16 +435,8 @@ export default function AllLeaveRequestsPage() {
 
                   <div style={{ width: 1, height: 44, background: C.border, flexShrink: 0 }} />
 
-                  {/* Project */}
-                  <div style={{ flex: '0 0 140px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    <p style={{ margin: 0, fontSize: 10.5, fontWeight: 600, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Project</p>
-                    <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: C.navy }}>{r.project}</p>
-                  </div>
-
-                  <div style={{ width: 1, height: 44, background: C.border, flexShrink: 0 }} />
-
                   {/* Reporting Manager */}
-                  <div style={{ flex: '0 0 150px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <div style={{ flex: 1.1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
                     <p style={{ margin: 0, fontSize: 10.5, fontWeight: 600, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Manager</p>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                       <img src={`https://i.pravatar.cc/22?img=${r.managerAvatar}`} alt={r.reportingManager}
@@ -456,13 +448,13 @@ export default function AllLeaveRequestsPage() {
                   <div style={{ width: 1, height: 44, background: C.border, flexShrink: 0 }} />
 
                   {/* Applied date */}
-                  <div style={{ flex: '0 0 110px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
                     <p style={{ margin: 0, fontSize: 10.5, fontWeight: 600, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Applied</p>
                     <p style={{ margin: 0, fontSize: 12.5, color: C.navy }}>{r.appliedDate}</p>
                   </div>
 
                   {/* Right: status + action */}
-                  <div style={{ marginLeft: 'auto', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ flex: '0 0 auto', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
                     <span style={{
                       display: 'inline-flex', alignItems: 'center', gap: 5,
                       padding: '4px 11px', borderRadius: 7,
