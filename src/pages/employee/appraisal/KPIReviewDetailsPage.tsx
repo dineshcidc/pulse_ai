@@ -20,19 +20,6 @@ interface KPIReviewDetailsPageProps {
 
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', hover: '#F0F2F8', indigo: '#6366F1' }
 
-const EMPLOYEE = {
-  name: 'John Doe',
-  code: 'CC0309',
-  department: 'Design',
-  role: 'UI/UX Designer',
-  level: 'Executive',
-  doj: '01 Feb 2023',
-  manager: 'Premnath S (CC0388)',
-  assessor: 'Premnath S (CC0388)',
-  assessorLevel: 'Executive',
-  img: 'https://i.pravatar.cc/150?img=12',
-}
-
 const MAX = 5
 
 type Crit = { id: string; name: string; tag: string; weight: number; desc: string }

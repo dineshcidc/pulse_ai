@@ -63,7 +63,7 @@ const STATUS_STYLE: Record<QueueStatus, { color: string; bg: string; border: str
 
 const FILTERS: ('All' | QueueStatus)[] = ['All', 'Pending', 'Approved']
 
-export default function TeamAppraisalsPage({ onNavigate, managerName = 'James Shower' }: TeamAppraisalsPageProps) {
+export default function TeamAppraisalsPage({ onNavigate: _onNavigate, managerName = 'James Shower' }: TeamAppraisalsPageProps) {
   const [howOpen, setHowOpen]           = useState(false)
   const [selectedYear, setSelectedYear] = useState(CURRENT_YEAR)
   const [yearMenuOpen, setYearMenuOpen] = useState(false)
