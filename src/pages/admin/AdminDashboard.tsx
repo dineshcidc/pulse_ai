@@ -33,6 +33,9 @@ import AdminAddAssetPage from './assets/AdminAddAssetPage'
 import AdminUploadBulkAssetsPage from './assets/AdminUploadBulkAssetsPage'
 import AdminAssetsRequestPage from './assets/AdminAssetsRequestPage'
 import ActivityTagPage from './projects/ActivityTagPage'
+import AdminKPITemplatesPage from './appraisal/AdminKPITemplatesPage'
+import AdminAppraisalCyclesPage from './appraisal/AdminAppraisalCyclesPage'
+import AdminSubmissionsTrackerPage from './appraisal/AdminSubmissionsTrackerPage'
 
 const PAGE_LABELS: Record<string, string> = {
   'my-profile':           'My Profile',
@@ -71,6 +74,12 @@ const PAGE_LABELS: Record<string, string> = {
   'assets-request':       'Assets Request',
   'add-asset':            'Add Asset',
   'upload-bulk-assets':   'Upload Bulk Assets',
+  'admin-kpi-templates':      'KPI Templates',
+  'admin-appraisal-cycles':   'Appraisal Cycles',
+  'admin-appraisal-tracker':  'Submissions Tracker',
+  'admin-kpi-template-create': 'Add KPI Template',
+  'admin-kpi-template-upload': 'Upload KPI Template',
+  'admin-kpi-template-view':   'KPI Template',
 }
 
 function ComingSoon({ id }: { id: string }) {
@@ -140,6 +149,9 @@ function PageContent({ activeItem, onNavigate }: { activeItem: string; onNavigat
   if (activeItem === 'add-asset')              return <AdminAddAssetPage onBack={() => onNavigate('assets-list')} onSave={() => onNavigate('assets-list')} />
   if (activeItem === 'upload-bulk-assets')     return <AdminUploadBulkAssetsPage onBack={() => onNavigate('assets-list')} />
   if (activeItem === 'assets-request')         return <AdminAssetsRequestPage />
+  if (activeItem === 'admin-kpi-templates')    return <AdminKPITemplatesPage onNavigate={onNavigate} />
+  if (activeItem === 'admin-appraisal-cycles') return <AdminAppraisalCyclesPage />
+  if (activeItem === 'admin-appraisal-tracker') return <AdminSubmissionsTrackerPage />
   return <ComingSoon id={activeItem} />
 }
 

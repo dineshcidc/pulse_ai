@@ -17,6 +17,7 @@ import {
   Package,
   Receipt,
   Ticket,
+  Target,
 } from 'lucide-react'
 
 
@@ -40,6 +41,15 @@ const MY_PROJECTS_ITEM: NavItem = {
     { id: 'team-leave',             label: 'Team Leave Requests'    },
     { id: 'team-attendance',        label: 'Team Attendance Request'},
     { id: 'project-announcements',  label: 'Project Announcements'  },
+  ],
+}
+
+const MANAGER_PERFORMANCE_ITEM: NavItem = {
+  id: 'performance-appraisal', label: 'Performance Appraisal', Icon: Target,
+  neutralDots: true,
+  children: [
+    { id: 'my-performance',  label: 'My Performance'  },
+    { id: 'team-appraisals', label: 'Team Appraisals' },
   ],
 }
 
@@ -75,8 +85,10 @@ function buildNav(role: 'employee' | 'manager'): NavSection[] {
           children: [
             { id: 'my-profile',    label: 'My Profile'    },
             { id: 'org-structure', label: 'Org Structure' },
+            ...(role === 'employee' ? [{ id: 'performance-appraisal', label: 'My Performance' }] : []),
           ],
         },
+        ...(role === 'manager' ? [MANAGER_PERFORMANCE_ITEM] : []),
         {
           id: 'support-tickets', label: 'Support Tickets', Icon: Ticket,
           children: role === 'manager'
@@ -157,6 +169,19 @@ function buildAdminNav(): NavSection[] {
           ],
         },
         { id: 'admin-org', label: 'Org Structure', Icon: Building2 },
+      ],
+    },
+    {
+      label: 'PERFORMANCE',
+      items: [
+        {
+          id: 'performance-management', label: 'Performance Management', Icon: Target,
+          children: [
+            { id: 'admin-kpi-templates',    label: 'KPI Templates'      },
+            { id: 'admin-appraisal-cycles', label: 'Appraisal Cycles'   },
+            { id: 'admin-appraisal-tracker', label: 'Submissions Tracker' },
+          ],
+        },
       ],
     },
     {

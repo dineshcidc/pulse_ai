@@ -14,6 +14,7 @@ import AssetManagementPage from './assets/AssetManagementPage'
 import PayrollPage from './payroll/PayrollPage'
 import ExpensePage from './expense/ExpensePage'
 import ReportsPage from './reports/ReportsPage'
+import MyAppraisalPage from './appraisal/MyAppraisalPage'
 
 const PAGE_LABELS: Record<string, string> = {
   'timesheet-add':     'Add Timesheet',
@@ -26,6 +27,8 @@ const PAGE_LABELS: Record<string, string> = {
   tickets:         'Tickets',
   expense:         'Expense',
   reports:         'Reports',
+  'performance-appraisal': 'Performance Appraisal',
+  'appraisal-self-assessment': 'KPI Self-Assessment',
 }
 
 function ComingSoon({ id }: { id: string }) {
@@ -63,7 +66,8 @@ function ComingSoon({ id }: { id: string }) {
 }
 
 function PageContent({ activeItem, onNavigate }: { activeItem: string; onNavigate: (id: string) => void }) {
-  if (activeItem === 'dashboard')       return <DashboardPage />
+  if (activeItem === 'dashboard')       return <DashboardPage onNavigate={onNavigate} />
+  if (activeItem === 'performance-appraisal') return <MyAppraisalPage onNavigate={onNavigate} />
   if (activeItem === 'timesheet-add')     return <AddTimesheetPage />
   if (activeItem === 'timesheet-history') return <TimesheetHistoryPage onNavigate={onNavigate} />
   if (activeItem === 'leave-create') return <LeaveCreatePage onNavigate={onNavigate} />

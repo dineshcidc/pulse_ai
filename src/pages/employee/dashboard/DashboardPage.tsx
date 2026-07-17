@@ -2,12 +2,29 @@ import { useState, useEffect } from 'react'
 import {
   Briefcase, Clock, CalendarDays, Ticket, Megaphone,
   ChevronDown, X, Shield, FileText, FolderOpen, ExternalLink,
+  Target, ArrowRight, ClipboardCheck, ChevronRight,
 } from 'lucide-react'
 
 interface DashboardPageProps {
   managerMode?: boolean
+  onNavigate?: (id: string) => void
   onNavigateTeam?: (id: string) => void
 }
+
+/* ── Performance Appraisal alert (shown when Admin publishes the current cycle — mock) ── */
+const APPRAISAL_ALERT = {
+  published: true,
+  cycle: 'Q1 2026',
+  dueDate: 'July 31, 2026',
+  message: 'Your Q1 2026 Performance Appraisal is now open. Complete your KPI self-assessment and submit it to your manager.',
+}
+
+/* ── Team KPI submissions (manager dashboard — latest 3) ── */
+const TEAM_KPI_SUBMISSIONS = [
+  { id: 1, name: 'Rajesh Kumar',  code: 'CC003', cycle: 'Q1 2026', when: '2 hours ago',  img: 12 },
+  { id: 2, name: 'Priya Sharma',  code: 'CC004', cycle: 'Q1 2026', when: '5 hours ago',  img: 45 },
+  { id: 3, name: 'Arjun Menon',   code: 'CC005', cycle: 'Q1 2026', when: 'Yesterday',    img: 33 },
+]
 
 function getGreeting() {
   const h = new Date().getHours()
@@ -154,7 +171,7 @@ const C = {
   hover:  '#F0F2F8',
 }
 
-export default function DashboardPage({ managerMode = false }: DashboardPageProps = {}) {
+export default function DashboardPage({ managerMode = false, onNavigate }: DashboardPageProps = {}) {
   const [alertsOpen, setAlertsOpen]     = useState(true)
   const [alerts, setAlerts]             = useState(INITIAL_ALERTS)
   const [pageSize, setPageSize]         = useState(5)
@@ -399,6 +416,137 @@ export default function DashboardPage({ managerMode = false }: DashboardPageProp
                   <div style={{ height: 3, borderRadius: 99, background: 'rgba(232,72,85,0.09)', marginTop: 16, border: '1px solid rgba(232,72,85,0.15)' }} />
                 </div>
                 */}
+              </div>
+            </div>
+          )}
+
+          {/* ── Performance Appraisal notification card ── */}
+          {APPRAISAL_ALERT.published && (
+            <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, padding: 14 }}>
+            <div
+              className="flex items-center justify-between gap-4"
+              style={{
+                padding: '14px 18px',
+                background: 'linear-gradient(90deg, rgba(99,102,241,0.09), rgba(99,102,241,0.02))',
+                border: '1px solid rgba(99,102,241,0.22)',
+                borderLeft: '3px solid #6366F1',
+                borderRadius: 12,
+              }}
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div
+                  className="flex items-center justify-center flex-shrink-0"
+                  style={{ width: 34, height: 34, borderRadius: 9, background: 'rgba(99,102,241,0.13)', border: '1px solid rgba(99,102,241,0.22)' }}
+                >
+                  <Target size={17} strokeWidth={1.8} style={{ color: '#6366F1' }} />
+                </div>
+
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span style={{ fontSize: 12.5, fontWeight: 700, color: C.navy }}>
+                      Performance Appraisal — {APPRAISAL_ALERT.cycle}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: 9, fontWeight: 700, color: '#A07800',
+                        background: 'rgba(212,168,0,0.14)', border: '1px solid rgba(212,168,0,0.28)',
+                        borderRadius: 5, padding: '1px 6px', textTransform: 'uppercase', letterSpacing: '0.05em',
+                      }}
+                    >
+                      New
+                    </span>
+                  </div>
+                  <p style={{ fontSize: 11.5, color: '#5A6080', lineHeight: 1.45, margin: '3px 0 0', minWidth: 170, maxWidth: 450, whiteSpace: 'normal', overflowWrap: 'anywhere' }}>
+                    {APPRAISAL_ALERT.message}
+                    <span style={{ color: '#C0202E', fontWeight: 600 }}> Due {APPRAISAL_ALERT.dueDate}.</span>
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => onNavigate?.(managerMode ? 'my-performance' : 'performance-appraisal')}
+                className="flex items-center gap-1.5 rounded-lg border-none cursor-pointer font-semibold transition-all duration-150 flex-shrink-0"
+                style={{ height: 36, padding: '0 14px', fontSize: 12.5, background: 'rgba(99,102,241,0.10)', color: '#6366F1', whiteSpace: 'nowrap' }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.18)' }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.10)' }}
+              >
+                View
+                <ArrowRight size={14} strokeWidth={2.2} />
+              </button>
+            </div>
+            </div>
+          )}
+
+          {/* ── Team KPI Submissions (manager only) ── */}
+          {managerMode && (
+            <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden' }}>
+              {/* Header */}
+              <div
+                className="flex items-center justify-between"
+                style={{ padding: '14px 20px', borderBottom: `1px solid ${C.border}` }}
+              >
+                <div className="flex items-center gap-2.5">
+                  <div
+                    className="flex items-center justify-center flex-shrink-0"
+                    style={{ width: 32, height: 32, borderRadius: 9, background: 'rgba(99,102,241,0.11)', border: '1px solid rgba(99,102,241,0.2)' }}
+                  >
+                    <ClipboardCheck size={17} strokeWidth={1.9} style={{ color: '#6366F1' }} />
+                  </div>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: C.navy }}>Team KPI Submissions</span>
+                  <span
+                    className="flex items-center justify-center rounded-full"
+                    style={{ width: 20, height: 20, background: 'rgba(99,102,241,0.10)', color: '#6366F1', fontSize: 11, fontWeight: 700 }}
+                  >
+                    {TEAM_KPI_SUBMISSIONS.length}
+                  </span>
+                </div>
+                <button
+                  onClick={() => onNavigate?.('team-appraisals')}
+                  className="flex items-center gap-1 border-none bg-transparent cursor-pointer"
+                  style={{ fontSize: 12.5, fontWeight: 700, color: '#8B90A7', padding: 0, fontFamily: 'inherit' }}
+                  onMouseEnter={e => { e.currentTarget.style.color = '#1C2035' }}
+                  onMouseLeave={e => { e.currentTarget.style.color = '#8B90A7' }}
+                >
+                  View All <ChevronRight size={14} strokeWidth={2.5} />
+                </button>
+              </div>
+
+              {/* Rows */}
+              <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {TEAM_KPI_SUBMISSIONS.map(s => (
+                  <div
+                    key={s.id}
+                    className="flex items-center justify-between"
+                    style={{ background: '#F7F8FC', border: '1px solid #ECEEF5', borderRadius: 10, padding: '10px 14px', gap: 12 }}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <img
+                        src={`https://i.pravatar.cc/150?img=${s.img}`}
+                        alt={s.name}
+                        className="rounded-full object-cover flex-shrink-0"
+                        style={{ width: 34, height: 34, border: '2px solid #E8EAF2' }}
+                      />
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span style={{ fontSize: 13, fontWeight: 600, color: C.navy }}>{s.name}</span>
+                          <span style={{ fontSize: 11, color: '#B0B4C8', fontWeight: 500 }}>· {s.code}</span>
+                        </div>
+                        <div style={{ fontSize: 11.5, color: '#8B90A7', fontWeight: 500, marginTop: 1 }}>
+                          Submitted {s.cycle} self-assessment · {s.when}
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => onNavigate?.('team-appraisals')}
+                      className="flex items-center gap-1 rounded-lg border-none cursor-pointer font-semibold transition-all duration-150 flex-shrink-0"
+                      style={{ height: 30, padding: '0 12px', fontSize: 12, background: 'rgba(99,102,241,0.10)', color: '#6366F1' }}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.18)' }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.10)' }}
+                    >
+                      Open
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
           )}

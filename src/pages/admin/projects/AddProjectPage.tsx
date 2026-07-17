@@ -13,6 +13,7 @@ type BillingType   = 'hourly' | 'fixed' | 'retainer'
 interface RoleMember {
   name: string
   allocation: number
+  billing: 'Billable' | 'Non-Billable'
 }
 
 interface RoleGroup {
@@ -293,7 +294,7 @@ function Step2({ data, set }: { data: FormData; set: (p: Partial<FormData>) => v
   function addMemberToRole(name: string) {
     if (!currentGroup) return
     set({ roleGroups: data.roleGroups.map(rg =>
-      rg.id === selectedRoleId ? { ...rg, members: [...rg.members, { name, allocation: 100 }] } : rg
+      rg.id === selectedRoleId ? { ...rg, members: [...rg.members, { name, allocation: 100, billing: 'Billable' }] } : rg
     )})
     setMemberSearch('')
   }
@@ -307,6 +308,12 @@ function Step2({ data, set }: { data: FormData; set: (p: Partial<FormData>) => v
   function updateAllocation(roleId: number, name: string, allocation: number) {
     set({ roleGroups: data.roleGroups.map(rg =>
       rg.id === roleId ? { ...rg, members: rg.members.map(m => m.name === name ? { ...m, allocation } : m) } : rg
+    )})
+  }
+
+  function updateBilling(roleId: number, name: string, billing: RoleMember['billing']) {
+    set({ roleGroups: data.roleGroups.map(rg =>
+      rg.id === roleId ? { ...rg, members: rg.members.map(m => m.name === name ? { ...m, billing } : m) } : rg
     )})
   }
 
@@ -472,11 +479,11 @@ function Step2({ data, set }: { data: FormData; set: (p: Partial<FormData>) => v
           ) : (
             <div style={{ background: '#fff', display: 'flex', flexDirection: 'column' }}>
               {/* Role header */}
-              <div style={{ padding: '14px 18px 12px', borderBottom: `1px solid ${C.border}` }}>
-                <div style={{ fontSize: 14, fontWeight: 700, color: C.navy }}>{currentGroup.role}</div>
-                <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>
+              <div style={{ height: 44.8, padding: '0 18px', boxSizing: 'border-box', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: C.navy, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{currentGroup.role}</div>
+                <span style={{ flexShrink: 0, fontSize: 11.5, fontWeight: 600, color: C.muted, background: C.surface, border: `1px solid ${C.border}`, borderRadius: 99, padding: '4px 12px' }}>
                   {currentGroup.members.length === 0 ? 'No members assigned yet' : `${currentGroup.members.length} member${currentGroup.members.length !== 1 ? 's' : ''} assigned`}
-                </div>
+                </span>
               </div>
 
               <div style={{ padding: '14px 18px', flex: 1, display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -524,32 +531,67 @@ function Step2({ data, set }: { data: FormData; set: (p: Partial<FormData>) => v
                     <div style={{ fontSize: 10.5, fontWeight: 700, color: '#B0B4C8', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>Assigned</div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                       {currentGroup.members.map(m => (
-                        <div key={m.name} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', borderRadius: 10, background: '#FAFBFE', border: `1px solid ${C.border}` }}>
-                          <img src={`https://i.pravatar.cc/32?u=${m.name}`} alt="" style={{ width: 30, height: 30, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: `1px solid ${C.border}` }} />
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: 13, fontWeight: 600, color: C.navy, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</div>
-                            <div style={{ fontSize: 11, color: C.muted, marginTop: 1 }}>{currentGroup.role}</div>
+                        <div key={m.name} style={{ padding: '10px 12px', borderRadius: 10, background: '#FAFBFE', border: `1px solid ${C.border}` }}>
+                          {/* Row 1 — identity + remove */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <img src={`https://i.pravatar.cc/32?u=${m.name}`} alt="" style={{ width: 30, height: 30, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: `1px solid ${C.border}` }} />
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: 13, fontWeight: 600, color: C.navy, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</div>
+                              <div style={{ fontSize: 11, color: C.muted, marginTop: 1 }}>{currentGroup.role}</div>
+                            </div>
+                            <button onClick={() => removeMemberFromRole(currentGroup.id, m.name)}
+                              style={{ width: 28, height: 28, borderRadius: 7, border: `1px solid ${C.border}`, background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.muted, flexShrink: 0, transition: 'all 0.13s', outline: 'none' }}
+                              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(232,72,85,0.08)'; e.currentTarget.style.borderColor = 'rgba(232,72,85,0.30)'; e.currentTarget.style.color = '#E84855' }}
+                              onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted }}>
+                              <X size={11} strokeWidth={2.5} />
+                            </button>
                           </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
-                            <span style={{ fontSize: 11, color: C.muted, fontWeight: 600 }}>Allocation</span>
-                            <div style={{ position: 'relative', width: 62 }}>
-                              <input
-                                type="number" min={10} max={100} step={5}
-                                value={m.allocation}
-                                onChange={e => updateAllocation(currentGroup.id, m.name, Math.min(100, Math.max(10, Number(e.target.value))))}
-                                style={{ width: '100%', height: 32, borderRadius: 8, border: `1px solid ${C.border}`, background: '#fff', fontSize: 12.5, fontWeight: 700, color: C.navy, textAlign: 'center', outline: 'none', fontFamily: 'inherit', paddingRight: 14, boxSizing: 'border-box' }}
-                                onFocus={e => { e.target.style.borderColor = '#6366F1' }}
-                                onBlur={e => { e.target.style.borderColor = C.border }}
-                              />
-                              <span style={{ position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)', fontSize: 10, color: C.muted, fontWeight: 700, pointerEvents: 'none' }}>%</span>
+
+                          {/* Row 2 — allocation + billing status */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 10, paddingTop: 10, borderTop: `1px dashed ${C.border}`, flexWrap: 'wrap' }}>
+                            {/* Allocation */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                              <span style={{ fontSize: 11, color: C.muted, fontWeight: 600 }}>Allocation</span>
+                              <div style={{ position: 'relative', width: 62 }}>
+                                <input
+                                  type="number" min={10} max={100} step={5}
+                                  value={m.allocation}
+                                  onChange={e => updateAllocation(currentGroup.id, m.name, Math.min(100, Math.max(10, Number(e.target.value))))}
+                                  style={{ width: '100%', height: 32, borderRadius: 8, border: `1px solid ${C.border}`, background: '#fff', fontSize: 12.5, fontWeight: 700, color: C.navy, textAlign: 'center', outline: 'none', fontFamily: 'inherit', paddingRight: 14, boxSizing: 'border-box' }}
+                                  onFocus={e => { e.target.style.borderColor = '#6366F1' }}
+                                  onBlur={e => { e.target.style.borderColor = C.border }}
+                                />
+                                <span style={{ position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)', fontSize: 10, color: C.muted, fontWeight: 700, pointerEvents: 'none' }}>%</span>
+                              </div>
+                            </div>
+
+                            {/* Billing status — segmented toggle */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto', flexShrink: 0 }}>
+                              <span style={{ fontSize: 11, color: C.muted, fontWeight: 600 }}>Billing Status :</span>
+                              <div style={{ display: 'inline-flex', padding: 2, borderRadius: 9, background: '#EEF0F6', border: `1px solid ${C.border}` }}>
+                                {(['Billable', 'Non-Billable'] as const).map(opt => {
+                                  const active = m.billing === opt
+                                  const activeColor = opt === 'Billable' ? '#0EA86A' : '#8B90A7'
+                                  return (
+                                    <button
+                                      key={opt}
+                                      type="button"
+                                      onClick={() => updateBilling(currentGroup.id, m.name, opt)}
+                                      style={{
+                                        height: 28, padding: '0 12px', borderRadius: 7, border: 'none', cursor: 'pointer',
+                                        fontSize: 11.5, fontWeight: 700, fontFamily: 'inherit', transition: 'all 0.13s',
+                                        background: active ? '#fff' : 'transparent',
+                                        color: active ? activeColor : C.muted,
+                                        boxShadow: active ? '0 1px 2px rgba(28,32,53,0.10)' : 'none',
+                                      }}
+                                    >
+                                      {opt}
+                                    </button>
+                                  )
+                                })}
+                              </div>
                             </div>
                           </div>
-                          <button onClick={() => removeMemberFromRole(currentGroup.id, m.name)}
-                            style={{ width: 28, height: 28, borderRadius: 7, border: `1px solid ${C.border}`, background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.muted, flexShrink: 0, transition: 'all 0.13s', outline: 'none' }}
-                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(232,72,85,0.08)'; e.currentTarget.style.borderColor = 'rgba(232,72,85,0.30)'; e.currentTarget.style.color = '#E84855' }}
-                            onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted }}>
-                            <X size={11} strokeWidth={2.5} />
-                          </button>
                         </div>
                       ))}
                     </div>
@@ -786,19 +828,19 @@ export default function AddProjectPage({ onBack, onSave }: { onBack: () => void;
         <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 18, overflow: 'hidden' }}>
 
           {/* Step header */}
-          <div style={{ padding: '22px 28px 18px', borderBottom: `1px solid ${C.border}`, background: '#FAFBFE' }}>
-            <div className="flex items-center gap-3">
+          <div style={{ padding: '10px 20px', borderBottom: `1px solid ${C.border}`, background: '#FAFBFE' }}>
+            <div className="flex items-center gap-2.5">
               {(() => {
                 const s = STEPS[step - 1]
                 const Icon = s.Icon
                 return (
                   <>
-                    <div style={{ width: 42, height: 42, borderRadius: 12, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <Icon size={18} strokeWidth={1.8} style={{ color: '#5B5FDE' }} />
+                    <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <Icon size={14} strokeWidth={1.9} style={{ color: '#5B5FDE' }} />
                     </div>
                     <div>
-                      <div style={{ fontSize: 16, fontWeight: 800, color: C.navy, letterSpacing: '-0.2px' }}>{s.label}</div>
-                      <div style={{ fontSize: 12.5, color: C.muted, marginTop: 1 }}>{s.sub}</div>
+                      <div style={{ fontSize: 13.5, fontWeight: 700, color: C.navy, letterSpacing: '-0.2px' }}>{s.label}</div>
+                      <div style={{ fontSize: 11, color: C.muted, marginTop: 0 }}>{s.sub}</div>
                     </div>
                   </>
                 )
@@ -807,7 +849,7 @@ export default function AddProjectPage({ onBack, onSave }: { onBack: () => void;
           </div>
 
           {/* Form body */}
-          <div style={{ padding: '28px 28px', minHeight: 400, animation: 'apFadeIn 0.22s ease-out' }} key={step}>
+          <div style={{ padding: '16px 28px 28px', minHeight: 400, animation: 'apFadeIn 0.22s ease-out' }} key={step}>
             {step === 1 && <Step1 data={form} set={set} />}
             {step === 2 && <Step2 data={form} set={set} />}
             {step === 3 && <Step3 data={form} set={set} />}

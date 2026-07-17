@@ -38,6 +38,7 @@ interface AllocatedEmployee {
   startDate: string
   endDate: string
   allocation: number
+  billing: 'Billable' | 'Non-Billable'
 }
 
 interface RateEntry {
@@ -63,14 +64,14 @@ interface ActivityItem {
 
 /* ── Mock data per project ── */
 const ALLOCATIONS: AllocatedEmployee[] = [
-  { id: 'e1', name: 'Arjun Sharma',   code: 'EMP-041', role: 'Tech Lead',         avatar: 47, email: 'arjun.s@concert.io',   startDate: 'May 2026', endDate: 'Aug 2026', allocation: 100 },
-  { id: 'e2', name: 'Priya Nair',     code: 'EMP-058', role: 'Frontend Dev',      avatar: 33, email: 'priya.n@concert.io',   startDate: 'May 2026', endDate: 'Aug 2026', allocation: 80  },
-  { id: 'e3', name: 'Rahul Mehra',    code: 'EMP-022', role: 'Backend Dev',       avatar: 44, email: 'rahul.m@concert.io',   startDate: 'Jun 2026', endDate: 'Aug 2026', allocation: 100 },
-  { id: 'e4', name: 'Kavitha Iyer',   code: 'EMP-067', role: 'QA Engineer',       avatar: 38, email: 'kavitha.i@concert.io', startDate: 'May 2026', endDate: 'Jul 2026', allocation: 60  },
-  { id: 'e5', name: 'Siddharth Roy',  code: 'EMP-031', role: 'UI/UX Designer',    avatar: 25, email: 'sid.r@concert.io',     startDate: 'May 2026', endDate: 'Jun 2026', allocation: 50  },
-  { id: 'e6', name: 'Meera Pillai',   code: 'EMP-089', role: 'DevOps Engineer',   avatar: 20, email: 'meera.p@concert.io',   startDate: 'Jun 2026', endDate: 'Aug 2026', allocation: 40  },
-  { id: 'e7', name: 'Vikram Bose',    code: 'EMP-014', role: 'Data Engineer',     avatar: 10, email: 'vikram.b@concert.io',  startDate: 'May 2026', endDate: 'Aug 2026', allocation: 100 },
-  { id: 'e8', name: 'Anjali Singh',   code: 'EMP-073', role: 'Product Analyst',   avatar: 60, email: 'anjali.s@concert.io',  startDate: 'May 2026', endDate: 'Jul 2026', allocation: 60  },
+  { id: 'e1', name: 'Arjun Sharma',   code: 'EMP-041', role: 'Tech Lead',         avatar: 47, email: 'arjun.s@concert.io',   startDate: 'May 2026', endDate: 'Aug 2026', allocation: 100, billing: 'Billable'     },
+  { id: 'e2', name: 'Priya Nair',     code: 'EMP-058', role: 'Frontend Dev',      avatar: 33, email: 'priya.n@concert.io',   startDate: 'May 2026', endDate: 'Aug 2026', allocation: 80,  billing: 'Billable'     },
+  { id: 'e3', name: 'Rahul Mehra',    code: 'EMP-022', role: 'Backend Dev',       avatar: 44, email: 'rahul.m@concert.io',   startDate: 'Jun 2026', endDate: 'Aug 2026', allocation: 100, billing: 'Billable'     },
+  { id: 'e4', name: 'Kavitha Iyer',   code: 'EMP-067', role: 'QA Engineer',       avatar: 38, email: 'kavitha.i@concert.io', startDate: 'May 2026', endDate: 'Jul 2026', allocation: 60,  billing: 'Non-Billable' },
+  { id: 'e5', name: 'Siddharth Roy',  code: 'EMP-031', role: 'UI/UX Designer',    avatar: 25, email: 'sid.r@concert.io',     startDate: 'May 2026', endDate: 'Jun 2026', allocation: 50,  billing: 'Billable'     },
+  { id: 'e6', name: 'Meera Pillai',   code: 'EMP-089', role: 'DevOps Engineer',   avatar: 20, email: 'meera.p@concert.io',   startDate: 'Jun 2026', endDate: 'Aug 2026', allocation: 40,  billing: 'Non-Billable' },
+  { id: 'e7', name: 'Vikram Bose',    code: 'EMP-014', role: 'Data Engineer',     avatar: 10, email: 'vikram.b@concert.io',  startDate: 'May 2026', endDate: 'Aug 2026', allocation: 100, billing: 'Billable'     },
+  { id: 'e8', name: 'Anjali Singh',   code: 'EMP-073', role: 'Product Analyst',   avatar: 60, email: 'anjali.s@concert.io',  startDate: 'May 2026', endDate: 'Jul 2026', allocation: 60,  billing: 'Non-Billable' },
 ]
 
 const RATE_CARDS: RateEntry[] = [
@@ -117,7 +118,7 @@ const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', hover: '#F0F2F
 const TABS = [
   { id: 'details',    label: 'Project Details'    },
   { id: 'allocation', label: 'Project Allocation' },
-  { id: 'ratecard',   label: 'Rate Card'          },
+  // { id: 'ratecard',   label: 'Rate Card'          },  // hidden for now
   { id: 'activity',   label: 'Activity'           },
 ]
 
@@ -446,7 +447,7 @@ function AllocationTab() {
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ background: '#F7F8FC' }}>
-              {['Employee', 'Employee Code', 'Role', 'Allocation', 'Actions'].map(col => (
+              {['Employee', 'Employee Code', 'Role', 'Allocation', 'Billing Status', 'Actions'].map(col => (
                 <th
                   key={col}
                   style={{
@@ -826,25 +827,38 @@ function AllocationTab() {
                 </div>
               )}
 
-              {/* Info Note and Days Input */}
+              {/* Info Note and Allocation Period (Start / End date) */}
               {selectedEmployee && addForm.allocation < 70 && (
                 <div style={{ padding: '12px 14px', background: '#FEF8F0', border: `1px solid #FED7AA`, borderRadius: 12 }}>
                   <div style={{ fontSize: 12.5, color: '#92400E', lineHeight: 1.5, marginBottom: 12 }}>
-                    <strong>ℹ️ Info:</strong> If you are assigning this employee on a part-time basis, please enter the number of allocated days. The employee will only have access to log timesheets for this project during the assigned allocation period.
+                    <strong>ℹ️ Info:</strong> If you are assigning this employee on a part-time basis, please set the allocation period. The employee will only have access to log timesheets for this project between the start and end date.
                   </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: 11.5, fontWeight: 600, color: '#92400E', marginBottom: 6 }}>Allocated Days</label>
-                    <input
-                      type="number"
-                      min="1"
-                      max="365"
-                      value={addForm.startDate || ''}
-                      onChange={e => setAddForm(prev => ({ ...prev, startDate: e.target.value }))}
-                      placeholder="Enter number of days…"
-                      style={{ width: '100%', height: 40, padding: '0 14px', border: `1px solid #FED7AA`, borderRadius: 10, fontSize: 13.5, fontWeight: 500, color: C.navy, outline: 'none', background: '#fff', fontFamily: 'inherit', boxSizing: 'border-box', transition: 'border-color 0.15s' }}
-                      onFocus={e => { e.target.style.borderColor = '#F59E0B'; e.target.style.boxShadow = '0 0 0 3px rgba(245,158,11,0.10)' }}
-                      onBlur={e => { e.target.style.borderColor = '#FED7AA'; e.target.style.boxShadow = 'none' }}
-                    />
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                    {/* Start Date */}
+                    <div>
+                      <label style={{ display: 'block', fontSize: 11.5, fontWeight: 600, color: '#92400E', marginBottom: 6 }}>Start Date</label>
+                      <input
+                        type="date"
+                        value={addForm.startDate || ''}
+                        onChange={e => setAddForm(prev => ({ ...prev, startDate: e.target.value }))}
+                        style={{ width: '100%', height: 40, padding: '0 14px', border: `1px solid #FED7AA`, borderRadius: 10, fontSize: 13.5, fontWeight: 500, color: C.navy, outline: 'none', background: '#fff', fontFamily: 'inherit', boxSizing: 'border-box', transition: 'border-color 0.15s' }}
+                        onFocus={e => { e.target.style.borderColor = '#F59E0B'; e.target.style.boxShadow = '0 0 0 3px rgba(245,158,11,0.10)' }}
+                        onBlur={e => { e.target.style.borderColor = '#FED7AA'; e.target.style.boxShadow = 'none' }}
+                      />
+                    </div>
+                    {/* End Date */}
+                    <div>
+                      <label style={{ display: 'block', fontSize: 11.5, fontWeight: 600, color: '#92400E', marginBottom: 6 }}>End Date</label>
+                      <input
+                        type="date"
+                        value={addForm.endDate || ''}
+                        min={addForm.startDate || undefined}
+                        onChange={e => setAddForm(prev => ({ ...prev, endDate: e.target.value }))}
+                        style={{ width: '100%', height: 40, padding: '0 14px', border: `1px solid #FED7AA`, borderRadius: 10, fontSize: 13.5, fontWeight: 500, color: C.navy, outline: 'none', background: '#fff', fontFamily: 'inherit', boxSizing: 'border-box', transition: 'border-color 0.15s' }}
+                        onFocus={e => { e.target.style.borderColor = '#F59E0B'; e.target.style.boxShadow = '0 0 0 3px rgba(245,158,11,0.10)' }}
+                        onBlur={e => { e.target.style.borderColor = '#FED7AA'; e.target.style.boxShadow = 'none' }}
+                      />
+                    </div>
                   </div>
                 </div>
               )}
@@ -921,6 +935,23 @@ function TableRow({
           </div>
           <span style={{ fontSize: 12, fontWeight: 600, color: emp.allocation === 100 ? '#0A8A58' : '#92400E' }}>{emp.allocation}%</span>
         </div>
+      </td>
+      <td style={{ padding: '14px 20px', borderBottom: idx < total - 1 ? `1px solid #F3F4F8` : 'none' }}>
+        {(() => {
+          const billable = emp.billing === 'Billable'
+          const s = billable
+            ? { color: '#0A8A58', bg: 'rgba(14,168,106,0.10)', border: 'rgba(14,168,106,0.28)', dot: '#0EA86A' }
+            : { color: '#5B6178', bg: 'rgba(139,144,167,0.12)', border: 'rgba(139,144,167,0.30)', dot: '#8B90A7' }
+          return (
+            <span
+              className="inline-flex items-center gap-1.5"
+              style={{ padding: '3px 10px', borderRadius: 99, background: s.bg, border: `1px solid ${s.border}`, fontSize: 12, fontWeight: 600, color: s.color }}
+            >
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: s.dot, flexShrink: 0 }} />
+              {emp.billing}
+            </span>
+          )
+        })()}
       </td>
       <td style={{ padding: '14px 20px', borderBottom: idx < total - 1 ? `1px solid #F3F4F8` : 'none' }}>
         <div className="flex items-center gap-1.5">

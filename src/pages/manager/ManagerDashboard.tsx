@@ -15,6 +15,8 @@ import TicketsPage from '../employee/hrms/TicketsPage'
 import PayrollPage from '../employee/payroll/PayrollPage'
 import ReportsPage from '../employee/reports/ReportsPage'
 import ExpensePage from '../employee/expense/ExpensePage'
+import MyAppraisalPage from '../employee/appraisal/MyAppraisalPage'
+import TeamAppraisalsPage from './appraisal/TeamAppraisalsPage'
 
 // Manager-only pages
 import ProjectListPage from './projects/ProjectListPage'
@@ -73,6 +75,9 @@ const PAGE_LABELS: Record<string, string> = {
   'team-asset-requests':    'Team Asset Requests',
   'create-asset-request':   'Create Asset Request',
   'asset-request-details':  'Request Details',
+  'my-performance':          'My Performance',
+  'team-appraisals':         'Team Appraisals',
+  'team-appraisal-history':  'Appraisal History',
 }
 
 function ComingSoon({ id }: { id: string }) {
@@ -129,7 +134,7 @@ function PageContent({
   onRequestCreated: (request: ManagerAssetRequest, selectedEmployee: string) => void
 }) {
   // Shared employee pages
-  if (activeItem === 'dashboard')        return <DashboardPage managerMode onNavigateTeam={onNavigate} />
+  if (activeItem === 'dashboard')        return <DashboardPage managerMode onNavigate={onNavigate} onNavigateTeam={onNavigate} />
   if (activeItem === 'timesheet-add')    return <AddTimesheetPage />
   if (activeItem === 'timesheet-history') return <TimesheetHistoryPage onNavigate={onNavigate} />
   if (activeItem === 'leave-create')     return <LeaveCreatePage />
@@ -145,6 +150,8 @@ function PageContent({
   if (activeItem === 'asset-request-details-case1') return <ManagerAssetRequestDetailsPage_Case1_ArjunMenon onNavigate={onNavigate} />
   if (activeItem === 'asset-request-details-case2') return <ManagerAssetRequestDetailsPage_Case2_RajeshKumar onNavigate={onNavigate} />
   if (activeItem === 'asset-request-details-case3') return <ManagerAssetRequestDetailsPage_Case3_SarahJohnson onNavigate={onNavigate} />
+  if (activeItem === 'my-performance')   return <MyAppraisalPage onNavigate={onNavigate} assessorName="James Shower" />
+  if (activeItem === 'team-appraisals')  return <TeamAppraisalsPage onNavigate={onNavigate} />
   if (activeItem === 'expense')          return <ExpensePage />
   if (activeItem === 'payroll')          return <PayrollPage />
   if (activeItem === 'reports')          return <ReportsPage />
