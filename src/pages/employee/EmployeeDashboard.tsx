@@ -15,6 +15,7 @@ import PayrollPage from './payroll/PayrollPage'
 import ExpensePage from './expense/ExpensePage'
 import ReportsPage from './reports/ReportsPage'
 import MyAppraisalPage from './appraisal/MyAppraisalPage'
+import OffboardingPage from './offboarding/OffboardingPage'
 
 const PAGE_LABELS: Record<string, string> = {
   'timesheet-add':     'Add Timesheet',
@@ -29,6 +30,7 @@ const PAGE_LABELS: Record<string, string> = {
   reports:         'Reports',
   'performance-appraisal': 'Performance Appraisal',
   'appraisal-self-assessment': 'KPI Self-Assessment',
+  offboarding: 'Employee Offboarding',
 }
 
 function ComingSoon({ id }: { id: string }) {
@@ -80,6 +82,7 @@ function PageContent({ activeItem, onNavigate }: { activeItem: string; onNavigat
   if (activeItem === 'expense')       return <ExpensePage />
   if (activeItem === 'reports')       return <ReportsPage />
   if (activeItem === 'payroll')       return <PayrollPage />
+  if (activeItem === 'offboarding')   return <OffboardingPage />
   return <ComingSoon id={activeItem} />
 }
 

@@ -18,6 +18,7 @@ import {
   Receipt,
   Ticket,
   Target,
+  DoorOpen,
 } from 'lucide-react'
 
 
@@ -51,6 +52,10 @@ const MANAGER_PERFORMANCE_ITEM: NavItem = {
     { id: 'my-performance',  label: 'My Performance'  },
     { id: 'team-appraisals', label: 'Team Appraisals' },
   ],
+}
+
+const EMPLOYEE_OFFBOARDING_ITEM: NavItem = {
+  id: 'offboarding', label: 'Offboarding', Icon: DoorOpen,
 }
 
 function buildNav(role: 'employee' | 'manager'): NavSection[] {
@@ -114,6 +119,7 @@ function buildNav(role: 'employee' | 'manager'): NavSection[] {
         ),
         { id: 'payroll', label: 'Payroll', Icon: Wallet    },
         { id: 'reports', label: 'Reports', Icon: BarChart3 },
+        ...(role === 'employee' ? [EMPLOYEE_OFFBOARDING_ITEM] : []),
       ],
     },
   ]
@@ -228,6 +234,7 @@ function buildAdminNav(): NavSection[] {
             { id: 'attendance-report', label: 'Attendance Report' },
             { id: 'leave-report',      label: 'Leave Report'      },
             { id: 'all-timesheets',    label: 'Timesheet Report'  },
+            { id: 'allocation-report', label: 'Allocation Report' },
             { id: 'audit-trail',       label: 'Audit Trail'       },
           ],
         },

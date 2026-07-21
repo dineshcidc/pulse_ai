@@ -33,7 +33,7 @@ const STEPS = [
   { n: 3, title: 'Final Appraisal',   desc: 'Admin finalizes the scores and closes the review cycle.',        done: false, current: false },
 ]
 
-export default function MyAppraisalPage({ onNavigate: _onNavigate, assessorName = 'Sara Johnson' }: MyAppraisalPageProps) {
+export default function MyAppraisalPage({ assessorName = 'Sara Johnson' }: MyAppraisalPageProps) {
   const [howOpen, setHowOpen]           = useState(false)
   const [selectedYear, setSelectedYear] = useState(CURRENT_YEAR)
   const [yearMenuOpen, setYearMenuOpen] = useState(false)

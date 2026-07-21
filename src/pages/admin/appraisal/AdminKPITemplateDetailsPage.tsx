@@ -21,7 +21,7 @@ const STAGE_META: Record<KpiStage, { color: string; bg: string; border: string }
   Annual: { color: '#0EA86A', bg: 'rgba(14,168,106,0.10)', border: 'rgba(14,168,106,0.24)' },
 }
 
-export default function AdminKPITemplateDetailsPage({ template, initialCriteria, onBack, onNavigate: _onNavigate }: Props) {
+export default function AdminKPITemplateDetailsPage({ template, initialCriteria, onBack }: Props) {
   const [criteria, setCriteria] = useState<KpiCriterion[]>(initialCriteria)
   const [tab, setTab]           = useState<KpiStage>('Q1')
   const [deleteId, setDeleteId] = useState<string | null>(null)

@@ -15,6 +15,7 @@ import DepartmentManagementPage from './projects/DepartmentManagementPage'
 import AdminOrgStructurePage from './AdminOrgStructurePage'
 import AttendanceReportPage from './reports/AttendanceReportPage'
 import LeaveReportPage from './reports/LeaveReportPage'
+import AllocationReportPage from './reports/AllocationReportPage'
 import AuditTrailPage from './reports/AuditTrailPage'
 import OrgProfileWrapperPage from './settings/OrgProfileWrapperPage'
 import WorkingHoursPage from './settings/WorkingHoursPage'
@@ -57,6 +58,7 @@ const PAGE_LABELS: Record<string, string> = {
   'admin-org':            'Org Structure',
   'attendance-report':    'Attendance Report',
   'leave-report':         'Leave Report',
+  'allocation-report':    'Allocation Report',
   'audit-trail':          'Audit Trail',
   'policy-setup':         'Policy Setup',
   'org-profile':          'Organization Profile',
@@ -133,6 +135,7 @@ function PageContent({ activeItem, onNavigate }: { activeItem: string; onNavigat
   if (activeItem === 'admin-org')              return <AdminOrgStructurePage />
   if (activeItem === 'attendance-report')      return <AttendanceReportPage />
   if (activeItem === 'leave-report')            return <LeaveReportPage />
+  if (activeItem === 'allocation-report')       return <AllocationReportPage />
   if (activeItem === 'audit-trail')             return <AuditTrailPage />
   if (activeItem === 'policy-setup')           return <PolicySetupPage />
   if (activeItem === 'org-profile')            return <OrgProfileWrapperPage />
