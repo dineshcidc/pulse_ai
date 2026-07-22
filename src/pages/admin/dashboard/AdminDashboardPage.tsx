@@ -71,7 +71,7 @@ const DEPARTMENTS = [
 const PENDING_ACTIONS = [
   { id: 'leave',    label: 'Leave Requests',    count: 5,  overdue: 2, Icon: CalendarDays, navId: 'all-leave-requests' },
   { id: 'ts',       label: 'Timesheet Reviews', count: 12, overdue: 0, Icon: Clock,        navId: 'pending-approvals'  },
-  { id: 'newusers', label: 'New Registrations', count: 2,  overdue: 0, Icon: UserPlus,     navId: 'all-users'          },
+  // { id: 'newusers', label: 'New Registrations', count: 2,  overdue: 0, Icon: UserPlus,     navId: 'all-users'          },
 ]
 
 const RECENT_ACTIVITY = [

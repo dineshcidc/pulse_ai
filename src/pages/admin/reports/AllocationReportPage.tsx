@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import {
   BarChart3, Briefcase, ChevronDown, AlertCircle,
   Download, ClipboardList, Check, Users, ChevronLeft, ChevronRight,
+  CalendarDays, FolderKanban,
 } from 'lucide-react'
 import type { ElementType } from 'react'
 
@@ -199,10 +200,29 @@ function fmtUtil(u: number) {
 const PROJECTS = ['All projects', 'Emard Inc', 'Kohler Group', 'Stark Industries', 'Wayne LLC', 'Acme Co']
 const EMPLOYEES = ['All employees', 'Cullen Haag', 'Ana Reilly', 'Bruce Wayne', 'Diana Prince', 'John Doe']
 const PROJECT_STATUS = ['All statuses', 'Active', 'On hold', 'Completed']
-const WEEKLY_STATUS = ['All weekly statuses', 'On track', 'At risk', 'Over SoW']
 const BILLING = ['All billing types', 'Billable', 'Non-billable', 'Fixed bid']
-const QUICK = ['Monthly', 'Weekly', 'Bi-weekly'] as const
-type QuickType = (typeof QUICK)[number]
+
+/* Each real project has a fixed start/end — powers the "Full Project" report and the duration card */
+interface ProjMeta { start: string; end: string; duration: string }
+const PROJECT_META: Record<string, ProjMeta> = {
+  'Emard Inc':        { start: '2026-04-01', end: '2026-06-30', duration: '3 months' },
+  'Kohler Group':     { start: '2026-05-15', end: '2026-08-14', duration: '3 months' },
+  'Stark Industries': { start: '2026-02-01', end: '2026-07-31', duration: '6 months' },
+  'Wayne LLC':        { start: '2026-06-01', end: '2026-08-31', duration: '3 months' },
+  'Acme Co':          { start: '2026-01-01', end: '2026-06-30', duration: '6 months' },
+}
+function fmtNice(iso: string) {
+  const [y, m, d] = iso.split('-').map(Number)
+  return `${pad(d)} ${MONTH_SHORT[m - 1]} ${y}`
+}
+
+const PERIODS = [
+  { key: 'Monthly',      desc: 'Calendar month' },
+  { key: 'Weekly',       desc: 'One week' },
+  { key: 'Bi-weekly',    desc: 'Two-week block' },
+  { key: 'Full Project', desc: 'Entire duration' },
+] as const
+type QuickType = (typeof PERIODS)[number]['key']
 
 export default function AllocationReportPage() {
   const [quick, setQuick]       = useState<QuickType>('Monthly')
@@ -213,7 +233,6 @@ export default function AllocationReportPage() {
   const [project, setProject]     = useState(PROJECTS[0])
   const [employee, setEmployee]   = useState(EMPLOYEES[0])
   const [projStatus, setProjStatus] = useState(PROJECT_STATUS[0])
-  const [weekStatus, setWeekStatus] = useState(WEEKLY_STATUS[0])
   const [billing, setBilling]     = useState(BILLING[0])
 
   const [allocPage, setAllocPage] = useState(1)
@@ -237,21 +256,29 @@ export default function AllocationReportPage() {
   const halfOptions  = halves.map(h => `${MONTH_SHORT[sel.m]} ${h.start}–${h.end}`)
 
   /* ── resolved date range ── */
+  const selProj = PROJECT_META[project]
   let rStart = 1, rEnd = dim
   if (quick === 'Weekly')      { rStart = weeks[wIdx].start;  rEnd = weeks[wIdx].end }
   else if (quick === 'Bi-weekly') { rStart = halves[hIdx].start; rEnd = halves[hIdx].end }
-  const isoStart = `${sel.year}-${pad(sel.m + 1)}-${pad(rStart)}`
-  const isoEnd   = `${sel.year}-${pad(sel.m + 1)}-${pad(rEnd)}`
+  let isoStart = `${sel.year}-${pad(sel.m + 1)}-${pad(rStart)}`
+  let isoEnd   = `${sel.year}-${pad(sel.m + 1)}-${pad(rEnd)}`
+  if (quick === 'Full Project' && selProj) { isoStart = selProj.start; isoEnd = selProj.end }
 
   function pickMonth(label: string) {
     setMonthIdx(monthOptions.indexOf(label))
     setWeekIdx(0); setHalfIdx(0)
   }
 
+  function pickProject(p: string) {
+    setProject(p)
+    // "Full Project" needs a specific project — fall back to Monthly for "All projects"
+    if (!PROJECT_META[p] && quick === 'Full Project') setQuick('Monthly')
+  }
+
   function resetFilters() {
     setQuick('Monthly'); setMonthIdx(6); setWeekIdx(0); setHalfIdx(0)
     setProject(PROJECTS[0]); setEmployee(EMPLOYEES[0])
-    setProjStatus(PROJECT_STATUS[0]); setWeekStatus(WEEKLY_STATUS[0]); setBilling(BILLING[0])
+    setProjStatus(PROJECT_STATUS[0]); setBilling(BILLING[0])
   }
 
   return (
@@ -310,11 +337,38 @@ export default function AllocationReportPage() {
 
           {/* rail body */}
           <div style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {/* ── Tabs first ── */}
+            {/* ── Filters (top) ── */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <Field label="Project"><Dropdown options={PROJECTS} value={project} onChange={pickProject} /></Field>
+              <Field label="Employee"><Dropdown options={EMPLOYEES} value={employee} onChange={setEmployee} /></Field>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <Field label="Project Status"><Dropdown options={PROJECT_STATUS} value={projStatus} onChange={setProjStatus} /></Field>
+              <Field label="Billing"><Dropdown options={BILLING} value={billing} onChange={setBilling} /></Field>
+            </div>
+
+            {/* ── Date Range ── */}
+            <span style={{ fontSize: 12, fontWeight: 700, color: C.navy, letterSpacing: '-0.1px', marginTop: 2 }}>Date Range</span>
+
+            {selProj && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '11px 13px', background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.18)', borderRadius: 11 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 9, minWidth: 0 }}>
+                  <CalendarDays size={16} strokeWidth={2} style={{ color: C.indigo, flexShrink: 0 }} />
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Project Duration</div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: C.navy, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{fmtNice(selProj.start)} – {fmtNice(selProj.end)}</div>
+                  </div>
+                </div>
+                <span style={{ flexShrink: 0, fontSize: 11, fontWeight: 700, color: C.indigoDark, background: '#fff', border: '1px solid rgba(99,102,241,0.25)', borderRadius: 999, padding: '3px 10px' }}>{selProj.duration}</span>
+              </div>
+            )}
+
+            {/* ── Report Period ── */}
             <div>
-              <span style={{ display: 'block', fontSize: 11, fontWeight: 700, letterSpacing: '0.04em', color: C.muted, textTransform: 'uppercase', marginBottom: 7 }}>Report Period</span>
+              {/* time-based — segmented tabs */}
               <div style={{ display: 'flex', gap: 4, padding: 4, background: C.bg, borderRadius: 10 }}>
-                {QUICK.map(q => {
+                {(['Monthly', 'Weekly', 'Bi-weekly'] as const).map(q => {
                   const active = q === quick
                   return (
                     <button
@@ -324,9 +378,9 @@ export default function AllocationReportPage() {
                       style={{
                         flex: 1, height: 34, borderRadius: 7, border: 'none', cursor: 'pointer',
                         fontSize: 12, fontWeight: 600, transition: 'all 0.15s',
-                        background: active ? '#fff' : 'transparent',
+                        background: active ? '#EEF0FE' : 'transparent',
                         color: active ? C.indigoDark : C.muted,
-                        boxShadow: active ? '0 1px 3px rgba(28,32,53,0.10)' : 'none',
+                        boxShadow: active ? 'inset 0 0 0 1px rgba(99,102,241,0.28)' : 'none',
                       }}
                     >
                       {q}
@@ -334,9 +388,41 @@ export default function AllocationReportPage() {
                   )
                 })}
               </div>
+
+              {/* full project — full width */}
+              {(() => {
+                const active = quick === 'Full Project'
+                const disabled = !selProj
+                return (
+                  <button
+                    type="button"
+                    disabled={disabled}
+                    onClick={() => setQuick('Full Project')}
+                    style={{
+                      width: '100%', marginTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      gap: 10, padding: '10px 12px', borderRadius: 10, textAlign: 'left',
+                      cursor: disabled ? 'not-allowed' : 'pointer',
+                      border: `1px solid ${active ? C.indigo : C.border}`,
+                      background: active ? 'rgba(99,102,241,0.08)' : '#fff',
+                      opacity: disabled ? 0.5 : 1, transition: 'all 0.15s',
+                    }}
+                    onMouseEnter={e => { if (!active && !disabled) e.currentTarget.style.borderColor = C.indigo }}
+                    onMouseLeave={e => { if (!active && !disabled) e.currentTarget.style.borderColor = C.border }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 9, minWidth: 0 }}>
+                      <FolderKanban size={15} strokeWidth={2} style={{ color: active ? C.indigo : C.muted, flexShrink: 0 }} />
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: 12.5, fontWeight: 700, color: active ? C.indigoDark : C.navy }}>Full Project</div>
+                        <div style={{ fontSize: 10.5, fontWeight: 500, color: C.muted, marginTop: 1 }}>{disabled ? 'Select a project' : 'Entire project duration'}</div>
+                      </div>
+                    </div>
+                    {active && <Check size={14} strokeWidth={2.6} style={{ color: C.indigo, flexShrink: 0 }} />}
+                  </button>
+                )
+              })()}
             </div>
 
-            {/* ── Period selectors driven by the active tab ── */}
+            {/* ── Period selectors driven by the active tile ── */}
             {quick === 'Monthly' && (
               <Field label="Month">
                 <Dropdown options={monthOptions} value={MONTHS[monthIdx].label} onChange={pickMonth} />
@@ -365,28 +451,19 @@ export default function AllocationReportPage() {
               </div>
             )}
 
-            <span style={{ fontSize: 12, fontWeight: 700, color: C.navy, letterSpacing: '-0.1px', marginTop: 2 }}>Filter Results</span>
-
-            {/* ── Data filters (two per row) ── */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-              <Field label="Project"><Dropdown options={PROJECTS} value={project} onChange={setProject} /></Field>
-              <Field label="Employee"><Dropdown options={EMPLOYEES} value={employee} onChange={setEmployee} /></Field>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-              <Field label="Project Status"><Dropdown options={PROJECT_STATUS} value={projStatus} onChange={setProjStatus} /></Field>
-              <Field label="Weekly Status"><Dropdown options={WEEKLY_STATUS} value={weekStatus} onChange={setWeekStatus} /></Field>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-              <Field label="Billing"><Dropdown options={BILLING} value={billing} onChange={setBilling} /></Field>
-              <div />
-            </div>
+            {quick === 'Full Project' && selProj && (
+              <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '11px 13px', background: C.surface, border: `1px solid ${C.border}`, borderRadius: 11 }}>
+                <FolderKanban size={14} strokeWidth={2} style={{ color: C.indigo, marginTop: 1, flexShrink: 0 }} />
+                <span style={{ fontSize: 11.5, fontWeight: 500, color: C.muted, lineHeight: 1.5 }}>
+                  Report covers the full project duration — <strong style={{ color: C.navy }}>{fmtNice(selProj.start)} to {fmtNice(selProj.end)}</strong>.
+                </span>
+              </div>
+            )}
 
             <button
               type="button"
               style={{
-                width: '100%', height: 46, marginTop: 2, borderRadius: 12, border: 'none',
+                width: '100%', height: 46, marginTop: 6, borderRadius: 12, border: 'none',
                 background: C.navy, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, transition: 'background 0.15s',
               }}

@@ -130,6 +130,7 @@ export default function ExitInterviewPage() {
   const [rejoin, setRejoin] = useState<Choice | ''>('')
   const [comments, setComments] = useState('')
   const [showErr, setShowErr] = useState(false)
+  const [submitLoading, setSubmitLoading] = useState(false)
   const [confirm, setConfirm] = useState(false)
 
   const errOverall = showErr && !ratings.overall
@@ -140,7 +141,8 @@ export default function ExitInterviewPage() {
 
   function handleSubmit() {
     if (!ratings.overall || !improve.trim() || !recommend) { setShowErr(true); return }
-    setConfirm(true)
+    setSubmitLoading(true)
+    setTimeout(() => { setSubmitLoading(false); setConfirm(true) }, 900)
   }
 
   /* ── Submitted / thank-you state ── */
@@ -164,8 +166,8 @@ export default function ExitInterviewPage() {
 
         {/* Read-only summary */}
         <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, padding: 20 }}>
-          <h3 style={{ fontSize: 14, fontWeight: 700, color: C.navy, margin: '0 0 16px' }}>Your Responses</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <h3 style={{ fontSize: 14, fontWeight: 700, color: C.navy, margin: '0 0 18px' }}>Your Responses</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             {ASPECTS.map(a => (
               <div key={a.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span style={{ fontSize: 13, color: C.navy, fontWeight: 500 }}>{a.label}</span>
@@ -209,7 +211,7 @@ export default function ExitInterviewPage() {
         <SectionTitle n={1} title="Rate your experience" subtitle="Tap the stars to rate each area." />
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {ASPECTS.map((a, i) => (
-            <div key={a.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '11px 0', borderBottom: i < ASPECTS.length - 1 ? `1px solid ${C.border}` : 'none' }}>
+            <div key={a.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '16px 0', borderBottom: i < ASPECTS.length - 1 ? `1px solid ${C.border}` : 'none' }}>
               <span style={{ fontSize: 13.5, color: C.navy, fontWeight: 500 }}>
                 {a.label}{'required' in a && a.required && <span style={{ color: '#E84855', marginLeft: 3 }}>*</span>}
               </span>
@@ -263,11 +265,12 @@ export default function ExitInterviewPage() {
         <div style={{ marginTop: 24, paddingTop: 18, borderTop: `1px solid ${C.border}`, display: 'flex', justifyContent: 'flex-end' }}>
           <button
             onClick={handleSubmit}
-            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '11px 22px', borderRadius: 10, border: 'none', background: C.indigo, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.15s' }}
-            onMouseEnter={e => { e.currentTarget.style.background = '#4F46E5' }}
-            onMouseLeave={e => { e.currentTarget.style.background = C.indigo }}
+            disabled={submitLoading}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minWidth: 200, padding: '11px 22px', borderRadius: 10, border: 'none', background: C.indigo, color: '#fff', fontSize: 13, fontWeight: 600, cursor: submitLoading ? 'not-allowed' : 'pointer', fontFamily: 'inherit', transition: 'background 0.15s', opacity: submitLoading ? 0.85 : 1 }}
+            onMouseEnter={e => { if (!submitLoading) e.currentTarget.style.background = '#4F46E5' }}
+            onMouseLeave={e => { if (!submitLoading) e.currentTarget.style.background = C.indigo }}
           >
-            <Send size={15} strokeWidth={2} /> Submit Exit Interview
+            {submitLoading ? (<><Spinner /> Submitting…</>) : (<><Send size={15} strokeWidth={2} /> Submit Exit Interview</>)}
           </button>
         </div>
       </div>
