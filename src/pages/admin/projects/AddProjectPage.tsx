@@ -56,6 +56,7 @@ interface FormData {
   // Step 2 — allocation
   allocations: MonthAlloc[]
   customRoles: { id: string; label: string }[]
+  removedRoles: string[]   // ids of default ALLOC_ROLES the user removed
   // Step 3
   billingType:  BillingType
   poNumber:     string
@@ -91,6 +92,14 @@ const CURRENCIES = ['USD', 'INR', 'EUR', 'GBP', 'AED']
 const PAYMENT_TERMS_OPTIONS = ['Net 15', 'Net 30', 'Net 45', 'Net 60', 'Immediate']
 
 const MANAGER_LIST = ['Priya Mehta', 'Arjun Menon', 'Raj Kumar', 'Sunita Rao', 'Dev Team Lead']
+
+// Deterministic display code for a manager (no code stored in the list)
+function managerCode(name: string) {
+  const initials = name.split(' ').filter(Boolean).map(w => w[0]).join('').toUpperCase().slice(0, 3)
+  let h = 0
+  for (const c of name) h = (h * 31 + c.charCodeAt(0)) >>> 0
+  return `MGR-${initials}-${(h % 900) + 100}`
+}
 const MEMBER_LIST  = ['Sarah Johnson', 'Ravi Kumar', 'Meera Pillai', 'Deepak Nair', 'Ananya Singh', 'Vikram Sharma', 'Kiran Babu', 'Pooja Iyer']
 const ROLE_LIST    = ['Frontend Developer', 'Backend Developer', 'Full Stack Developer', 'UI/UX Designer', 'QA Engineer', 'DevOps Engineer', 'Business Analyst', 'Scrum Master']
 
@@ -102,11 +111,11 @@ const ALLOC_ROLES: { id: string; label: string }[] = [
   { id: 'cpm',      label: 'CPM' },
   { id: 'pm',       label: 'PM'  },
   { id: 'ba',       label: 'BA'  },
-  { id: 'uiux',     label: 'UI/UX Designer' },
-  { id: 'frontend', label: 'Frontend' },
-  { id: 'backend',  label: 'Backend' },
-  { id: 'qa',       label: 'QA'  },
-  { id: 'devops',   label: 'DevOps' },
+  { id: 'sr_swe',   label: 'SR Software Engineer' },
+  { id: 'sr_fe',    label: 'Sr Frontend Developer' },
+  { id: 'qa',       label: 'QA Engineer' },
+  { id: 'uiux',     label: 'UIUX' },
+  { id: 'devops',   label: 'Devops' },
 ]
 
 const MONTH_FULL  = ['January','February','March','April','May','June','July','August','September','October','November','December']
@@ -155,13 +164,6 @@ function fmtDate(iso: string): string {
   const d = new Date(iso + 'T00:00:00Z')
   if (isNaN(+d)) return '—'
   return `${String(d.getUTCDate()).padStart(2, '0')} ${MONTH_SHORT[d.getUTCMonth()]} ${d.getUTCFullYear()}`
-}
-
-function fmtDayShort(iso: string): string {
-  if (!iso) return '—'
-  const d = new Date(iso + 'T00:00:00Z')
-  if (isNaN(+d)) return '—'
-  return `${String(d.getUTCDate()).padStart(2, '0')} ${MONTH_SHORT[d.getUTCMonth()]}`
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -421,7 +423,7 @@ function StepAllocation({ data, set }: { data: FormData; set: (p: Partial<FormDa
   const months      = monthsBetween(data.startDate, data.endDate)
   const hasTimeline = months.length > 0
   const rows        = [...data.allocations].sort((a, b) => a.key.localeCompare(b.key))
-  const allRoles    = [...ALLOC_ROLES, ...data.customRoles]
+  const allRoles    = [...ALLOC_ROLES.filter(r => !data.removedRoles.includes(r.id)), ...data.customRoles]
 
   // Accordion — first month expanded, the rest collapsed initially.
   const [openKeys, setOpenKeys] = useState<string[]>([])
@@ -488,9 +490,11 @@ function StepAllocation({ data, set }: { data: FormData; set: (p: Partial<FormDa
     }
     setAddKey(null); setRoleName('')
   }
-  function removeCustomRole(id: string) {
+  function removeRole(id: string) {
+    const isCustom = data.customRoles.some(r => r.id === id)
     set({
-      customRoles: data.customRoles.filter(r => r.id !== id),
+      customRoles: isCustom ? data.customRoles.filter(r => r.id !== id) : data.customRoles,
+      removedRoles: isCustom ? data.removedRoles : [...data.removedRoles, id],
       allocations: data.allocations.map(a => { const h = { ...a.hours }; delete h[id]; return { ...a, hours: h } }),
     })
   }
@@ -588,10 +592,10 @@ function StepAllocation({ data, set }: { data: FormData; set: (p: Partial<FormDa
         <>
           {/* ── Project summary card ── */}
           <div style={{ borderRadius: 16, padding: '18px 20px', background: 'linear-gradient(135deg, #F5F6FF 0%, #EEF0FB 100%)', border: '1px solid rgba(99,102,241,0.16)' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 14 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 14 }}>
               <SummaryStat Icon={Briefcase}    label="Project"        value={data.projectName || 'Untitled Project'} />
               <SummaryStat Icon={Clock}        label="Duration"       value={months.length === 1 ? '1 month' : `${months.length} months`} />
-              <SummaryStat Icon={CalendarDays} label="Date"           value={`${fmtDayShort(data.startDate)} – ${fmtDayShort(data.endDate)}`} />
+              <SummaryStat Icon={CalendarDays} label="Date"           value={`${fmtDate(data.startDate)} – ${fmtDate(data.endDate)}`} small />
               <SummaryStat Icon={Sigma}        label="Planned Effort" value={data.allocationHours ? `${data.allocationHours} hrs` : '—'} />
             </div>
           </div>
@@ -629,19 +633,16 @@ function StepAllocation({ data, set }: { data: FormData; set: (p: Partial<FormDa
                     {/* role inputs */}
                     <div style={{ padding: '16px 18px 14px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 12 }}>
                       {allRoles.map(r => {
-                        const isCustom = data.customRoles.some(c => c.id === r.id)
                         return (
                           <div key={r.id}>
                             <label style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11.5, fontWeight: 600, color: C.navy, marginBottom: 5 }}>
                               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.label}</span>
-                              {isCustom && (
-                                <button type="button" title="Remove role" onClick={() => removeCustomRole(r.id)}
-                                  style={{ width: 15, height: 15, borderRadius: 4, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C8CCE0', padding: 0, flexShrink: 0 }}
-                                  onMouseEnter={e => { e.currentTarget.style.color = '#E84855'; e.currentTarget.style.background = 'rgba(232,72,85,0.08)' }}
-                                  onMouseLeave={e => { e.currentTarget.style.color = '#C8CCE0'; e.currentTarget.style.background = 'transparent' }}>
-                                  <X size={10} strokeWidth={2.6} />
-                                </button>
-                              )}
+                              <button type="button" title="Remove role" onClick={() => removeRole(r.id)}
+                                style={{ width: 15, height: 15, borderRadius: 4, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C8CCE0', padding: 0, flexShrink: 0 }}
+                                onMouseEnter={e => { e.currentTarget.style.color = '#E84855'; e.currentTarget.style.background = 'rgba(232,72,85,0.08)' }}
+                                onMouseLeave={e => { e.currentTarget.style.color = '#C8CCE0'; e.currentTarget.style.background = 'transparent' }}>
+                                <X size={10} strokeWidth={2.6} />
+                              </button>
                             </label>
                             <div style={{ position: 'relative' }}>
                               <input
@@ -856,15 +857,15 @@ const CODE: React.CSSProperties = {
   border: '1px solid rgba(99,102,241,0.16)', borderRadius: 5, padding: '1px 5px', fontFamily: 'ui-monospace, monospace',
 }
 
-function SummaryStat({ Icon, label, value, big }: { Icon: React.ElementType; label: string; value: string; big?: boolean }) {
+function SummaryStat({ Icon, label, value, big, wide, small }: { Icon: React.ElementType; label: string; value: string; big?: boolean; wide?: boolean; small?: boolean }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, minWidth: 0 }}>
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, minWidth: small ? 190 : 0, gridColumn: wide ? 'span 2' : undefined }}>
       <div style={{ width: 32, height: 32, borderRadius: 8, background: '#fff', border: '1px solid rgba(99,102,241,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <Icon size={15} strokeWidth={2} style={{ color: '#5B5FDE' }} />
       </div>
       <div style={{ minWidth: 0 }}>
         <div style={{ fontSize: 10.5, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.03em' }}>{label}</div>
-        <div style={{ fontSize: big ? 17 : 13.5, fontWeight: 800, color: C.navy, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{value}</div>
+        <div style={{ fontSize: big ? 17 : small ? 12 : 13.5, fontWeight: 800, color: C.navy, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{value}</div>
       </div>
     </div>
   )
@@ -874,8 +875,6 @@ function SummaryStat({ Icon, label, value, big }: { Icon: React.ElementType; lab
 function Step2({ data, set }: { data: FormData; set: (p: Partial<FormData>) => void }) {
   const [selectedRoleId, setSelectedRoleId] = useState<number | null>(null)
   const [memberSearch,   setMemberSearch]   = useState('')
-  const [managerSearch,  setManagerSearch]  = useState('')
-  const [managerOpen,    setManagerOpen]    = useState(false)
   const [addingRole,     setAddingRole]     = useState(false)
   const [roleSearch,     setRoleSearch]     = useState('')
 
@@ -887,8 +886,9 @@ function Step2({ data, set }: { data: FormData; set: (p: Partial<FormData>) => v
     m.toLowerCase().includes(memberSearch.toLowerCase())
   )
 
-  // Roles not yet added
-  const unusedRoles = ROLE_LIST.filter(r =>
+  // Roles not yet added (same role names as tab 2 / Project Allocation)
+  const TEAM_ROLE_LIST = ALLOC_ROLES.map(r => r.label)
+  const unusedRoles = TEAM_ROLE_LIST.filter(r =>
     !data.roleGroups.some(rg => rg.role === r) &&
     r.toLowerCase().includes(roleSearch.toLowerCase())
   )
@@ -932,58 +932,35 @@ function Step2({ data, set }: { data: FormData; set: (p: Partial<FormData>) => v
     )})
   }
 
-  const filteredManagers = MANAGER_LIST.filter(m =>
-    m.toLowerCase().includes(managerSearch.toLowerCase())
-  )
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-      {/* ── Project Manager — searchable ── */}
+      {/* ── Project Manager — select ── */}
       <div>
         <label style={LABEL}>Project Manager</label>
-        {managerOpen && (
-          <div style={{ position: 'fixed', inset: 0, zIndex: 49 }} onClick={() => setManagerOpen(false)} />
-        )}
-        <div style={{ position: 'relative', zIndex: 50 }}>
-          {data.manager ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, height: 44, padding: '0 14px', borderRadius: 10, border: `1px solid rgba(99,102,241,0.35)`, background: 'rgba(99,102,241,0.05)' }}>
-              <img src={`https://i.pravatar.cc/40?u=${data.manager}`} alt={data.manager} style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '1.5px solid rgba(99,102,241,0.20)' }} />
-              <span style={{ flex: 1, fontSize: 13.5, fontWeight: 600, color: C.navy }}>{data.manager}</span>
-              <button onClick={() => { set({ manager: '' }); setManagerSearch('') }}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: C.muted, lineHeight: 0 }}
-                onMouseEnter={e => { e.currentTarget.style.color = '#E84855' }}
-                onMouseLeave={e => { e.currentTarget.style.color = C.muted }}>
-                <X size={13} strokeWidth={2.5} />
-              </button>
-            </div>
-          ) : (
-            <div style={{ position: 'relative' }}>
-              <Search size={14} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: C.muted, pointerEvents: 'none' }} />
-              <input
-                value={managerSearch}
-                onChange={e => { setManagerSearch(e.target.value); setManagerOpen(true) }}
-                onFocus={() => setManagerOpen(true)}
-                placeholder="Search and select project manager…"
-                style={{ ...inputStyle, paddingLeft: 38 }}
-              />
-              {managerOpen && filteredManagers.length > 0 && (
-                <div style={{ position: 'absolute', top: 'calc(100% + 5px)', left: 0, right: 0, background: '#fff', border: `1px solid ${C.border}`, borderRadius: 12, boxShadow: '0 8px 28px rgba(28,32,53,0.12)', zIndex: 100, overflow: 'hidden' }}>
-                  {filteredManagers.map(m => (
-                    <button key={m}
-                      onMouseDown={() => { set({ manager: m }); setManagerOpen(false); setManagerSearch('') }}
-                      style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 14px', border: 'none', background: 'transparent', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit' }}
-                      onMouseEnter={e => { e.currentTarget.style.background = C.surface }}
-                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}>
-                      <img src={`https://i.pravatar.cc/40?u=${m}`} alt={m} style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: `1.5px solid ${C.border}` }} />
-                      <span style={{ fontSize: 13.5, fontWeight: 500, color: C.navy }}>{m}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+        <div style={{ position: 'relative' }}>
+          <select
+            value={data.manager}
+            onChange={e => set({ manager: e.target.value })}
+            style={{ ...inputStyle, paddingRight: 34, appearance: 'none', cursor: 'pointer', color: data.manager ? C.navy : C.muted }}>
+            <option value="">Select project manager…</option>
+            {MANAGER_LIST.map(m => <option key={m} value={m}>{m}</option>)}
+          </select>
+          <ChevronDown size={16} style={{ position: 'absolute', right: 13, top: '50%', transform: 'translateY(-50%)', color: C.muted, pointerEvents: 'none' }} />
         </div>
+
+        {/* Selected manager details */}
+        {data.manager && (
+          <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 12, background: C.surface, border: `1px solid ${C.border}` }}>
+            <img src={`https://i.pravatar.cc/48?u=${data.manager}`} alt={data.manager}
+              style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: `1.5px solid ${C.border}` }} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+              <span style={{ fontSize: 13.5, fontWeight: 600, color: C.navy }}>{data.manager}</span>
+              <span style={{ fontSize: 11.5, fontWeight: 500, color: C.muted, letterSpacing: '0.02em' }}>{managerCode(data.manager)}</span>
+            </div>
+            <span style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 600, color: '#5B5FDE', background: 'rgba(99,102,241,0.10)', padding: '4px 10px', borderRadius: 999 }}>Manager</span>
+          </div>
+        )}
       </div>
 
       <div style={{ height: 1, background: C.border }} />
@@ -1054,7 +1031,7 @@ function Step2({ data, set }: { data: FormData; set: (p: Partial<FormData>) => v
                         {r}
                       </button>
                     ))}
-                    {roleSearch.trim() && !ROLE_LIST.includes(roleSearch.trim()) && (
+                    {roleSearch.trim() && !TEAM_ROLE_LIST.includes(roleSearch.trim()) && (
                       <button onMouseDown={() => addRoleGroup(roleSearch.trim())}
                         style={{ width: '100%', padding: '6px 8px', borderRadius: 6, border: 'none', background: 'rgba(99,102,241,0.07)', textAlign: 'left', fontSize: 11.5, color: '#5B5FDE', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>
                         + Add "{roleSearch.trim()}"
@@ -1342,7 +1319,7 @@ export default function AddProjectPage({ onBack, onSave }: { onBack: () => void;
     plannedStart: '', plannedEnd: '', actualStart: '', actualEnd: '', sowSigned: '',
     allocationHours: '',
     status: 'yet-to-start',
-    manager: '', roleGroups: [], allocations: [], customRoles: [],
+    manager: '', roleGroups: [], allocations: [], customRoles: [], removedRoles: [],
     billingType: 'hourly', poNumber: '', paymentTerms: '', rates: [],
   })
 
@@ -1423,6 +1400,11 @@ export default function AddProjectPage({ onBack, onSave }: { onBack: () => void;
                     <div style={{ fontSize: 13, fontWeight: done || current ? 700 : 500, color: current ? '#5B5FDE' : done ? '#0A8A58' : '#5A6080', lineHeight: 1.3, transition: 'color 0.15s' }}>{s.label}</div>
                     <div style={{ fontSize: 11, color: '#B0B4C8', fontWeight: 400, marginTop: 1 }}>{s.sub}</div>
                   </div>
+                  {current && (
+                    <div style={{ width: 16, height: 16, borderRadius: '50%', background: 'rgba(99,102,241,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: 'auto', flexShrink: 0 }}>
+                      <ChevronRight size={9} strokeWidth={2.5} style={{ color: '#5B5FDE' }} />
+                    </div>
+                  )}
                 </button>
               )
             })}
