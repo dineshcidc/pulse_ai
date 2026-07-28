@@ -2,7 +2,7 @@
 
 ## Module Name
 
-**Project Dashboard**
+**Project Dashboard -**
 
 ---
 
@@ -367,11 +367,11 @@ Design a world-class enterprise Project Dashboard that enables managers and lead
 The experience should emphasize clarity, speed, actionable insights, and professional enterprise UI standards similar to Jira Portfolio, Azure DevOps Dashboards, Monday.com, ClickUp, and Microsoft Project dashboards.
 
 
-<!-- Above is Secondary Task -->
+<!-- Above is Secondary Task - Like Project Dashboard and View Project -->
 
 
-<!-- Primary Task  -->
 
+<!-- Primary Task --->
 
 # Pulse AI – Project Reporting Management Module
 

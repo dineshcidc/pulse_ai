@@ -33,6 +33,10 @@ import ManagerAssetRequestDetailsPage_Case1_ArjunMenon from './assets/ManagerAss
 import ManagerAssetRequestDetailsPage_Case2_RajeshKumar from './assets/ManagerAssetRequestDetailsPage_Case2_RajeshKumar'
 import ManagerAssetRequestDetailsPage_Case3_SarahJohnson from './assets/ManagerAssetRequestDetailsPage_Case3_SarahJohnson'
 
+// Manager Project Reporting pages
+import ReportingOverviewPage from './reporting/ReportingOverviewPage'
+import MyReportProjectsPage from './reporting/MyReportProjectsPage'
+
 interface ManagerAsset {
   id: string
   code: string
@@ -163,6 +167,10 @@ function PageContent({
   if (activeItem === 'team-leave')            return <TeamLeaveRequestsPage />
   if (activeItem === 'team-attendance')       return <TeamAttendanceRequestsPage />
   if (activeItem === 'project-announcements') return <ProjectAnnouncementsPage />
+
+  // Manager Project Reporting
+  if (activeItem === 'reporting-overview')  return <ReportingOverviewPage onNavigate={onNavigate} />
+  if (activeItem === 'my-report-projects')  return <MyReportProjectsPage />
 
   return <ComingSoon id={activeItem} />
 }

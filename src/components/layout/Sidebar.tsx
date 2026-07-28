@@ -19,6 +19,8 @@ import {
   Ticket,
   Target,
   DoorOpen,
+  ClipboardList,
+  LayoutTemplate,
 } from 'lucide-react'
 
 
@@ -42,6 +44,15 @@ const MY_PROJECTS_ITEM: NavItem = {
     { id: 'team-leave',             label: 'Team Leave Requests'    },
     { id: 'team-attendance',        label: 'Team Attendance Request'},
     { id: 'project-announcements',  label: 'Project Announcements'  },
+  ],
+}
+
+const PROJECT_REPORTING_ITEM: NavItem = {
+  id: 'project-reporting', label: 'Project Reporting', Icon: ClipboardList,
+  neutralDots: true,
+  children: [
+    { id: 'reporting-overview',  label: 'Reporting Dashboard' },
+    { id: 'my-report-projects',  label: 'My Report Projects'  },
   ],
 }
 
@@ -72,6 +83,7 @@ function buildNav(role: 'employee' | 'manager'): NavSection[] {
           ],
         },
         ...(role === 'manager' ? [MY_PROJECTS_ITEM] : []),
+        ...(role === 'manager' ? [PROJECT_REPORTING_ITEM] : []),
       ],
     },
     {
@@ -175,6 +187,18 @@ function buildAdminNav(): NavSection[] {
           ],
         },
         { id: 'admin-org', label: 'Org Structure', Icon: Building2 },
+      ],
+    },
+    {
+      label: 'PROJECT REPORTING',
+      items: [
+        {
+          id: 'template-creation', label: 'Template Creation', Icon: LayoutTemplate,
+          children: [
+            { id: 'admin-reporting-dashboard', label: 'Reporting Dashboard' },
+            { id: 'project-assignment',        label: 'Project Assignment'  },
+          ],
+        },
       ],
     },
     {

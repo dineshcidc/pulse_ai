@@ -37,6 +37,12 @@ import ActivityTagPage from './projects/ActivityTagPage'
 import AdminKPITemplatesPage from './appraisal/AdminKPITemplatesPage'
 import AdminAppraisalCyclesPage from './appraisal/AdminAppraisalCyclesPage'
 import AdminSubmissionsTrackerPage from './appraisal/AdminSubmissionsTrackerPage'
+import ReportingDashboardPage from './reporting/ReportingDashboardPage'
+import ReportingTemplatesPage from './reporting/ReportingTemplatesPage'
+import ProjectAssignmentPage from './reporting/ProjectAssignmentPage'
+import ReportMonitoringPage from './reporting/ReportMonitoringPage'
+import TemplateBuilderPage from './reporting/TemplateBuilderPage'
+import type { ReportTemplate } from './reporting/reportingTemplatesData'
 
 const PAGE_LABELS: Record<string, string> = {
   'my-profile':           'My Profile',
@@ -82,6 +88,10 @@ const PAGE_LABELS: Record<string, string> = {
   'admin-kpi-template-create': 'Add KPI Template',
   'admin-kpi-template-upload': 'Upload KPI Template',
   'admin-kpi-template-view':   'KPI Template',
+  'admin-reporting-dashboard': 'Reporting Dashboard',
+  'reporting-templates':       'Reporting Templates',
+  'project-assignment':        'Project Assignment',
+  'report-monitoring':         'Report Monitoring',
 }
 
 function ComingSoon({ id }: { id: string }) {
@@ -118,7 +128,7 @@ function ComingSoon({ id }: { id: string }) {
   )
 }
 
-function PageContent({ activeItem, onNavigate }: { activeItem: string; onNavigate: (id: string) => void }) {
+function PageContent({ activeItem, onNavigate, onOpenBuilder }: { activeItem: string; onNavigate: (id: string) => void; onOpenBuilder: (mode: 'create' | 'edit', template?: ReportTemplate) => void }) {
   if (activeItem === 'my-profile')       return <AdminProfilePage />
   if (activeItem === 'admin-dashboard') return <AdminDashboardPage onNavigate={onNavigate} />
   if (activeItem === 'all-users')       return <AllUsersPage onNavigate={onNavigate} />
@@ -155,12 +165,22 @@ function PageContent({ activeItem, onNavigate }: { activeItem: string; onNavigat
   if (activeItem === 'admin-kpi-templates')    return <AdminKPITemplatesPage onNavigate={onNavigate} />
   if (activeItem === 'admin-appraisal-cycles') return <AdminAppraisalCyclesPage />
   if (activeItem === 'admin-appraisal-tracker') return <AdminSubmissionsTrackerPage />
+  if (activeItem === 'admin-reporting-dashboard') return <ReportingDashboardPage onNavigate={onNavigate} />
+  if (activeItem === 'reporting-templates')       return <ReportingTemplatesPage onOpenBuilder={onOpenBuilder} />
+  if (activeItem === 'project-assignment')        return <ProjectAssignmentPage />
+  if (activeItem === 'report-monitoring')         return <ReportMonitoringPage />
   return <ComingSoon id={activeItem} />
 }
 
 export default function AdminDashboard({ onLogout }: { onLogout: () => void }) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [activeItem, setActiveItem]   = useState('admin-dashboard')
+  const [builder, setBuilder] = useState<{ mode: 'create' | 'edit'; template?: ReportTemplate } | null>(null)
+
+  // Template Builder is a dedicated full-page workspace — no sidebar / header.
+  if (builder) {
+    return <TemplateBuilderPage mode={builder.mode} template={builder.template} onBack={() => setBuilder(null)} />
+  }
 
   return (
     <div
@@ -185,7 +205,7 @@ export default function AdminDashboard({ onLogout }: { onLogout: () => void }) {
         />
 
         <main className="flex-1 overflow-auto py-6 px-8 scrollbar-hide">
-          <PageContent activeItem={activeItem} onNavigate={setActiveItem} />
+          <PageContent activeItem={activeItem} onNavigate={setActiveItem} onOpenBuilder={(mode, template) => setBuilder({ mode, template })} />
         </main>
       </div>
     </div>

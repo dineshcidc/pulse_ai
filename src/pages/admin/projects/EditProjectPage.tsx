@@ -1451,7 +1451,7 @@ export default function EditProjectPage({
             </div>
           </div>
           <div style={{ padding: '12px 10px' }}>
-            {STEPS.map((s) => {
+            {STEPS.map((s, idx) => {
               const done    = step > s.id
               const current = step === s.id
               const Icon    = s.Icon
