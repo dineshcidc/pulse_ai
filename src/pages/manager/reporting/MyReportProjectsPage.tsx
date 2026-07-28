@@ -5,7 +5,7 @@ import {
 } from 'lucide-react'
 import {
   REPORT_PROJECTS, generateTimeline, formatDate, daysFromToday,
-  type ReportProject, type Frequency, type ReportPeriod, type TimelineStatus,
+  type Frequency, type ReportPeriod, type TimelineStatus,
 } from './reportingData'
 import ReportFormPage from './ReportFormPage'
 import ReportViewPage from './ReportViewPage'
