@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import {
-  ArrowLeft, FolderKanban, CalendarClock, ChevronDown, Bell, Send, Layers,
+  ArrowLeft, FolderKanban, CalendarClock, Bell, Send, Layers,
 } from 'lucide-react'
 import {
   REPORTING_TEMPLATES, PM_AVATARS,
@@ -61,6 +61,10 @@ export default function AssignmentEditorPage({ project, mode, onBack, onPublish 
 
   const enabledCount = FREQ_ORDER.filter(f => conf[f].enabled).length
   const canPublish = enabledCount > 0 && FREQ_ORDER.every(f => !conf[f].enabled || conf[f].templateId)
+  const isManage = mode === 'manage'
+  // Manage opens as a read-only view — the action stays disabled.
+  const btnLabel = isManage ? 'Update' : 'Publish'
+  const btnActive = !isManage && canPublish
 
   function publish() {
     const assignments: Assignment[] = FREQ_ORDER.filter(f => conf[f].enabled && conf[f].templateId).map(f => ({
@@ -69,7 +73,6 @@ export default function AssignmentEditorPage({ project, mode, onBack, onPublish 
     onPublish(project.id, assignments)
   }
 
-  const inp: React.CSSProperties = { width: '100%', height: 42, background: C.wash, border: `1px solid ${C.border}`, borderRadius: 10, padding: '0 12px', fontSize: 13.5, color: C.ink, outline: 'none', fontFamily: 'inherit' }
   const lbl: React.CSSProperties = { fontSize: 11.5, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 8, display: 'block' }
 
   return (
@@ -122,7 +125,6 @@ export default function AssignmentEditorPage({ project, mode, onBack, onPublish 
               {FREQ_ORDER.map(f => {
                 const c = conf[f]
                 const accent = FREQ_ACCENT[f]
-                const templates = REPORTING_TEMPLATES.filter(t => t.frequency === f)
                 return (
                   <div key={f} className="rounded-2xl" style={{ background: C.panel, border: `1px solid ${c.enabled ? 'rgba(99,102,241,0.28)' : C.border}` }}>
                     <div className="flex items-center justify-between" style={{ padding: '16px 18px', borderBottom: c.enabled ? `1px solid ${C.line}` : 'none' }}>
@@ -134,21 +136,9 @@ export default function AssignmentEditorPage({ project, mode, onBack, onPublish 
                     </div>
                     {c.enabled && (
                       <div style={{ padding: '18px' }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 16 }}>
-                          <div>
-                            <label style={lbl}>Reporting Template</label>
-                            <div className="relative">
-                              <select value={c.templateId} onChange={e => setCad(f, { templateId: e.target.value })} style={{ ...inp, appearance: 'none', paddingRight: 36, cursor: 'pointer', color: c.templateId ? C.ink : C.faint }}>
-                                <option value="">Select a {freqLabel(f)} template…</option>
-                                {templates.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                              </select>
-                              <ChevronDown size={16} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: C.muted, pointerEvents: 'none' }} />
-                            </div>
-                          </div>
-                          <div>
-                            <label style={lbl}>Reporting Starts On</label>
-                            <input type="date" value={c.startDate} onChange={e => setCad(f, { startDate: e.target.value })} style={{ ...inp, cursor: 'pointer' }} />
-                          </div>
+                        <div>
+                          <label style={lbl}>Reporting Starts On</label>
+                          <div style={{ fontSize: 13.5, fontWeight: 700, color: C.navy }}>{formatDate(c.startDate)}</div>
                         </div>
                         <div className="flex items-center gap-3 rounded-xl" style={{ background: `${accent}0F`, border: `1px solid ${accent}30`, padding: '12px 14px', marginTop: 14 }}>
                           <CalendarClock size={17} style={{ color: accent, flexShrink: 0 }} />
@@ -172,8 +162,8 @@ export default function AssignmentEditorPage({ project, mode, onBack, onPublish 
               </div>
               <div className="flex items-center gap-2.5">
                 <button onClick={onBack} className="rounded-lg cursor-pointer" style={{ height: 42, padding: '0 16px', background: C.panel, border: `1px solid ${C.border}`, color: C.ink, fontSize: 13, fontWeight: 600 }} onMouseEnter={e => { e.currentTarget.style.background = C.wash }} onMouseLeave={e => { e.currentTarget.style.background = C.panel }}>Cancel</button>
-                <button onClick={publish} disabled={!canPublish} className="inline-flex items-center gap-1.5 rounded-lg" style={{ height: 42, padding: '0 18px', background: canPublish ? C.navy : '#C4C7DA', color: '#fff', border: 'none', fontSize: 13, fontWeight: 600, cursor: canPublish ? 'pointer' : 'not-allowed' }} onMouseEnter={e => { if (canPublish) e.currentTarget.style.background = '#2A2F45' }} onMouseLeave={e => { if (canPublish) e.currentTarget.style.background = C.navy }}>
-                  <Send size={15} /> Publish
+                <button onClick={publish} disabled={!btnActive} className="inline-flex items-center gap-1.5 rounded-lg" style={{ height: 42, padding: '0 18px', background: btnActive ? C.navy : '#C4C7DA', color: '#fff', border: 'none', fontSize: 13, fontWeight: 600, cursor: btnActive ? 'pointer' : 'not-allowed' }} onMouseEnter={e => { if (btnActive) e.currentTarget.style.background = '#2A2F45' }} onMouseLeave={e => { if (btnActive) e.currentTarget.style.background = C.navy }}>
+                  <Send size={15} /> {btnLabel}
                 </button>
               </div>
             </div>

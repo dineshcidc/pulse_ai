@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import {
   FolderKanban, CheckCircle2, Search, ChevronDown, Plus, X,
-  LayoutTemplate, Settings2, LayoutGrid,
+  Settings2, LayoutGrid,
 } from 'lucide-react'
 import {
   ASSIGNMENT_PROJECTS, PM_AVATARS, statusOf,
   type AssignmentProject, type AssignStatus, type Assignment,
 } from './projectAssignmentData'
 import AssignmentEditorPage from './AssignmentEditorPage'
+import BulkAssignmentPage from './BulkAssignmentPage'
 
 const C = {
   navy: '#1C2035', ink: '#2A2F45', muted: '#8B90A7', faint: '#AEB2C4',
@@ -34,6 +35,7 @@ export default function ProjectAssignmentPage() {
   const [pmFilter, setPmFilter] = useState('all')
   const [toast, setToast] = useState<string | null>(null)
   const [editor, setEditor] = useState<{ project: AssignmentProject; mode: 'assign' | 'manage' } | null>(null)
+  const [bulk, setBulk] = useState(false)
 
   function flash(msg: string) { setToast(msg); window.setTimeout(() => setToast(null), 2600) }
   const pmNames = [...new Set(projects.map(p => p.pm))]
@@ -61,6 +63,11 @@ export default function ProjectAssignmentPage() {
     return <AssignmentEditorPage project={editor.project} mode={editor.mode} onBack={() => setEditor(null)} onPublish={handlePublish} />
   }
 
+  // ── Dedicated Bulk Assignment flow ──
+  if (bulk) {
+    return <BulkAssignmentPage projects={projects} onBack={() => setBulk(false)} />
+  }
+
   return (
     <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
       {/* Heading + Bulk button */}
@@ -70,7 +77,7 @@ export default function ProjectAssignmentPage() {
           <p className="text-sm mt-0.5" style={{ color: C.muted }}>Assign reporting templates and schedules to each project across the organization.</p>
         </div>
         <button
-          onClick={() => flash('Bulk Assignment — coming in a later phase.')}
+          onClick={() => setBulk(true)}
           className="inline-flex items-center gap-2 rounded-lg cursor-pointer"
           style={{ height: 40, background: C.panel, color: C.navy, border: `1px solid ${C.border}`, padding: '0 15px', fontSize: 13, fontWeight: 600 }}
           onMouseEnter={e => { e.currentTarget.style.background = C.wash; e.currentTarget.style.borderColor = '#D5D9EA' }}
@@ -93,7 +100,7 @@ export default function ProjectAssignmentPage() {
       {/* Table */}
       <div className="rounded-2xl" style={{ background: C.panel, border: `1px solid ${C.border}` }}>
         <div style={{ display: 'grid', gridTemplateColumns: COLS, gap: 12, alignItems: 'center', padding: '11px 18px', borderBottom: `1px solid ${C.line}`, background: C.wash, borderRadius: '16px 16px 0 0' }}>
-          {[{ h: 'Project', pl: 44 }, { h: 'Project Manager', pl: 0 }, { h: 'Reporting Templates', pl: 0 }, { h: 'Status', pl: 0 }, { h: 'Action', pl: 0, right: true }].map(c => (
+          {[{ h: 'Project', pl: 44 }, { h: 'Project Manager', pl: 0 }, { h: 'Reporting Frequencies', pl: 0 }, { h: 'Status', pl: 0 }, { h: 'Action', pl: 0, right: true }].map(c => (
             <div key={c.h} style={{ fontSize: 11, fontWeight: 700, color: C.muted, letterSpacing: 0.4, textTransform: 'uppercase', textAlign: c.right ? 'right' : 'left', paddingLeft: c.pl, whiteSpace: 'nowrap' }}>{c.h}</div>
           ))}
         </div>
@@ -105,7 +112,7 @@ export default function ProjectAssignmentPage() {
             <div key={p.id} style={{ display: 'grid', gridTemplateColumns: COLS, gap: 12, alignItems: 'center', padding: '14px 18px', borderBottom: i < visible.length - 1 ? `1px solid ${C.line}` : 'none', transition: 'background 0.15s' }} onMouseEnter={e => { e.currentTarget.style.background = C.wash }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}>
               <div className="flex items-center gap-2.5 min-w-0"><div className="rounded-lg flex items-center justify-center flex-shrink-0" style={{ width: 34, height: 34, background: C.wash }}><FolderKanban size={16} style={{ color: C.muted }} /></div><div className="min-w-0"><div className="truncate" style={{ fontSize: 13.5, fontWeight: 700, color: C.navy }}>{p.name}</div><div className="truncate" style={{ fontSize: 11.5, color: C.faint }}>{p.client}</div></div></div>
               <div className="flex items-center gap-2 min-w-0"><Avatar name={p.pm} size={28} /><span className="truncate" style={{ fontSize: 12.5, color: C.ink, fontWeight: 600 }}>{p.pm}</span></div>
-              <div className="min-w-0">{p.assignments.length === 0 ? <span style={{ fontSize: 12.5, color: C.faint, fontWeight: 500 }}>Not Assigned</span> : <span className="inline-flex items-center gap-1.5 rounded-md" style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.20)', color: C.indigo, padding: '4px 10px', fontSize: 12.5, fontWeight: 700 }}><LayoutTemplate size={13} /> {p.assignments.length} template{p.assignments.length > 1 ? 's' : ''}</span>}</div>
+              <div className="min-w-0 flex items-center gap-1.5 flex-wrap">{p.assignments.length === 0 ? <span style={{ fontSize: 12.5, color: C.faint, fontWeight: 500 }}>Not Assigned</span> : p.assignments.map(a => <span key={a.frequency} className="inline-flex items-center rounded-md" style={{ background: C.wash, border: `1px solid ${C.border}`, color: C.ink, padding: '3px 9px', fontSize: 11.5, fontWeight: 600 }}>{a.frequency === 'Biweekly' ? 'Bi-weekly' : a.frequency}</span>)}</div>
               <div><StatusPill status={st} /></div>
               <div style={{ textAlign: 'right' }}>
                 {st === 'Not Assigned' ? (

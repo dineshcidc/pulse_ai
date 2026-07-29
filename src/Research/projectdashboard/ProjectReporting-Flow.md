@@ -12,7 +12,7 @@
 
 The Dashboard never takes manual input. Every number on it is born from a report a Manager submitted, using a template an Admin designed. That is the whole system.
 
-```
+``` 
    ADMIN                     PROJECT MANAGER              EXECUTIVE (Admin for now)
    ─────                     ───────────────              ─────────────────────────
    Build template       →    Open assigned project   →    Portfolio Dashboard
