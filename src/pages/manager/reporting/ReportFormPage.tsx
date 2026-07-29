@@ -40,12 +40,11 @@ const ACCENT: Record<string, { fg: string; bg: string }> = {
 /* Dashed "join" lines that give the four cards a template / blueprint feel. */
 const GRID_DASH = 'rgba(99,102,241,0.32)'
 
-/* Risk levels selectable on the Risks & Issues card. */
-const RISK_LEVELS = [
-  { key: 'Low',      fg: C.green,   bg: 'rgba(22,163,74,0.10)' },
-  { key: 'Medium',   fg: C.amber,   bg: 'rgba(217,119,6,0.10)' },
-  { key: 'High',     fg: '#EA580C', bg: 'rgba(234,88,12,0.10)' },
-  { key: 'Critical', fg: C.red,     bg: 'rgba(225,29,72,0.10)' },
+/* Health statuses selectable on the Risks & Issues card. */
+const HEALTH_STATUSES = [
+  { key: 'On Track',            fg: C.green, bg: 'rgba(22,163,74,0.10)' },
+  { key: 'At Risk',             fg: C.amber, bg: 'rgba(217,119,6,0.10)' },
+  { key: 'Critical / Off Track', fg: C.red,  bg: 'rgba(225,29,72,0.10)' },
 ] as const
 
 type Tab = 'template' | 'efforts'
@@ -88,7 +87,7 @@ export default function ReportFormPage({
   const [savedAt, setSavedAt] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
-  const [riskLevel, setRiskLevel] = useState<string | null>(null)
+  const [healthStatus, setHealthStatus] = useState<string | null>(null)
 
   function setVal(id: string, v: string) {
     setData(prev => ({ ...prev, [id]: v }))
@@ -268,20 +267,20 @@ export default function ReportFormPage({
                       </span>
                     </div>
 
-                    {/* Risks & Issues — pick a risk level before writing details */}
+                    {/* Risks & Issues — pick a health status before writing details */}
                     {s.id === 'risks' && (
                       <div style={{ flexShrink: 0, marginBottom: 12 }}>
                         <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: C.ink, marginBottom: 8, lineHeight: 1.4 }}>
-                          Select your project risk level based on the current project status.
+                          Select Health Status For Your Projects
                         </label>
                         <div className="flex items-center gap-2 flex-wrap">
-                          {RISK_LEVELS.map(r => {
-                            const active = riskLevel === r.key
+                          {HEALTH_STATUSES.map(r => {
+                            const active = healthStatus === r.key
                             return (
                               <button
                                 key={r.key}
                                 type="button"
-                                onClick={() => setRiskLevel(r.key)}
+                                onClick={() => setHealthStatus(r.key)}
                                 className="inline-flex items-center gap-1.5 rounded-full cursor-pointer"
                                 style={{
                                   padding: '5px 12px', fontSize: 12, fontWeight: 700, transition: 'all 0.15s',

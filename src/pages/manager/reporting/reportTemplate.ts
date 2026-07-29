@@ -106,19 +106,17 @@ export const TEMPLATE_SECTIONS: SectionDef[] = [
   },
   {
     id: 'status',
-    name: 'Weekly Status',
-    description: 'Overall status for the period and the plan ahead.',
+    name: 'Milestones / Critical Updates',
+    description: 'Key milestones reached or upcoming, plus any critical updates or escalations for leadership.',
     Icon: ClipboardList,
     frequencies: ALL,
-    fields: [notepad('status', 'Status', 'Add the overall status for this period, the plan for next period, and any notes for leadership…')],
+    fields: [notepad('status', 'Milestones / Critical Updates', 'List key milestones (reached or upcoming) and any critical updates or escalations for leadership…')],
   },
 ]
 
-const FREQ_WORD: Record<Frequency, string> = { Weekly: 'Weekly', Biweekly: 'Bi-weekly', Monthly: 'Monthly' }
-
-/** The status section's title adapts to the reporting frequency. */
-export function sectionTitle(section: SectionDef, freq: Frequency): string {
-  return section.id === 'status' ? `${FREQ_WORD[freq]} Status` : section.name
+/** Section title (fixed — no longer varies by frequency). */
+export function sectionTitle(section: SectionDef, _freq: Frequency): string {
+  return section.name
 }
 
 export function sectionsForFrequency(_freq: Frequency): SectionDef[] {

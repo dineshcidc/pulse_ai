@@ -202,6 +202,18 @@ function buildAdminNav(): NavSection[] {
       ],
     },
     {
+      label: 'PORTFOLIO',
+      items: [
+        {
+          id: 'portfolio-dashboard', label: 'Portfolio Dashboard', Icon: BarChart3,
+          children: [
+            { id: 'projects-dashboard', label: 'Projects Dashboard' },
+            { id: 'projects',           label: 'Projects'           },
+          ],
+        },
+      ],
+    },
+    {
       label: 'PERFORMANCE',
       items: [
         {
