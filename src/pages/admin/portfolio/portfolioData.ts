@@ -110,7 +110,7 @@ export const GENAI_ADOPTION_AVG = 41
 
 export interface EffortRow { name: string; role: string; allocation: number; expected: number; logged: number; billable: boolean }
 export interface ReportEntry { period: string; status: 'Submitted' | 'Overdue' | 'Draft'; date: string }
-export interface TaskItem { title: string; date: string; status: 'Completed' | 'In Progress' | 'Blocked' }
+export interface TaskItem { title: string; date: string; due: string; status: 'Completed' | 'In Progress' | 'Blocked' }
 export interface RiskItem { title: string; severity: RiskLevel; note: string }
 export interface MilestoneItem { name: string; date: string; kind: 'Milestone' | 'Critical Update'; status: 'On Track' | 'At Risk' | 'Done' }
 export interface ProjectDetail {
@@ -186,6 +186,7 @@ export function getProjectDetail(p: PortfolioProject): ProjectDetail {
       title: TASK_POOL[(seed + i * 3) % TASK_POOL.length],
       status: TASK_STATUS[(seed + i) % TASK_STATUS.length],
       date: `2026-07-${String(day).padStart(2, '0')}`,
+      due: `2026-08-${String(5 + i * 5).padStart(2, '0')}`, // Aug 5, 10, 15, 20
     }
   })
 
