@@ -38,7 +38,7 @@ export interface PortfolioProject {
 }
 
 export const PORTFOLIO_PROJECTS: PortfolioProject[] = [
-  { id: 'prj-apollo',  name: 'Apollo CRM Revamp',        client: 'Nordstrom Retail',       pm: 'John Doe',      status: 'Active',    teamCount: 8,  utilization: 92, billable: 88, health: 'At Risk', risk: 'High',     riskCount: 2, riskNote: 'Third-party payment API latency spikes under peak load, occasionally breaching the 2s checkout SLA. A vendor escalation is open and we have added retry logic plus response caching as interim mitigation.' },
+  { id: 'prj-apollo',  name: 'Apollo CRM Revamp',        client: 'UrbanCart Retail',       pm: 'John Doe',      status: 'Active',    teamCount: 8,  utilization: 92, billable: 88, health: 'At Risk', risk: 'High',     riskCount: 2, riskNote: 'Third-party payment API latency spikes under peak load, occasionally breaching the 2s checkout SLA. A vendor escalation is open and we have added retry logic plus response caching as interim mitigation.' },
   { id: 'prj-helios',  name: 'Helios Analytics',         client: 'Meridian Bank',          pm: 'John Doe',      status: 'Active',    teamCount: 6,  utilization: 78, billable: 82, health: 'Healthy', risk: 'Low',      riskCount: 0, riskNote: 'No major risks this period. The regulatory reporting module is tracking to plan and passed the last compliance dry-run, and team capacity is stable with no open blockers.' },
   { id: 'prj-nova',    name: 'Nova E-commerce',          client: 'UrbanCart',              pm: 'John Doe',      status: 'On Hold',   teamCount: 5,  utilization: 64, billable: 70, health: 'Healthy', risk: 'Medium',   riskCount: 1, riskNote: 'Checkout redesign is blocked on the client content freeze, and there is a minor schedule risk if the freeze slips past next week. Daily follow-ups with the client POC are in place.' },
   { id: 'prj-orion',   name: 'Orion Mobile Banking',     client: 'Meridian Bank',          pm: 'Meera Nair',    status: 'Active',    teamCount: 7,  utilization: 85, billable: 90, health: 'Healthy', risk: 'Low',      riskCount: 0, riskNote: 'Biometric authentication certification is pending vendor sign-off, which is a low risk and currently on track. All other modules are progressing as planned with no resourcing gaps this cycle.' },
@@ -144,12 +144,21 @@ const MILESTONE_POOL: { name: string; kind: MilestoneItem['kind'] }[] = [
 
 function hashStr(s: string) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h }
 
-export function getProjectDetail(p: PortfolioProject): ProjectDetail {
+/**
+ * Project efforts for a given month. `monthOffset` is months back from the
+ * current month (0 = current month, 1 = last month, …). The team, roles and
+ * allocations stay stable across months; only the logged hours drift so an
+ * admin can review how effort tracked in earlier months.
+ */
+export function getProjectEfforts(p: PortfolioProject, monthOffset = 0): EffortRow[] {
   const seed = hashStr(p.id)
-  const efforts: EffortRow[] = Array.from({ length: p.teamCount }, (_, i) => {
+  // Utilization eases off slightly the further back you look, and the per-person
+  // spread is re-shuffled each month so the numbers read as genuinely different.
+  const monthUtil = p.utilization * (1 - monthOffset * 0.05)
+  return Array.from({ length: p.teamCount }, (_, i) => {
     const allocation = ALLOC[(seed + i) % ALLOC.length]
     const expected = Math.round((allocation / 100) * 160) // ~monthly capacity
-    const factor = (p.utilization / 100) * (0.9 + ((seed + i) % 5) * 0.05)
+    const factor = (monthUtil / 100) * (0.9 + ((seed + i + monthOffset * 3) % 5) * 0.05)
     const logged = Math.round(expected * factor)
     return {
       name: EFFORT_NAMES[(seed + i * 5) % EFFORT_NAMES.length],
@@ -158,13 +167,17 @@ export function getProjectDetail(p: PortfolioProject): ProjectDetail {
       billable: ((seed + i) % 4) !== 0,
     }
   })
+}
+
+export function getProjectDetail(p: PortfolioProject): ProjectDetail {
+  const seed = hashStr(p.id)
+  const efforts = getProjectEfforts(p, 0)
 
   const reports: ReportEntry[] = [
     { period: 'Week 30 · Jul 21–27',     status: p.health === 'Delayed' ? 'Overdue' : 'Submitted', date: '2026-07-25' },
     { period: 'Week 29 · Jul 14–20',     status: 'Submitted', date: '2026-07-18' },
     { period: 'Week 28 · Jul 07–13',     status: 'Submitted', date: '2026-07-11' },
     { period: 'Week 27 · Jun 30–Jul 06', status: 'Submitted', date: '2026-07-04' },
-    { period: 'Week 26 · Jun 23–29',     status: 'Submitted', date: '2026-06-27' },
   ]
 
   const tasks: TaskItem[] = Array.from({ length: 4 }, (_, i) => {

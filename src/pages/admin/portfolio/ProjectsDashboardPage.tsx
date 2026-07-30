@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import {
   FolderKanban, Activity, Gauge, AlertTriangle,
   ShieldAlert, CalendarClock, TrendingUp, BarChart3, Users, ArrowRight,
-  Eye, Sparkles,
+  Eye, Sparkles, Search, X,
 } from 'lucide-react'
 import {
   PORTFOLIO_PROJECTS, MILESTONE_UPDATES, ACTIVE_TREND,
@@ -38,6 +38,10 @@ function utilStatus(v: number): { label: string; fg: string; bg: string } {
 
 /** Softer, lighter bar tones (the saturated set was too harsh). */
 const billColor = (v: number) => v >= 85 ? '#5FC08D' : v >= 75 ? '#8AA0F2' : v >= 55 ? '#EBC17A' : '#EC9AA0'
+
+/* Filter options — kept in sync with utilStatus() / riskStatus() labels. */
+const UTIL_OPTIONS = ['Highly Over Utilized', 'Over Utilized', 'Optimal', 'Under Utilized']
+const HEALTH_OPTIONS = ['On Track', 'At Risk', 'Critical']
 
 /* Parse the update markup (**bold**, {{date}}, !!critical!!) into styled nodes. */
 function renderUpdate(content: string): React.ReactNode[] {
@@ -197,11 +201,31 @@ export default function ProjectsDashboardPage() {
     (acc, p) => { acc[riskStatus(p.risk).label]++; return acc },
     { 'On Track': 0, 'At Risk': 0, 'Critical': 0 } as Record<string, number>,
   )
-  const table = PORTFOLIO_PROJECTS
+  const [search, setSearch] = useState('')
+  const [utilFilter, setUtilFilter] = useState('All')
+  const [healthFilter, setHealthFilter] = useState('All')
   const [visibleCount, setVisibleCount] = useState(5)
   if (viewProject) return <ProjectDetailView project={viewProject} onBack={() => setViewProject(null)} />
+
+  const q = search.trim().toLowerCase()
+  const table = PORTFOLIO_PROJECTS.filter(p => {
+    const matchSearch = q === '' || p.name.toLowerCase().includes(q) || p.client.toLowerCase().includes(q) || p.pm.toLowerCase().includes(q)
+    const matchUtil = utilFilter === 'All' || utilStatus(p.utilization).label === utilFilter
+    const matchHealth = healthFilter === 'All' || riskStatus(p.risk).label === healthFilter
+    return matchSearch && matchUtil && matchHealth
+  })
+  const filtersActive = q !== '' || utilFilter !== 'All' || healthFilter !== 'All'
   const rows = table.slice(0, visibleCount)
   const allShown = visibleCount >= table.length
+
+  const resetPaging = () => setVisibleCount(5)
+  const selectStyle: React.CSSProperties = {
+    height: 34, border: `1px solid ${C.border}`, borderRadius: 9, padding: '0 30px 0 11px',
+    fontSize: 12.5, fontWeight: 400, color: C.muted, background: '#fff', cursor: 'pointer',
+    fontFamily: 'inherit', outline: 'none', appearance: 'none',
+    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238B90A7' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
+    backgroundRepeat: 'no-repeat', backgroundPosition: 'right 10px center',
+  }
 
   const risks: PortfolioProject[] = [...PORTFOLIO_PROJECTS].sort((a, b) => RISK_RANK[a.risk] - RISK_RANK[b.risk]).slice(0, 4)
   const updates = MILESTONE_UPDATES
@@ -239,7 +263,32 @@ export default function ProjectsDashboardPage() {
 
       {/* Full-width Projects table */}
       <div style={{ marginTop: 20 }}>
-        <Panel title="Projects">
+        <Panel title="Projects" right={
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            <div className="inline-flex items-center gap-2" style={{ height: 34, border: `1px solid ${C.border}`, borderRadius: 9, padding: '0 10px', background: '#fff', width: 210 }}>
+              <Search size={14} style={{ color: C.faint, flexShrink: 0 }} />
+              <input
+                value={search}
+                onChange={e => { setSearch(e.target.value); resetPaging() }}
+                placeholder="Search project, client, PM…"
+                style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: 12.5, color: C.navy, fontFamily: 'inherit', width: '100%' }}
+              />
+              {search && (
+                <button onClick={() => { setSearch(''); resetPaging() }} title="Clear" className="inline-flex items-center justify-center flex-shrink-0" style={{ border: 'none', background: 'transparent', color: C.faint, cursor: 'pointer', padding: 0 }}>
+                  <X size={13} />
+                </button>
+              )}
+            </div>
+            <select aria-label="Utilization Status filter" value={utilFilter} onChange={e => { setUtilFilter(e.target.value); resetPaging() }} style={selectStyle}>
+              <option value="All">All Utilization</option>
+              {UTIL_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+            </select>
+            <select aria-label="Health Status filter" value={healthFilter} onChange={e => { setHealthFilter(e.target.value); resetPaging() }} style={selectStyle}>
+              <option value="All">All Health</option>
+              {HEALTH_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+            </select>
+          </div>
+        }>
           {/* header */}
           <div style={{ display: 'grid', gridTemplateColumns: TCOLS, gap: 16, padding: '11px 22px', borderBottom: `1px solid ${C.line}`, background: C.wash }}>
             {THEAD.map(c => (
@@ -288,18 +337,27 @@ export default function ProjectsDashboardPage() {
               </div>
             )
           })}
+          {/* empty state — no matches for the active filters/search */}
+          {rows.length === 0 && (
+            <div className="flex flex-col items-center justify-center gap-1" style={{ padding: '34px 22px', textAlign: 'center' }}>
+              <span style={{ fontSize: 13.5, fontWeight: 700, color: C.navy }}>No projects match your filters</span>
+              <span style={{ fontSize: 12.5, color: C.muted }}>Try a different search term or clear the status filters.</span>
+            </div>
+          )}
           {/* footer — count (left) + load more / show less link (right) */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '13px 22px', borderTop: `1px solid ${C.line}` }}>
             <span style={{ fontSize: 12.5, color: C.muted, fontWeight: 500 }}>
-              Showing <b style={{ color: C.navy, fontWeight: 700 }}>{rows.length}</b> of <b style={{ color: C.navy, fontWeight: 700 }}>{table.length}</b> projects
+              Showing <b style={{ color: C.navy, fontWeight: 700 }}>{rows.length}</b> of <b style={{ color: C.navy, fontWeight: 700 }}>{table.length}</b>{filtersActive ? ' matching' : ''} projects
             </span>
-            <button
-              onClick={() => setVisibleCount(allShown ? 5 : Math.min(table.length, visibleCount + 5))}
-              className="inline-flex items-center gap-1 cursor-pointer"
-              style={{ background: 'transparent', border: 'none', color: C.indigo, fontSize: 12.5, fontWeight: 700, fontFamily: 'inherit', padding: 0 }}
-            >
-              {allShown ? 'Show less' : 'Load more'} <ArrowRight size={13} />
-            </button>
+            {table.length > 5 && (
+              <button
+                onClick={() => setVisibleCount(allShown ? 5 : Math.min(table.length, visibleCount + 5))}
+                className="inline-flex items-center gap-1 cursor-pointer"
+                style={{ background: 'transparent', border: 'none', color: C.indigo, fontSize: 12.5, fontWeight: 700, fontFamily: 'inherit', padding: 0 }}
+              >
+                {allShown ? 'Show less' : 'Load more'} <ArrowRight size={13} />
+              </button>
+            )}
           </div>
         </Panel>
       </div>
