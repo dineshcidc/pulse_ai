@@ -4,6 +4,7 @@ import {
   ClipboardList, Users, Briefcase,
   CalendarDays, CheckCircle2, TrendingUp, Download,
 } from 'lucide-react'
+import DateRangePicker from '../../../components/reports/DateRangePicker'
 
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', bg: '#F0F2F8', surface: '#F7F8FC' }
 
@@ -153,6 +154,30 @@ function buildYearCard(emp: Employee, months: number[], year: number, projectNam
   return { employee: emp, projectName, workingDays: totalWorking, presentDays: totalPresent, plannedLeave: totalPlanned, unplannedLeave: totalUnplanned, attendancePct: attPct, month: mo.label, dateRange: mo.range }
 }
 
+/* ── Date-range helpers ── */
+function weekdaysBetween(fromIso: string, toIso: string): number {
+  const a = new Date(fromIso + 'T00:00:00'), b = new Date(toIso + 'T00:00:00')
+  if (isNaN(a.getTime()) || isNaN(b.getTime()) || b < a) return 0
+  let n = 0; const d = new Date(a)
+  while (d <= b) { const wd = d.getDay(); if (wd !== 0 && wd !== 6) n++; d.setDate(d.getDate() + 1) }
+  return n
+}
+function fmtNice(iso: string) { const dt = new Date(iso + 'T00:00:00'); return `${String(dt.getDate()).padStart(2, '0')} ${MONTH_SHORT[dt.getMonth()]} ${dt.getFullYear()}` }
+function buildRangeCard(emp: Employee, fromIso: string, toIso: string, projectName: string): ReportCard {
+  const a = ATT[emp.empId] ?? { present: 20, planned: 1, unplanned: 1 }
+  const working   = weekdaysBetween(fromIso, toIso)
+  const scale     = working / 22
+  const present   = Math.min(working, Math.round(a.present * scale))
+  const planned   = Math.round(a.planned * scale)
+  const unplanned = Math.max(0, Math.round(a.unplanned * scale))
+  const attPct    = working > 0 ? Math.min(100, Math.round((present / working) * 100)) : 0
+  return {
+    employee: emp, projectName,
+    workingDays: working, presentDays: present, plannedLeave: planned, unplannedLeave: unplanned,
+    attendancePct: attPct, month: `${fmtNice(fromIso)} – ${fmtNice(toIso)}`, dateRange: `${working} working day${working !== 1 ? 's' : ''}`,
+  }
+}
+
 /* ── Employee chip ── */
 function EmpChip({ emp, onRemove }: { emp: Employee; onRemove: () => void }) {
   return (
@@ -172,11 +197,12 @@ function EmpChip({ emp, onRemove }: { emp: Employee; onRemove: () => void }) {
 }
 
 /* ── Month picker (chevron + full-year mode) ── */
-function MonthPicker({ month, year, setMonth, setYear, mode, setMode, yearMonths, setYearMonths }: {
+function MonthPicker({ month, year, setMonth, setYear, mode, setMode, yearMonths, setYearMonths, from, to, setFrom, setTo }: {
   month: number; year: number
   setMonth: (m: number) => void; setYear: (y: number) => void
   mode: 'month' | 'year'; setMode: (m: 'month' | 'year') => void
   yearMonths: number[]; setYearMonths: (ms: number[]) => void
+  from: string; to: string; setFrom: (v: string) => void; setTo: (v: string) => void
 }) {
   function prevMo() { if (month === 0) { setMonth(11); setYear(year - 1) } else setMonth(month - 1) }
   function nextMo() { if (month === 11) { setMonth(0); setYear(year + 1) } else setMonth(month + 1) }
@@ -235,6 +261,9 @@ function MonthPicker({ month, year, setMonth, setYear, mode, setMode, yearMonths
           {navBtn(nextMo, <ChevronRight size={15} style={{ color: C.navy }} />, { borderLeft: `1px solid ${C.border}` })}
         </div>
       )}
+
+      {/* Monthly mode — optional date range */}
+      {mode === 'month' && <DateRangePicker from={from} to={to} setFrom={setFrom} setTo={setTo} />}
 
       {/* Full Year mode — month grid */}
       {mode === 'year' && (
@@ -332,10 +361,10 @@ function ReportCardView({ card, delay = 0 }: { card: ReportCard; delay?: number 
   const bg  = pctBg(card.attendancePct)
 
   const STATS = [
-    { label: 'Working Days', value: card.workingDays,                          color: '#6366F1', bg: 'rgba(99,102,241,0.09)',  icon: CalendarDays },
-    { label: 'Present Days', value: card.presentDays,                          color: '#0EA86A', bg: 'rgba(14,168,106,0.09)', icon: CheckCircle2 },
-    { label: 'Leave Count',  value: card.plannedLeave + card.unplannedLeave,   color: '#2563EB', bg: 'rgba(37,99,235,0.09)',  icon: CalendarDays },
-    { label: 'Attendance',   value: `${card.attendancePct}%`,                  color: col,       bg,                           icon: TrendingUp   },
+    { label: 'Working Days', value: card.workingDays,                        color: '#6366F1', bg: 'rgba(99,102,241,0.09)',  icon: CalendarDays, hl: false },
+    { label: 'Present Days', value: card.presentDays,                        color: '#0EA86A', bg: 'rgba(14,168,106,0.09)', icon: CheckCircle2, hl: false },
+    { label: 'Leave Count',  value: card.plannedLeave + card.unplannedLeave, color: '#2563EB', bg: 'rgba(37,99,235,0.09)',  icon: CalendarDays, hl: false },
+    { label: 'Attendance',   value: `${card.attendancePct}%`,                color: col,       bg,                          icon: TrendingUp,   hl: true },
   ]
 
   return (
@@ -386,8 +415,8 @@ function ReportCardView({ card, delay = 0 }: { card: ReportCard; delay?: number 
             key={s.label}
             style={{
               padding: '16px 20px',
-              borderRight: i < 4 ? `1px solid ${C.border}` : 'none',
-              background: i === 4 ? s.bg : 'transparent',
+              borderRight: i < STATS.length - 1 ? `1px solid ${C.border}` : 'none',
+              background: s.hl ? s.bg : 'transparent',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
@@ -396,7 +425,7 @@ function ReportCardView({ card, delay = 0 }: { card: ReportCard; delay?: number 
                 {s.label}
               </span>
             </div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: i === 4 ? s.color : C.navy, letterSpacing: '-0.3px', lineHeight: 1 }}>
+            <div style={{ fontSize: 18, fontWeight: 700, color: s.hl ? s.color : C.navy, letterSpacing: '-0.3px', lineHeight: 1 }}>
               {s.value}
             </div>
           </div>
@@ -418,7 +447,14 @@ export default function AttendanceReportPage() {
   const [projectEmps, setProjectEmps]         = useState<Employee[]>([])
   const [selMonth, setSelMonth]               = useState(4)  // May
   const [selYear,  setSelYear]                = useState(2026)
+  const [fromDate, setFromDate]               = useState('')
+  const [toDate,   setToDate]                 = useState('')
   const [pickerMode, setPickerMode]           = useState<'month' | 'year'>('month')
+
+  // A date range only applies within a month, so reset it when the month/year/mode changes.
+  const setMonthReset = (m: number) => { setSelMonth(m); setFromDate(''); setToDate('') }
+  const setYearReset  = (y: number) => { setSelYear(y); setFromDate(''); setToDate('') }
+  const setModeReset  = (m: 'month' | 'year') => { setPickerMode(m); setFromDate(''); setToDate('') }
   const [yearMonths, setYearMonths]           = useState<number[]>(Array.from({ length: 12 }, (_, i) => i))
   const [state, setState]                     = useState<'idle' | 'loading' | 'done'>('idle')
   const [cards, setCards]                     = useState<ReportCard[]>([])
@@ -452,20 +488,25 @@ export default function AttendanceReportPage() {
     setTimeout(() => {
       setCards(emps.map(emp => {
         const projName = tab === 'project' && selectedProject ? selectedProject.name : (EMP_PRIMARY_PROJECT[emp.empId] ?? 'No Project')
-        return pickerMode === 'month'
-          ? buildCard(emp, getMonthOption(selMonth, selYear), projName)
-          : buildYearCard(emp, yearMonths, selYear, projName)
+        if (pickerMode === 'year') return buildYearCard(emp, yearMonths, selYear, projName)
+        return rangeActive
+          ? buildRangeCard(emp, fromDate, toDate, projName)
+          : buildCard(emp, getMonthOption(selMonth, selYear), projName)
       }))
       setState('done')
     }, 1300)
   }
 
+  const rangeActive = pickerMode === 'month' && fromDate !== '' && toDate !== ''
   const canGenerate = (pickerMode === 'year' ? yearMonths.length > 0 : true) &&
     (tab === 'employee' ? (allSelected || selectedEmps.length > 0) : projectEmps.length > 0)
 
   const currentMo = pickerMode === 'month'
     ? getMonthOption(selMonth, selYear)
     : getYearOption(yearMonths, selYear)
+
+  const ctxLabel = rangeActive ? `${fmtNice(fromDate)} – ${fmtNice(toDate)}` : currentMo.label
+  const ctxRange = rangeActive ? `${weekdaysBetween(fromDate, toDate)} working days` : currentMo.range
 
   return (
     <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
@@ -582,7 +623,7 @@ export default function AttendanceReportPage() {
 
                   <div>
                     <label style={{ fontSize: 12, fontWeight: 600, color: C.muted, display: 'block', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Month</label>
-                    <MonthPicker month={selMonth} year={selYear} setMonth={setSelMonth} setYear={setSelYear} mode={pickerMode} setMode={setPickerMode} yearMonths={yearMonths} setYearMonths={setYearMonths} />
+                    <MonthPicker month={selMonth} year={selYear} setMonth={setMonthReset} setYear={setYearReset} mode={pickerMode} setMode={setModeReset} yearMonths={yearMonths} setYearMonths={setYearMonths} from={fromDate} to={toDate} setFrom={setFromDate} setTo={setToDate} />
                   </div>
                 </div>
               )}
@@ -614,7 +655,7 @@ export default function AttendanceReportPage() {
 
                   <div>
                     <label style={{ fontSize: 12, fontWeight: 600, color: C.muted, display: 'block', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Month</label>
-                    <MonthPicker month={selMonth} year={selYear} setMonth={setSelMonth} setYear={setSelYear} mode={pickerMode} setMode={setPickerMode} yearMonths={yearMonths} setYearMonths={setYearMonths} />
+                    <MonthPicker month={selMonth} year={selYear} setMonth={setMonthReset} setYear={setYearReset} mode={pickerMode} setMode={setModeReset} yearMonths={yearMonths} setYearMonths={setYearMonths} from={fromDate} to={toDate} setFrom={setFromDate} setTo={setToDate} />
                   </div>
                 </div>
               )}
@@ -669,7 +710,7 @@ export default function AttendanceReportPage() {
                   <span style={{ fontSize: 15, fontWeight: 700, color: C.navy }}>{cards.length} Report{cards.length !== 1 ? 's' : ''}</span>
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, height: 26, padding: '0 10px', background: '#ECEEF5', border: `1px solid ${C.border}`, borderRadius: 99, fontSize: 11.5, fontWeight: 600, color: C.muted }}>
                     <CalendarDays size={11} strokeWidth={2} />
-                    {currentMo.label} · {currentMo.range}
+                    {ctxLabel} · {ctxRange}
                   </span>
                 </div>
                 {/* Download All */}
@@ -680,8 +721,8 @@ export default function AttendanceReportPage() {
                 </button>
               </div>
 
-              {/* Project overall summary card */}
-              {tab === 'project' && selectedProject && (() => {
+              {/* Project overall summary card — month/year aggregates only (not for a date range) */}
+              {tab === 'project' && selectedProject && !rangeActive && (() => {
                 const avgAtt     = Math.round(cards.reduce((s, c) => s + c.attendancePct, 0) / cards.length)
                 const avgPresent = +(cards.reduce((s, c) => s + c.presentDays, 0) / cards.length).toFixed(1)
                 const avgLeave   = +(cards.reduce((s, c) => s + c.plannedLeave + c.unplannedLeave, 0) / cards.length).toFixed(1)

@@ -172,7 +172,7 @@ function PageContent({ activeItem, onNavigate, onOpenBuilder }: { activeItem: st
   if (activeItem === 'reporting-templates')       return <ReportingTemplatesPage onOpenBuilder={onOpenBuilder} />
   if (activeItem === 'project-assignment')        return <ProjectAssignmentPage />
   if (activeItem === 'report-monitoring')         return <ReportMonitoringPage />
-  if (activeItem === 'projects-dashboard')        return <ProjectsDashboardPage onNavigate={onNavigate} />
+  if (activeItem === 'projects-dashboard')        return <ProjectsDashboardPage />
   return <ComingSoon id={activeItem} />
 }
 

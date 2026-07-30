@@ -4,6 +4,7 @@ import {
   ClipboardList, CalendarDays, AlertCircle, Download, MoreHorizontal,
   ArrowLeft,
 } from 'lucide-react'
+import DateRangePicker from '../../../components/reports/DateRangePicker'
 
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', bg: '#F0F2F8', surface: '#F7F8FC' }
 
@@ -81,10 +82,32 @@ function buildYearCard(months: number[], year: number): LeaveCard {
 }
 
 /* ── Month picker ── */
-function MonthPicker({ month, year, setMonth, setYear, mode, setMode, yearMonths, setYearMonths }: {
+function weekdaysBetween(fromIso: string, toIso: string): number {
+  const a = new Date(fromIso + 'T00:00:00'), b = new Date(toIso + 'T00:00:00')
+  if (isNaN(a.getTime()) || isNaN(b.getTime()) || b < a) return 0
+  let n = 0; const d = new Date(a)
+  while (d <= b) { const wd = d.getDay(); if (wd !== 0 && wd !== 6) n++; d.setDate(d.getDate() + 1) }
+  return n
+}
+function fmtNice(iso: string) { const dt = new Date(iso + 'T00:00:00'); return `${String(dt.getDate()).padStart(2, '0')} ${MONTH_SHORT[dt.getMonth()]} ${dt.getFullYear()}` }
+function buildRangeCard(fromIso: string, toIso: string): LeaveCard {
+  const a = new Date(fromIso + 'T00:00:00'), b = new Date(toIso + 'T00:00:00')
+  // Seed leave dates are in May 2026 ('05 May' …); match those falling inside the range.
+  const datesInRange = LEAVE_BASE.dates.filter(s => { const dt = new Date(2026, 4, parseInt(s)); return dt >= a && dt <= b })
+  const total = datesInRange.length
+  const planned = Math.min(LEAVE_BASE.planned, total)
+  const unplanned = total - planned
+  return {
+    totalLeave: total, plannedLeave: planned, unplannedLeave: unplanned, otherLeave: 0,
+    leaveDates: datesInRange, month: `${fmtNice(fromIso)} – ${fmtNice(toIso)}`, dateRange: `${weekdaysBetween(fromIso, toIso)} working days`,
+  }
+}
+
+function MonthPicker({ month, year, setMonth, setYear, mode, setMode, yearMonths, setYearMonths, from, to, setFrom, setTo }: {
   month:number; year:number; setMonth:(m:number)=>void; setYear:(y:number)=>void
   mode:'month'|'year'; setMode:(m:'month'|'year')=>void
   yearMonths:number[]; setYearMonths:(ms:number[])=>void
+  from:string; to:string; setFrom:(v:string)=>void; setTo:(v:string)=>void
 }) {
   function prevMo() { if(month===0){setMonth(11);setYear(year-1)}else setMonth(month-1) }
   function nextMo() { if(month===11){setMonth(0);setYear(year+1)}else setMonth(month+1) }
@@ -119,6 +142,7 @@ function MonthPicker({ month, year, setMonth, setYear, mode, setMode, yearMonths
           {navBtn(nextMo,<ChevronRight size={15} style={{color:C.navy}}/>,{borderLeft:`1px solid ${C.border}`})}
         </div>
       )}
+      {mode==='month' && <DateRangePicker from={from} to={to} setFrom={setFrom} setTo={setTo} />}
       {mode==='year' && (
         <div style={{ padding:'14px 14px 16px' }}>
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12 }}>
@@ -319,20 +343,25 @@ function LeaveCardView({ card }: { card: LeaveCard }) {
 export default function EmployeeLeaveReportPage({ onBack }: { onBack: () => void }) {
   const [selMonth,    setSelMonth]    = useState(4)
   const [selYear,     setSelYear]     = useState(2026)
+  const [fromDate,    setFromDate]    = useState('')
+  const [toDate,      setToDate]      = useState('')
   const [pickerMode,  setPickerMode]  = useState<'month'|'year'>('month')
   const [yearMonths,  setYearMonths]  = useState<number[]>(Array.from({length:12},(_,i)=>i))
   const [state,       setState]       = useState<'idle'|'loading'|'done'>('idle')
   const [card,        setCard]        = useState<LeaveCard|null>(null)
 
+  const rangeActive = pickerMode==='month' && fromDate!=='' && toDate!==''
   const canGenerate = pickerMode==='year' ? yearMonths.length > 0 : true
 
   function handleGenerate() {
     if (!canGenerate) return
     setState('loading'); setCard(null)
     setTimeout(()=>{
-      const result = pickerMode==='month'
-        ? buildCard(getMonthOption(selMonth, selYear))
-        : buildYearCard(yearMonths, selYear)
+      const result = pickerMode==='year'
+        ? buildYearCard(yearMonths, selYear)
+        : rangeActive
+          ? buildRangeCard(fromDate, toDate)
+          : buildCard(getMonthOption(selMonth, selYear))
       setCard(result)
       setState('done')
     }, 1000)
@@ -341,6 +370,8 @@ export default function EmployeeLeaveReportPage({ onBack }: { onBack: () => void
   const currentMo = pickerMode==='month'
     ? getMonthOption(selMonth, selYear)
     : getYearOption(yearMonths, selYear)
+  const ctxLabel = rangeActive ? `${fmtNice(fromDate)} – ${fmtNice(toDate)}` : currentMo.label
+  const ctxRange = rangeActive ? `${weekdaysBetween(fromDate, toDate)} working days` : currentMo.range
 
   return (
     <div style={{ fontFamily:"'DM Sans', system-ui, sans-serif" }}>
@@ -401,12 +432,16 @@ export default function EmployeeLeaveReportPage({ onBack }: { onBack: () => void
                 <label style={{ fontSize:12, fontWeight:600, color:C.muted, display:'block', textTransform:'uppercase' as const, letterSpacing:'0.06em', marginBottom:8 }}>Select Period</label>
                 <MonthPicker
                   month={selMonth} year={selYear}
-                  setMonth={m=>{setSelMonth(m);setState('idle');setCard(null)}}
-                  setYear={y=>{setSelYear(y);setState('idle');setCard(null)}}
+                  setMonth={m=>{setSelMonth(m);setFromDate('');setToDate('');setState('idle');setCard(null)}}
+                  setYear={y=>{setSelYear(y);setFromDate('');setToDate('');setState('idle');setCard(null)}}
                   mode={pickerMode}
-                  setMode={m=>{setPickerMode(m);setState('idle');setCard(null)}}
+                  setMode={m=>{setPickerMode(m);setFromDate('');setToDate('');setState('idle');setCard(null)}}
                   yearMonths={yearMonths}
                   setYearMonths={ms=>{setYearMonths(ms);setState('idle');setCard(null)}}
+                  from={fromDate}
+                  to={toDate}
+                  setFrom={v=>{setFromDate(v);setState('idle');setCard(null)}}
+                  setTo={v=>{setToDate(v);setState('idle');setCard(null)}}
                 />
               </div>
 
@@ -462,7 +497,7 @@ export default function EmployeeLeaveReportPage({ onBack }: { onBack: () => void
                 <div style={{ display:'flex', alignItems:'center', gap:10 }}>
                   <span style={{ fontSize:15, fontWeight:700, color:C.navy }}>My Leave Report</span>
                   <span style={{ display:'inline-flex', alignItems:'center', gap:5, height:26, padding:'0 10px', background:'#ECEEF5', border:`1px solid ${C.border}`, borderRadius:99, fontSize:11.5, fontWeight:600, color:C.muted }}>
-                    <CalendarDays size={11} strokeWidth={2} /> {currentMo.label} · {currentMo.range}
+                    <CalendarDays size={11} strokeWidth={2} /> {ctxLabel} · {ctxRange}
                   </span>
                 </div>
                 <button

@@ -4,11 +4,20 @@ import {
   ClipboardList, Users, Briefcase,
   CalendarDays, Clock, Download, Eye, ArrowLeft,
 } from 'lucide-react'
+import DateRangePicker from '../../../components/reports/DateRangePicker'
 
 /* ── Constants ── */
 const C = { navy: '#1C2035', border: '#E8EAF2', muted: '#8B90A7', bg: '#F0F2F8', surface: '#F7F8FC' }
 const MONTH_NAMES  = ['January','February','March','April','May','June','July','August','September','October','November','December']
 const MONTH_SHORT  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+function weekdaysBetween(fromIso: string, toIso: string): number {
+  const a = new Date(fromIso + 'T00:00:00'), b = new Date(toIso + 'T00:00:00')
+  if (isNaN(a.getTime()) || isNaN(b.getTime()) || b < a) return 0
+  let n = 0; const d = new Date(a)
+  while (d <= b) { const wd = d.getDay(); if (wd !== 0 && wd !== 6) n++; d.setDate(d.getDate() + 1) }
+  return n
+}
+function fmtNice(iso: string) { const dt = new Date(iso + 'T00:00:00'); return `${String(dt.getDate()).padStart(2, '0')} ${MONTH_SHORT[dt.getMonth()]} ${dt.getFullYear()}` }
 const MONTH_DAYS   = [31,28,28,31,30,31,30,31,31,30,31,30]
 const WORKING_PER_MONTH = [22,20,21,22,22,21,23,21,22,23,20,23]
 
@@ -225,10 +234,11 @@ function EmpChip({ emp, onRemove }: { emp: Employee; onRemove: () => void }) {
 }
 
 /* ── MonthPicker ── */
-function MonthPicker({ month, year, setMonth, setYear, mode, setMode, yearMonths, setYearMonths }: {
+function MonthPicker({ month, year, setMonth, setYear, mode, setMode, yearMonths, setYearMonths, from, to, setFrom, setTo }: {
   month:number; year:number; setMonth:(m:number)=>void; setYear:(y:number)=>void
   mode:'month'|'year'; setMode:(m:'month'|'year')=>void
   yearMonths:number[]; setYearMonths:(ms:number[])=>void
+  from:string; to:string; setFrom:(v:string)=>void; setTo:(v:string)=>void
 }) {
   function prevMo() { if(month===0){setMonth(11);setYear(year-1)}else setMonth(month-1) }
   function nextMo() { if(month===11){setMonth(0);setYear(year+1)}else setMonth(month+1) }
@@ -259,6 +269,7 @@ function MonthPicker({ month, year, setMonth, setYear, mode, setMode, yearMonths
           {navBtn(nextMo,<ChevronRight size={15} style={{color:C.navy}}/>,{borderLeft:`1px solid ${C.border}`})}
         </div>
       )}
+      {mode==='month' && <DateRangePicker from={from} to={to} setFrom={setFrom} setTo={setTo} />}
       {mode==='year' && (
         <div style={{ padding:'14px 14px 16px' }}>
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12 }}>
@@ -538,7 +549,13 @@ export default function AllTimesheetsPage() {
   const [projectEmps,     setProjectEmps]     = useState<Employee[]>([])
   const [selMonth,        setSelMonth]        = useState(4)
   const [selYear,         setSelYear]         = useState(2026)
+  const [fromDate,        setFromDate]        = useState('')
+  const [toDate,          setToDate]          = useState('')
   const [pickerMode,      setPickerMode]      = useState<'month'|'year'>('month')
+
+  const setMonthReset = (m:number) => { setSelMonth(m); setFromDate(''); setToDate('') }
+  const setYearReset  = (y:number) => { setSelYear(y); setFromDate(''); setToDate('') }
+  const setModeReset  = (m:'month'|'year') => { setPickerMode(m); setFromDate(''); setToDate('') }
   const [yearMonths,      setYearMonths]      = useState<number[]>(Array.from({length:12},(_,i)=>i))
   const [state,           setState]           = useState<'idle'|'loading'|'done'>('idle')
   const [summaries,       setSummaries]       = useState<EmployeeSummary[]>([])
@@ -566,9 +583,15 @@ export default function AllTimesheetsPage() {
     if(emps.length===0) return
     setState('loading'); setSummaries([])
     setTimeout(()=>{
-      const mo = pickerMode==='month' ? getMonthOption(selMonth,selYear) : getYearOption(yearMonths,selYear)
+      const useRange = pickerMode==='month' && fromDate!=='' && toDate!==''
+      const mo = pickerMode==='year'
+        ? getYearOption(yearMonths,selYear)
+        : useRange
+          ? { label:`${fmtNice(fromDate)} – ${fmtNice(toDate)}`, value:`${fromDate}_${toDate}`, working:weekdaysBetween(fromDate,toDate), range:`${weekdaysBetween(fromDate,toDate)} working days` }
+          : getMonthOption(selMonth,selYear)
       const result = emps.map(emp=>{
-        const entries = DATA.filter(e=>e.employee===emp.name)
+        let entries = DATA.filter(e=>e.employee===emp.name)
+        if (useRange) entries = entries.filter(e=>e.date>=fromDate && e.date<=toDate)
         const projName = tab==='project'&&selectedProject ? selectedProject.name : (EMP_PRIMARY_PROJECT[emp.empId]??'No Project')
         return buildSummary(emp, entries, mo, projName)
       }).filter(s=>s.entries.length>0)
@@ -580,6 +603,9 @@ export default function AllTimesheetsPage() {
     (tab==='employee'?(allSelected||selectedEmps.length>0):projectEmps.length>0)
 
   const currentMo = pickerMode==='month' ? getMonthOption(selMonth,selYear) : getYearOption(yearMonths,selYear)
+  const rangeActive = pickerMode==='month' && fromDate!=='' && toDate!==''
+  const ctxLabel = rangeActive ? `${fmtNice(fromDate)} – ${fmtNice(toDate)}` : currentMo.label
+  const ctxRange = rangeActive ? `${weekdaysBetween(fromDate, toDate)} working days` : currentMo.range
 
   if (viewEmployee) {
     return <EmployeeDateListView summary={viewEmployee} onBack={()=>setViewEmployee(null)} />
@@ -679,7 +705,7 @@ export default function AllTimesheetsPage() {
 
                   <div>
                     <label style={{ fontSize:12, fontWeight:600, color:C.muted, display:'block', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:8 }}>Period</label>
-                    <MonthPicker month={selMonth} year={selYear} setMonth={setSelMonth} setYear={setSelYear} mode={pickerMode} setMode={setPickerMode} yearMonths={yearMonths} setYearMonths={setYearMonths}/>
+                    <MonthPicker month={selMonth} year={selYear} setMonth={setMonthReset} setYear={setYearReset} mode={pickerMode} setMode={setModeReset} yearMonths={yearMonths} setYearMonths={setYearMonths} from={fromDate} to={toDate} setFrom={setFromDate} setTo={setToDate}/>
                   </div>
                 </div>
               )}
@@ -707,7 +733,7 @@ export default function AllTimesheetsPage() {
                   )}
                   <div>
                     <label style={{ fontSize:12, fontWeight:600, color:C.muted, display:'block', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:8 }}>Period</label>
-                    <MonthPicker month={selMonth} year={selYear} setMonth={setSelMonth} setYear={setSelYear} mode={pickerMode} setMode={setPickerMode} yearMonths={yearMonths} setYearMonths={setYearMonths}/>
+                    <MonthPicker month={selMonth} year={selYear} setMonth={setMonthReset} setYear={setYearReset} mode={pickerMode} setMode={setModeReset} yearMonths={yearMonths} setYearMonths={setYearMonths} from={fromDate} to={toDate} setFrom={setFromDate} setTo={setToDate}/>
                   </div>
                 </div>
               )}
@@ -762,7 +788,7 @@ export default function AllTimesheetsPage() {
                 <div style={{ display:'flex', alignItems:'center', gap:10 }}>
                   <span style={{ fontSize:15, fontWeight:700, color:C.navy }}>{summaries.length} Report{summaries.length!==1?'s':''}</span>
                   <span style={{ display:'inline-flex', alignItems:'center', gap:5, height:26, padding:'0 10px', background:'#ECEEF5', border:`1px solid ${C.border}`, borderRadius:99, fontSize:11.5, fontWeight:600, color:C.muted }}>
-                    <CalendarDays size={11} strokeWidth={2}/> {currentMo.label} · {currentMo.range}
+                    <CalendarDays size={11} strokeWidth={2}/> {ctxLabel} · {ctxRange}
                   </span>
                 </div>
                 <button style={{ display:'flex', alignItems:'center', gap:7, height:36, padding:'0 16px', borderRadius:9, border:'1px solid #16A34A40', background:'#F0FDF4', fontSize:12.5, fontWeight:600, color:'#15803D', cursor:'pointer', fontFamily:'inherit', transition:'all 0.15s' }}
@@ -772,8 +798,8 @@ export default function AllTimesheetsPage() {
                 </button>
               </div>
 
-              {/* Project summary card */}
-              {tab==='project' && selectedProject && summaries.length>0 && (()=>{
+              {/* Project summary card — month/year aggregates only (not for a date range) */}
+              {tab==='project' && selectedProject && summaries.length>0 && !rangeActive && (()=>{
                 const totalH = summaries.reduce((s,c)=>s+c.totalHours,0)
                 const avgH   = +(totalH/summaries.length).toFixed(1)
                 const pendH  = summaries.reduce((s,c)=>s+c.pendingHours,0)

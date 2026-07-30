@@ -52,17 +52,39 @@ export const PORTFOLIO_PROJECTS: PortfolioProject[] = [
   { id: 'prj-comet',   name: 'Comet Data Lake',          client: 'AeroSys Industries',     pm: 'Sophie Turner', status: 'Active',    teamCount: 6,  utilization: 62, billable: 66, health: 'Delayed', risk: 'Critical', riskCount: 3, riskNote: 'Ingestion-pipeline instability is blocking downstream analytics, and reporting has historically been overdue. A recovery plan is in progress, including a rewrite of the ingestion connectors.' },
 ]
 
-/** Placeholder — milestones & critical updates are NOT yet collected by the reporting flow. */
-export type FeedKind = 'Milestone' | 'Critical Update'
-export interface Milestone { id: string; kind: FeedKind; name: string; project: string; target: string /* ISO */ }
-export const UPCOMING_MILESTONES: Milestone[] = [
-  { id: 'cu1', kind: 'Critical Update', name: 'Atlas cutover escalated to a war-room',       project: 'Atlas ERP Migration',  target: '2026-07-29' },
-  { id: 'cu2', kind: 'Critical Update', name: 'Comet ingestion outage — recovery underway',  project: 'Comet Data Lake',      target: '2026-07-28' },
-  { id: 'ms1', kind: 'Milestone',       name: 'Data Migration Cutover',                       project: 'Atlas ERP Migration',  target: '2026-08-05' },
-  { id: 'ms2', kind: 'Milestone',       name: 'UAT Sign-off',                                 project: 'Apollo CRM Revamp',    target: '2026-08-08' },
-  { id: 'ms3', kind: 'Milestone',       name: 'App Store Release',                            project: 'Orion Mobile Banking', target: '2026-08-12' },
-  { id: 'ms4', kind: 'Milestone',       name: 'HIPAA Compliance Audit',                       project: 'Lyra Health Portal',   target: '2026-08-15' },
-  { id: 'ms5', kind: 'Milestone',       name: 'Production Go-Live',                           project: 'Titan Payments Gateway', target: '2026-08-20' },
+/**
+ * Milestones & Critical Updates — the free-text the manager writes in that report
+ * section (paragraphs or simple bullet lines). Rendered as text cards on the dashboard.
+ * PLACEHOLDER — not yet collected by the reporting flow.
+ */
+/**
+ * Inline markup used inside `content` (parsed on the dashboard):
+ *   **bold**      → bold emphasis
+ *   {{date}}      → highlighted date (colored)
+ *   !!critical!!  → red critical text
+ */
+export interface ProjectUpdate { id: string; project: string; content: string }
+export const MILESTONE_UPDATES: ProjectUpdate[] = [
+  {
+    id: 'u-atlas', project: 'Atlas ERP Migration',
+    content: 'Data-migration cutover pushed to {{Aug 5}} after the staging dry-run surfaced **two schema-mapping defects**. The rollback plan has been tested and signed off by the DBA team. !!The zero-downtime go-live window is now at risk!! and awaits business approval.',
+  },
+  {
+    id: 'u-comet', project: 'Comet Data Lake',
+    content: '!!Ingestion-pipeline instability is blocking downstream analytics.!! Connectors are being rewritten with retry/backoff handling and all analytics milestones stay **blocked** until throughput holds steady for {{3 consecutive days}}. A daily war-room continues.',
+  },
+  {
+    id: 'u-apollo', project: 'Apollo CRM Revamp',
+    content: 'UAT sign-off is targeted for {{Aug 8}}. The payment-gateway retry logic **shipped to staging** and passed the first load test. Next up: a client walkthrough of the new checkout flow, followed by the final content freeze before release.',
+  },
+  {
+    id: 'u-titan', project: 'Titan Payments Gateway',
+    content: '• PCI review scheduled for {{next week}}\n• Production go-live milestone confirmed for {{Aug 20}}\n• Performance and security suites are **all passing**\n• No open blockers this cycle',
+  },
+  {
+    id: 'u-orion', project: 'Orion Mobile Banking',
+    content: 'Biometric-auth certification has been **submitted**; a vendor response is expected {{this week}}. The App Store release milestone remains on track for {{Aug 12}} pending that certification. No blockers on the current build.',
+  },
 ]
 
 export interface MonthPoint { label: string; active: number }
@@ -80,6 +102,98 @@ export const ACTIVE_TREND: MonthPoint[] = [
 
 /** Placeholder metric — not yet collected by the report. */
 export const GENAI_ADOPTION_AVG = 41
+
+/* ────────────────────────── Project Detail View data ──────────────────────────
+   Everything below is derived deterministically from a project so the detail
+   page works for any row. Grounded in what the report collects:
+   narrative notes (4 cards) + Project Efforts (numeric backbone) + report history. */
+
+export interface EffortRow { name: string; role: string; allocation: number; expected: number; logged: number; billable: boolean }
+export interface ReportEntry { period: string; status: 'Submitted' | 'Overdue' | 'Draft'; date: string }
+export interface TaskItem { title: string; date: string; status: 'Completed' | 'In Progress' | 'Blocked' }
+export interface RiskItem { title: string; severity: RiskLevel; note: string }
+export interface MilestoneItem { name: string; date: string; kind: 'Milestone' | 'Critical Update'; status: 'On Track' | 'At Risk' | 'Done' }
+export interface ProjectDetail {
+  tasks: TaskItem[]
+  risks: RiskItem[]
+  milestones: MilestoneItem[]
+  efforts: EffortRow[]
+  reports: ReportEntry[]
+}
+
+const EFFORT_NAMES = ['Sarah Johnson','Tom Davis','Karthik Nair','Priya Sharma','Emma Wilson','Arjun Patel','Lisa Garcia','Rahul Khanna','Nina Volkov','Meera Pillai','Ravi Kumar','Grace Kim']
+const EFFORT_ROLES = ['Tech Lead','Senior Engineer','Backend Engineer','Frontend Engineer','QA Engineer','UI/UX Designer','DevOps Engineer','Business Analyst']
+const ALLOC = [100, 80, 100, 60, 75, 90, 50, 100]
+
+const TASK_POOL = ['OAuth login integration','Customer schema migration','Dashboard analytics v1','Checkout flow refinement','Reporting export module','Performance tuning','API retry & caching','UAT test preparation','Security review fixes','CI pipeline hardening']
+const TASK_STATUS: TaskItem['status'][] = ['Completed','In Progress','Blocked','In Progress','Completed']
+const RISK_POOL = [
+  { title: 'Third-party API latency',    note: 'Vendor latency spikes under peak load; retry + caching added and escalated.' },
+  { title: 'Delayed client sign-off',    note: 'UAT feedback still pending; daily follow-ups scheduled with the client POC.' },
+  { title: 'QA bandwidth gap',           note: 'QA capacity is tight ahead of the release window; contractor being onboarded.' },
+  { title: 'Scope creep — Phase 2',      note: 'Requirements expanding; re-baselining the backlog with the client this week.' },
+  { title: 'Vendor certification pending', note: 'Certification response expected this week; low risk but on the critical path.' },
+]
+const MILESTONE_POOL: { name: string; kind: MilestoneItem['kind'] }[] = [
+  { name: 'UAT Sign-off',           kind: 'Milestone' },
+  { name: 'Production Go-Live',      kind: 'Milestone' },
+  { name: 'Data Migration Cutover',  kind: 'Critical Update' },
+  { name: 'Security Audit',          kind: 'Milestone' },
+  { name: 'Client Demo',             kind: 'Milestone' },
+]
+
+function hashStr(s: string) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h }
+
+export function getProjectDetail(p: PortfolioProject): ProjectDetail {
+  const seed = hashStr(p.id)
+  const efforts: EffortRow[] = Array.from({ length: p.teamCount }, (_, i) => {
+    const allocation = ALLOC[(seed + i) % ALLOC.length]
+    const expected = Math.round((allocation / 100) * 160) // ~monthly capacity
+    const factor = (p.utilization / 100) * (0.9 + ((seed + i) % 5) * 0.05)
+    const logged = Math.round(expected * factor)
+    return {
+      name: EFFORT_NAMES[(seed + i * 5) % EFFORT_NAMES.length],
+      role: EFFORT_ROLES[(seed + i * 3) % EFFORT_ROLES.length],
+      allocation, expected, logged,
+      billable: ((seed + i) % 4) !== 0,
+    }
+  })
+
+  const reports: ReportEntry[] = [
+    { period: 'Week 30 · Jul 21–27',     status: p.health === 'Delayed' ? 'Overdue' : 'Submitted', date: '2026-07-25' },
+    { period: 'Week 29 · Jul 14–20',     status: 'Submitted', date: '2026-07-18' },
+    { period: 'Week 28 · Jul 07–13',     status: 'Submitted', date: '2026-07-11' },
+    { period: 'Week 27 · Jun 30–Jul 06', status: 'Submitted', date: '2026-07-04' },
+    { period: 'Week 26 · Jun 23–29',     status: 'Submitted', date: '2026-06-27' },
+  ]
+
+  const tasks: TaskItem[] = Array.from({ length: 4 }, (_, i) => {
+    const day = Math.max(1, 24 - i * 4) // Jul 24, 20, 16, 12
+    return {
+      title: TASK_POOL[(seed + i * 3) % TASK_POOL.length],
+      status: TASK_STATUS[(seed + i) % TASK_STATUS.length],
+      date: `2026-07-${String(day).padStart(2, '0')}`,
+    }
+  })
+
+  const sevOrder: RiskLevel[] = [p.risk, 'Medium', 'Low']
+  const risks: RiskItem[] = Array.from({ length: 3 }, (_, i) => {
+    const r = RISK_POOL[(seed + i * 2) % RISK_POOL.length]
+    return { title: r.title, note: r.note, severity: sevOrder[i] }
+  })
+
+  const msStatus: MilestoneItem['status'][] = ['On Track', 'At Risk', 'On Track']
+  const milestones: MilestoneItem[] = Array.from({ length: 5 }, (_, i) => {
+    const m = MILESTONE_POOL[(seed + i * 3) % MILESTONE_POOL.length]
+    return {
+      name: m.name, kind: m.kind,
+      status: p.health === 'Delayed' && i === 0 ? 'At Risk' : msStatus[i % msStatus.length],
+      date: `2026-08-${String(5 + i * 5).padStart(2, '0')}`, // Aug 5, 10, 15, 20, 25
+    }
+  })
+
+  return { tasks, risks, milestones, efforts, reports }
+}
 
 export function getPortfolioKpis(list: PortfolioProject[] = PORTFOLIO_PROJECTS) {
   const total = list.length

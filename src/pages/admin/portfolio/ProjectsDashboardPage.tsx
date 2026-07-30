@@ -2,13 +2,14 @@ import { useEffect, useRef, useState } from 'react'
 import {
   FolderKanban, Activity, Gauge, AlertTriangle,
   ShieldAlert, CalendarClock, TrendingUp, BarChart3, Users, ArrowRight,
-  Eye, Sparkles, Flag,
+  Eye, Sparkles,
 } from 'lucide-react'
 import {
-  PORTFOLIO_PROJECTS, UPCOMING_MILESTONES, ACTIVE_TREND,
+  PORTFOLIO_PROJECTS, MILESTONE_UPDATES, ACTIVE_TREND,
   getPortfolioKpis,
   type PortfolioProject, type RiskLevel,
 } from './portfolioData'
+import ProjectDetailView from './ProjectDetailView'
 
 const C = {
   navy: '#1C2035', ink: '#2A2F45', muted: '#8B90A7', faint: '#AEB2C4',
@@ -17,8 +18,6 @@ const C = {
   blue: '#2563EB', orange: '#EA580C',
 }
 
-const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-const fmtDate = (iso: string) => { const [, m, d] = iso.split('-').map(Number); return `${String(d).padStart(2, '0')} ${MONTH_SHORT[m - 1]}` }
 
 const RISK_RANK: Record<RiskLevel, number> = { Critical: 0, High: 1, Medium: 2, Low: 3 }
 
@@ -39,6 +38,23 @@ function utilStatus(v: number): { label: string; fg: string; bg: string } {
 
 /** Softer, lighter bar tones (the saturated set was too harsh). */
 const billColor = (v: number) => v >= 85 ? '#5FC08D' : v >= 75 ? '#8AA0F2' : v >= 55 ? '#EBC17A' : '#EC9AA0'
+
+/* Parse the update markup (**bold**, {{date}}, !!critical!!) into styled nodes. */
+function renderUpdate(content: string): React.ReactNode[] {
+  const re = /(\*\*[^*]+\*\*|\{\{[^}]+\}\}|!![^!]+!!)/g
+  const out: React.ReactNode[] = []
+  let last = 0, key = 0, m: RegExpExecArray | null
+  while ((m = re.exec(content)) !== null) {
+    if (m.index > last) out.push(content.slice(last, m.index))
+    const t = m[0]
+    if (t.startsWith('**'))      out.push(<b key={key++} style={{ color: C.navy, fontWeight: 800 }}>{t.slice(2, -2)}</b>)
+    else if (t.startsWith('{{')) out.push(<span key={key++} style={{ color: C.indigo, fontWeight: 700 }}>{t.slice(2, -2)}</span>)
+    else                          out.push(<span key={key++} style={{ color: C.red, fontWeight: 700 }}>{t.slice(2, -2)}</span>)
+    last = m.index + t.length
+  }
+  if (last < content.length) out.push(content.slice(last))
+  return out
+}
 
 function Badge({ text, fg, bg, dot }: { text: string; fg: string; bg: string; dot?: boolean }) {
   return (
@@ -174,7 +190,8 @@ function BillingBars() {
 }
 
 /* ── main page ── */
-export default function ProjectsDashboardPage({ onNavigate }: { onNavigate?: (id: string) => void }) {
+export default function ProjectsDashboardPage() {
+  const [viewProject, setViewProject] = useState<PortfolioProject | null>(null)
   const kpi = getPortfolioKpis()
   const riskStatusCounts = PORTFOLIO_PROJECTS.reduce(
     (acc, p) => { acc[riskStatus(p.risk).label]++; return acc },
@@ -182,18 +199,16 @@ export default function ProjectsDashboardPage({ onNavigate }: { onNavigate?: (id
   )
   const table = PORTFOLIO_PROJECTS
   const [visibleCount, setVisibleCount] = useState(5)
+  if (viewProject) return <ProjectDetailView project={viewProject} onBack={() => setViewProject(null)} />
   const rows = table.slice(0, visibleCount)
   const allShown = visibleCount >= table.length
 
   const risks: PortfolioProject[] = [...PORTFOLIO_PROJECTS].sort((a, b) => RISK_RANK[a.risk] - RISK_RANK[b.risk]).slice(0, 4)
-  const feed = [...UPCOMING_MILESTONES].sort((a, b) => {
-    if (a.kind !== b.kind) return a.kind === 'Critical Update' ? -1 : 1
-    return a.target.localeCompare(b.target)
-  }).slice(0, 4)
+  const updates = MILESTONE_UPDATES
 
   const TCOLS = '2fr 0.6fr 0.85fr 1.7fr 1fr 0.6fr'
   const THEAD: { h: string; align?: 'right' | 'center' }[] = [
-    { h: 'Project' }, { h: 'Team' }, { h: 'Utilization' }, { h: 'Utilization Status' }, { h: 'Risks' }, { h: 'Action', align: 'center' },
+    { h: 'Project' }, { h: 'Team' }, { h: 'Utilization' }, { h: 'Utilization Status' }, { h: 'Health Status' }, { h: 'Action', align: 'center' },
   ]
   const riskTiles = [
     { label: 'On Track', n: riskStatusCounts['On Track'], fg: C.green },
@@ -224,11 +239,7 @@ export default function ProjectsDashboardPage({ onNavigate }: { onNavigate?: (id
 
       {/* Full-width Projects table */}
       <div style={{ marginTop: 20 }}>
-        <Panel title="Projects" right={
-          <button onClick={() => onNavigate?.('projects')} className="inline-flex items-center gap-1 cursor-pointer" style={{ background: 'transparent', border: 'none', fontSize: 12.5, fontWeight: 700, color: C.indigo, fontFamily: 'inherit' }}>
-            View all <ArrowRight size={13} />
-          </button>
-        }>
+        <Panel title="Projects">
           {/* header */}
           <div style={{ display: 'grid', gridTemplateColumns: TCOLS, gap: 16, padding: '11px 22px', borderBottom: `1px solid ${C.line}`, background: C.wash }}>
             {THEAD.map(c => (
@@ -263,7 +274,7 @@ export default function ProjectsDashboardPage({ onNavigate }: { onNavigate?: (id
                 {/* action — view */}
                 <div style={{ textAlign: 'center' }}>
                   <button
-                    onClick={() => onNavigate?.('projects')}
+                    onClick={() => setViewProject(p)}
                     title={`View ${p.name}`}
                     aria-label={`View ${p.name}`}
                     className="inline-flex items-center justify-center rounded-lg cursor-pointer"
@@ -328,24 +339,25 @@ export default function ProjectsDashboardPage({ onNavigate }: { onNavigate?: (id
             </div>
           </Panel>
 
-          <Panel title="Milestones & Critical Updates" Icon={CalendarClock} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-            <div style={{ flex: 1 }}>
-              {feed.map((m, i) => {
-                const critical = m.kind === 'Critical Update'
-                const fg = critical ? C.red : C.indigo
-                const bg = critical ? 'rgba(225,29,72,0.10)' : 'rgba(99,102,241,0.10)'
-                const Ic = critical ? AlertTriangle : Flag
+          <Panel title="Milestones & Critical Updates" Icon={CalendarClock}>
+            <div style={{ maxHeight: 300, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {updates.map(u => {
+                const pm = PORTFOLIO_PROJECTS.find(p => p.name === u.project)?.pm ?? ''
                 return (
-                  <div key={m.id} className="flex items-center gap-3" style={{ padding: '13px 20px', borderBottom: i < feed.length - 1 ? `1px solid ${C.line}` : 'none', transition: 'background 0.14s' }}
-                    onMouseEnter={e => { e.currentTarget.style.background = C.wash }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}>
-                    <div className="rounded-lg flex items-center justify-center flex-shrink-0" style={{ width: 30, height: 30, background: bg }}>
-                      <Ic size={14} style={{ color: fg }} />
+                  <div
+                    key={u.id}
+                    className="rounded-xl"
+                    style={{ background: 'transparent', border: `1px solid ${C.border}`, padding: '14px 16px', transition: 'all 0.15s' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = C.wash; e.currentTarget.style.borderColor = '#D5D9EA' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = C.border }}
+                  >
+                    <div className="flex items-center justify-between gap-2" style={{ marginBottom: 10 }}>
+                      <span style={{ fontSize: 13, fontWeight: 800, color: C.navy, letterSpacing: '-0.2px' }}>{u.project}</span>
+                      <span className="inline-flex items-center gap-1.5 rounded-full flex-shrink-0" style={{ background: C.wash, border: `1px solid ${C.border}`, padding: '3px 9px', fontSize: 11, fontWeight: 600, color: C.muted }}>
+                        <Users size={11} style={{ color: C.faint }} /> {pm}
+                      </span>
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate" style={{ fontSize: 13, fontWeight: 700, color: C.navy }}>{m.name}</div>
-                      <div className="truncate" style={{ fontSize: 11.5, color: C.faint }}>{m.project}</div>
-                    </div>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: C.muted, flexShrink: 0 }}>{fmtDate(m.target)}</span>
+                    <div style={{ fontSize: 12, color: C.ink, lineHeight: 1.85, whiteSpace: 'pre-wrap' }}>{renderUpdate(u.content)}</div>
                   </div>
                 )
               })}
