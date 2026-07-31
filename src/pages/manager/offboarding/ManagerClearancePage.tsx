@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import {
   Search, Eye, CheckCircle, X, Clock, CalendarCheck2, PauseCircle,
-  AlertTriangle, ShieldCheck, MessageSquare, DoorOpen, UserCheck, Building2, Briefcase,
+  ShieldCheck, MessageSquare, DoorOpen, Building2, Briefcase,
 } from 'lucide-react'
 import type { ElementType } from 'react'
 
