@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import {
   Briefcase, Clock, CalendarDays, Ticket, Megaphone,
   ChevronDown, X, Shield, FileText, FolderOpen, ExternalLink,
-  Target, ArrowRight, ClipboardCheck, ChevronRight,
+  Target, ArrowRight, ClipboardCheck, ChevronRight, DoorOpen,
 } from 'lucide-react'
 
 interface DashboardPageProps {
@@ -17,6 +17,12 @@ const APPRAISAL_ALERT = {
   cycle: 'Q1 2026',
   dueDate: 'July 31, 2026',
   message: 'Your Q1 2026 Performance Appraisal is now open. Complete your KPI self-assessment and submit it to your manager.',
+}
+
+/* ── Offboarding alert (shown on the employee dashboard once offboarding begins — mock) ── */
+const OFFBOARDING_ALERT = {
+  active: true,
+  message: 'Your resignation has been accepted and your notice period has started. Track your clearances, last working day, and exit documents in the Offboarding section.',
 }
 
 /* ── Team KPI submissions (manager dashboard — latest 3) ── */
@@ -474,6 +480,62 @@ export default function DashboardPage({ managerMode = false, onNavigate }: Dashb
                 <ArrowRight size={14} strokeWidth={2.2} />
               </button>
             </div>
+            </div>
+          )}
+
+          {/* ── Offboarding notification card (employee only) ── */}
+          {!managerMode && OFFBOARDING_ALERT.active && (
+            <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, padding: 14 }}>
+              <div
+                className="flex items-center justify-between gap-4"
+                style={{
+                  padding: '14px 18px',
+                  background: 'linear-gradient(90deg, rgba(245,158,11,0.10), rgba(245,158,11,0.02))',
+                  border: '1px solid rgba(245,158,11,0.28)',
+                  borderLeft: '3px solid #F59E0B',
+                  borderRadius: 12,
+                }}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div
+                    className="flex items-center justify-center flex-shrink-0"
+                    style={{ width: 34, height: 34, borderRadius: 9, background: 'rgba(245,158,11,0.14)', border: '1px solid rgba(245,158,11,0.28)' }}
+                  >
+                    <DoorOpen size={17} strokeWidth={1.8} style={{ color: '#B45309' }} />
+                  </div>
+
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span style={{ fontSize: 12.5, fontWeight: 700, color: C.navy }}>
+                        Your offboarding process has started
+                      </span>
+                      <span
+                        style={{
+                          fontSize: 9, fontWeight: 700, color: '#A07800',
+                          background: 'rgba(212,168,0,0.14)', border: '1px solid rgba(212,168,0,0.28)',
+                          borderRadius: 5, padding: '1px 6px', textTransform: 'uppercase', letterSpacing: '0.05em',
+                        }}
+                      >
+                        In Progress
+                      </span>
+                    </div>
+                    <p style={{ fontSize: 11.5, color: '#5A6080', lineHeight: 1.45, margin: '3px 0 0', minWidth: 170, maxWidth: 460, whiteSpace: 'normal', overflowWrap: 'anywhere' }}>
+                      {OFFBOARDING_ALERT.message}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => onNavigate?.('offboarding')}
+                  className="flex items-center gap-1.5 rounded-lg border-none cursor-pointer font-semibold transition-all duration-150 flex-shrink-0"
+                  style={{ height: 36, padding: '0 14px', fontSize: 12.5, background: 'rgba(245,158,11,0.14)', color: '#B45309', whiteSpace: 'nowrap' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(245,158,11,0.24)' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(245,158,11,0.14)' }}
+                >
+                  View Progress
+                  <ArrowRight size={14} strokeWidth={2.2} />
+                </button>
+              </div>
             </div>
           )}
 

@@ -1,8 +1,9 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import {
   User, Briefcase, Shield, Phone, Camera, ChevronDown, Check, Plus,
   Trash2, MapPin, CreditCard, GraduationCap, Users, AlertCircle,
   BookOpen, FileSpreadsheet, UploadCloud, X,
+  CalendarClock, RotateCcw, Info, Pencil, ArrowLeft,
 } from 'lucide-react'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -22,6 +23,17 @@ const C = {
 }
 
 function genId() { return `EMP-${String(Math.floor(Math.random() * 8000) + 1000)}` }
+
+// Employee types that skip probation and are confirmed from day one
+const NO_PROBATION_TYPES = ['Intern', 'Consultant', 'Contract']
+
+// Add whole months to an ISO date string (yyyy-mm-dd) → ISO date string
+function addMonths(dateStr: string, months: number) {
+  if (!dateStr || !months) return ''
+  const d = new Date(dateStr + 'T00:00:00')
+  d.setMonth(d.getMonth() + months)
+  return d.toISOString().slice(0, 10)
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -172,80 +184,123 @@ const ROLE_INFO: Record<string, { color: string; bg: string; border: string; des
   Admin:    { color: '#7C3AED', bg: 'rgba(124,58,237,0.08)',  border: 'rgba(124,58,237,0.18)',  desc: 'Full system access — users, policies, and config.' },
 }
 
+// ─── Employee data shape (View / Edit profile mode) ──────────────────────────
+
+export interface EmployeeData {
+  empId?: string
+  firstName?: string; lastName?: string; email?: string; phone?: string; dob?: string
+  gender?: string; maritalStatus?: string; nationalId?: string
+  altEmail?: string; bloodGroup?: string; phoneRes?: string; phoneOffice?: string
+  ecName?: string; ecRelation?: string; ecPhone?: string
+  presentAddr?: string; permanentAddr?: string
+  salPayMode?: string; salAccNo?: string; salBankName?: string; salBranch?: string; salIFSC?: string
+  expPayMode?: string; expAccNo?: string; expBankName?: string; expBranch?: string; expIFSC?: string
+  panNo?: string; pfNo?: string; uanNo?: string; esiNo?: string; nprNo?: string; pranNo?: string; taxOption?: string
+  familyMembers?: FamilyMember[]; educations?: Education[]
+  empType?: string; designation?: string; level?: string; department?: string; manager?: string
+  officeLocation?: string; workLocation?: string; joinDate?: string; confirmDate?: string
+  shift?: string; attendanceRec?: string; deskNumber?: string; jobDesc?: string; role?: string; project?: string
+  probationApplicable?: boolean; probDuration?: string; probStart?: string; probEnd?: string; probRemarks?: string
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
-export default function AddEmployeePage() {
-  const [empId] = useState(genId)
+export default function AddEmployeePage({
+  mode = 'create', initialData, initialEdit = false, onBack,
+}: {
+  mode?: 'create' | 'profile'
+  initialData?: EmployeeData
+  initialEdit?: boolean
+  onBack?: () => void
+} = {}) {
+  const d = initialData ?? {}
+  const isProfile = mode === 'profile'
+  const [editing, setEditing] = useState(isProfile ? initialEdit : true)
+  const readOnly = isProfile && !editing
+
+  const [empId] = useState<string>(d.empId ?? genId)
   const [activeTab, setActiveTab] = useState<1 | 2>(1)
 
   // ── Tab 1: Personal Information ──
-  const [firstName,    setFirstName]    = useState('')
-  const [lastName,     setLastName]     = useState('')
-  const [email,        setEmail]        = useState('')
-  const [phone,        setPhone]        = useState('')
-  const [dob,          setDob]          = useState('')
-  const [gender,       setGender]       = useState('')
-  const [maritalStatus,setMaritalStatus]= useState('')
-  const [nationalId,   setNationalId]   = useState('')
+  const [firstName,    setFirstName]    = useState(d.firstName ?? '')
+  const [lastName,     setLastName]     = useState(d.lastName ?? '')
+  const [email,        setEmail]        = useState(d.email ?? '')
+  const [phone,        setPhone]        = useState(d.phone ?? '')
+  const [dob,          setDob]          = useState(d.dob ?? '')
+  const [gender,       setGender]       = useState(d.gender ?? '')
+  const [maritalStatus,setMaritalStatus]= useState(d.maritalStatus ?? '')
+  const [nationalId,   setNationalId]   = useState(d.nationalId ?? '')
 
-  const [altEmail,     setAltEmail]     = useState('')
-  const [bloodGroup,   setBloodGroup]   = useState('')
-  const [phoneRes,     setPhoneRes]     = useState('')
-  const [phoneOffice,  setPhoneOffice]  = useState('')
+  const [altEmail,     setAltEmail]     = useState(d.altEmail ?? '')
+  const [bloodGroup,   setBloodGroup]   = useState(d.bloodGroup ?? '')
+  const [phoneRes,     setPhoneRes]     = useState(d.phoneRes ?? '')
+  const [phoneOffice,  setPhoneOffice]  = useState(d.phoneOffice ?? '')
 
-  const [ecName,       setEcName]       = useState('')
-  const [ecRelation,   setEcRelation]   = useState('')
-  const [ecPhone,      setEcPhone]      = useState('')
+  const [ecName,       setEcName]       = useState(d.ecName ?? '')
+  const [ecRelation,   setEcRelation]   = useState(d.ecRelation ?? '')
+  const [ecPhone,      setEcPhone]      = useState(d.ecPhone ?? '')
 
-  const [presentAddr,  setPresentAddr]  = useState('')
-  const [permanentAddr,setPermanentAddr]= useState('')
+  const [presentAddr,  setPresentAddr]  = useState(d.presentAddr ?? '')
+  const [permanentAddr,setPermanentAddr]= useState(d.permanentAddr ?? '')
   const [sameAddr,     setSameAddr]     = useState(false)
 
-  const [salPayMode,   setSalPayMode]   = useState('')
-  const [salAccNo,     setSalAccNo]     = useState('')
-  const [salBankName,  setSalBankName]  = useState('')
-  const [salBranch,    setSalBranch]    = useState('')
-  const [salIFSC,      setSalIFSC]      = useState('')
-  const [expPayMode,   setExpPayMode]   = useState('')
-  const [expAccNo,     setExpAccNo]     = useState('')
-  const [expBankName,  setExpBankName]  = useState('')
-  const [expBranch,    setExpBranch]    = useState('')
-  const [expIFSC,      setExpIFSC]      = useState('')
+  const [salPayMode,   setSalPayMode]   = useState(d.salPayMode ?? '')
+  const [salAccNo,     setSalAccNo]     = useState(d.salAccNo ?? '')
+  const [salBankName,  setSalBankName]  = useState(d.salBankName ?? '')
+  const [salBranch,    setSalBranch]    = useState(d.salBranch ?? '')
+  const [salIFSC,      setSalIFSC]      = useState(d.salIFSC ?? '')
+  const [expPayMode,   setExpPayMode]   = useState(d.expPayMode ?? '')
+  const [expAccNo,     setExpAccNo]     = useState(d.expAccNo ?? '')
+  const [expBankName,  setExpBankName]  = useState(d.expBankName ?? '')
+  const [expBranch,    setExpBranch]    = useState(d.expBranch ?? '')
+  const [expIFSC,      setExpIFSC]      = useState(d.expIFSC ?? '')
 
-  const [panNo,        setPanNo]        = useState('')
-  const [pfNo,         setPfNo]         = useState('')
-  const [uanNo,        setUanNo]        = useState('')
-  const [esiNo,        setEsiNo]        = useState('')
-  const [nprNo,        setNprNo]        = useState('')
-  const [pranNo,       setPranNo]       = useState('')
-  const [taxOption,    setTaxOption]    = useState('')
+  const [panNo,        setPanNo]        = useState(d.panNo ?? '')
+  const [pfNo,         setPfNo]         = useState(d.pfNo ?? '')
+  const [uanNo,        setUanNo]        = useState(d.uanNo ?? '')
+  const [esiNo,        setEsiNo]        = useState(d.esiNo ?? '')
+  const [nprNo,        setNprNo]        = useState(d.nprNo ?? '')
+  const [pranNo,       setPranNo]       = useState(d.pranNo ?? '')
+  const [taxOption,    setTaxOption]    = useState(d.taxOption ?? '')
 
-  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([])
+  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>(d.familyMembers ?? [])
   const [showAddFamily,  setShowAddFamily]  = useState(false)
   const [newFam, setNewFam] = useState({ name: '', relation: '', dob: '', isDependent: false })
 
-  const [educations,   setEducations]   = useState<Education[]>([])
+  const [educations,   setEducations]   = useState<Education[]>(d.educations ?? [])
   const [showAddEdu,   setShowAddEdu]   = useState(false)
   const [newEdu, setNewEdu] = useState({ level: '', institute: '', degree: '', specialization: '', percent: '', from: '', to: '' })
 
   // ── Tab 2: Company Information ──
-  const [empType,      setEmpType]      = useState('')
-  const [designation,  setDesignation]  = useState('')
-  const [level,        setLevel]        = useState('')
-  const [department,   setDepartment]   = useState('')
-  const [manager,      setManager]      = useState('')
-  const [officeLocation,setOfficeLocation] = useState('')
-  const [workLocation, setWorkLocation] = useState('')
-  const [joinDate,     setJoinDate]     = useState('')
-  const [confirmDate,  setConfirmDate]  = useState('')
-  const [shift,        setShift]        = useState('')
-  const [attendanceRec,setAttendanceRec]= useState('')
-  const [deskNumber,   setDeskNumber]   = useState('')
-  const [jobDesc,      setJobDesc]      = useState('')
-  const [role,         setRole]         = useState('')
-  const [project,      setProject]      = useState('')
+  const [empType,      setEmpType]      = useState(d.empType ?? '')
+  const [designation,  setDesignation]  = useState(d.designation ?? '')
+  const [level,        setLevel]        = useState(d.level ?? '')
+  const [department,   setDepartment]   = useState(d.department ?? '')
+  const [manager,      setManager]      = useState(d.manager ?? '')
+  const [officeLocation,setOfficeLocation] = useState(d.officeLocation ?? '')
+  const [workLocation, setWorkLocation] = useState(d.workLocation ?? '')
+  const [joinDate,     setJoinDate]     = useState(d.joinDate ?? '')
+  const [confirmDate,  setConfirmDate]  = useState(d.confirmDate ?? '')
+  const [shift,        setShift]        = useState(d.shift ?? '')
+  const [attendanceRec,setAttendanceRec]= useState(d.attendanceRec ?? '')
+  const [deskNumber,   setDeskNumber]   = useState(d.deskNumber ?? '')
+  const [jobDesc,      setJobDesc]      = useState(d.jobDesc ?? '')
+  const [role,         setRole]         = useState(d.role ?? '')
+  const [project,      setProject]      = useState(d.project ?? '')
   const [sendEmail,    setSendEmail]    = useState(true)
   const [autoPass,     setAutoPass]     = useState(true)
+
+  // ── Probation Period (Tab 2) ──
+  const [probationApplicable, setProbationApplicable] = useState(d.probationApplicable ?? true)
+  const [probDuration, setProbDuration] = useState(d.probDuration ?? '6')   // months as string, or 'custom'
+  const [probCustom,   setProbCustom]   = useState('')     // custom months
+  const [probStart,    setProbStart]    = useState(d.probStart ?? '')
+  const [probEnd,      setProbEnd]      = useState(d.probEnd ?? '')
+  const [probRemarks,  setProbRemarks]  = useState(d.probRemarks ?? '')
+  // manual-override flags — once true, auto-calc stops touching that field
+  const [probStartEdited, setProbStartEdited] = useState(false)
+  const [probEndEdited,   setProbEndEdited]   = useState(false)
+  const [confirmEdited,   setConfirmEdited]   = useState(false)
 
   // Modals
   const [btnLoading,      setBtnLoading]      = useState(false)
@@ -264,10 +319,47 @@ export default function AddEmployeePage() {
   const [importedCount,    setImportedCount]    = useState(0)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // ── Probation derived values & validation ──
+  const durMonths = probDuration === 'custom' ? (parseInt(probCustom) || 0) : parseInt(probDuration)
+  const probCustomInvalid = probDuration === 'custom' && (durMonths < 1 || durMonths > 24)
+  const probStartBeforeJoin = probationApplicable && !!probStart && !!joinDate && probStart < joinDate
+  const probEndBeforeStart  = probationApplicable && !!probEnd   && !!probStart && probEnd <= probStart
+  const confirmBeforeEnd    = probationApplicable && !!confirmDate && !!probEnd && confirmDate < probEnd
+  const probationError = probationApplicable &&
+    (durMonths < 1 || probCustomInvalid || probStartBeforeJoin || probEndBeforeStart || confirmBeforeEnd)
+
+  // Smart-default probation based on employee type, then let auto-calc re-run
+  function handleEmpTypeChange(v: string) {
+    setEmpType(v)
+    const applies = !NO_PROBATION_TYPES.includes(v)
+    setProbationApplicable(applies)
+    setProbStartEdited(false); setProbEndEdited(false); setConfirmEdited(false)
+  }
+
+  // Clear all overrides and recompute from joining date + duration
+  function resetProbationAuto() {
+    setProbStartEdited(false); setProbEndEdited(false); setConfirmEdited(false)
+  }
+
+  // Start date mirrors Date of Joining (until overridden)
+  useEffect(() => {
+    if (probationApplicable && !probStartEdited) setProbStart(joinDate)
+  }, [joinDate, probationApplicable, probStartEdited])
+
+  // End date = Start + Duration (until overridden)
+  useEffect(() => {
+    if (probationApplicable && !probEndEdited) setProbEnd(addMonths(probStart, durMonths))
+  }, [probStart, durMonths, probationApplicable, probEndEdited])
+
+  // Confirmation date = probation End (or Joining if no probation), until overridden
+  useEffect(() => {
+    if (!confirmEdited) setConfirmDate(probationApplicable ? probEnd : joinDate)
+  }, [probationApplicable, probEnd, joinDate, confirmEdited])
+
   // Tab completion
   const tab1Done = !!firstName && !!lastName && !!email && !!phone
   const tab2Done = !!designation && !!department && !!empType && !!joinDate && !!role
-  const canSubmit = tab1Done && tab2Done
+  const canSubmit = tab1Done && tab2Done && !probationError
 
   const roleInfo = role ? ROLE_INFO[role] : null
 
@@ -354,6 +446,9 @@ export default function AddEmployeePage() {
     setJoinDate(''); setConfirmDate(''); setShift('')
     setAttendanceRec(''); setDeskNumber(''); setJobDesc('')
     setRole(''); setProject('')
+    setProbationApplicable(true); setProbDuration('6'); setProbCustom('')
+    setProbStart(''); setProbEnd(''); setProbRemarks('')
+    setProbStartEdited(false); setProbEndEdited(false); setConfirmEdited(false)
     setActiveTab(1)
   }
 
@@ -368,15 +463,81 @@ export default function AddEmployeePage() {
         @keyframes empSlideIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
         textarea::-webkit-scrollbar{width:4px} textarea::-webkit-scrollbar-track{background:transparent}
         textarea::-webkit-scrollbar-thumb{background:#D0D3E6;border-radius:4px}
+        .emp-fields:disabled { opacity: 1; }
+        .emp-fields:disabled input, .emp-fields:disabled select, .emp-fields:disabled textarea {
+          background: #F7F8FC !important; color: #3D4266 !important; cursor: not-allowed !important;
+        }
+        .emp-fields:disabled button { cursor: not-allowed !important; }
       `}</style>
 
       {/* ── Page header ── */}
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: C.navy, letterSpacing: '-0.4px' }}>Add Employee</h1>
-        <p style={{ margin: '4px 0 0', fontSize: 13.5, color: '#787878', fontWeight: 500 }}>
-          Complete both tabs to create a new employee account
-        </p>
-      </div>
+      {isProfile ? (
+        <div style={{ marginBottom: 20 }}>
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-2" style={{ marginBottom: 16 }}>
+            <button onClick={onBack}
+              style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: 9, border: `1px solid ${C.border}`, background: '#fff', cursor: 'pointer', flexShrink: 0, transition: 'all 0.14s', outline: 'none' }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#F7F8FC'; e.currentTarget.style.borderColor = '#C8CCE0' }}
+              onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = C.border }}>
+              <ArrowLeft size={14} strokeWidth={2} style={{ color: C.muted }} />
+            </button>
+            <span style={{ fontSize: 13, color: '#C8CCE0' }}>/</span>
+            <button onClick={onBack} style={{ fontSize: 13, fontWeight: 500, color: C.muted, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit', transition: 'color 0.14s' }}
+              onMouseEnter={e => { e.currentTarget.style.color = C.navy }}
+              onMouseLeave={e => { e.currentTarget.style.color = C.muted }}>
+              All Users
+            </button>
+            <span style={{ fontSize: 13, color: '#C8CCE0' }}>/</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: C.navy }}>{[firstName, lastName].filter(Boolean).join(' ') || 'Employee Profile'}</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+            <div style={{ minWidth: 0 }}>
+              <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: C.navy, letterSpacing: '-0.4px' }}>
+                {[firstName, lastName].filter(Boolean).join(' ') || 'Employee Profile'}
+              </h1>
+              <p style={{ margin: '4px 0 0', fontSize: 13.5, color: '#787878', fontWeight: 500 }}>
+                {[designation, empId].filter(Boolean).join('  ·  ')}
+              </p>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              {!editing ? (
+                <button
+                  onClick={() => setEditing(true)}
+                  style={{ height: 32, padding: '0 14px', borderRadius: 8, border: 'none', background: C.indigo, color: '#fff', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontFamily: "'DM Sans', system-ui, sans-serif" }}
+                  onMouseEnter={e => { e.currentTarget.style.background = '#4F52C4' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = C.indigo }}
+                >
+                  <Pencil size={13} /> Edit
+                </button>
+              ) : (
+                <>
+                  <button
+                    onClick={() => setEditing(false)}
+                    style={{ height: 32, padding: '0 12px', borderRadius: 8, border: `1px solid ${C.border}`, background: '#fff', color: C.muted, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontFamily: "'DM Sans', system-ui, sans-serif" }}
+                  >
+                    <X size={13} /> Cancel
+                  </button>
+                  <button
+                    onClick={() => setEditing(false)}
+                    style={{ height: 32, padding: '0 14px', borderRadius: 8, border: 'none', background: C.indigo, color: '#fff', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontFamily: "'DM Sans', system-ui, sans-serif" }}
+                    onMouseEnter={e => { e.currentTarget.style.background = '#4F52C4' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = C.indigo }}
+                  >
+                    <Check size={13} strokeWidth={2.5} /> Save Changes
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div style={{ marginBottom: 24 }}>
+          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: C.navy, letterSpacing: '-0.4px' }}>Add Employee</h1>
+          <p style={{ margin: '4px 0 0', fontSize: 13.5, color: '#787878', fontWeight: 500 }}>
+            Complete both tabs to create a new employee account
+          </p>
+        </div>
+      )}
 
       <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
 
@@ -402,34 +563,39 @@ export default function AddEmployeePage() {
           <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, padding: '14px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
             <p style={{ margin: '0 0 6px', fontSize: 10.5, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Completion Status</p>
             {[
-              { num: 1, label: 'Personal Information', done: tab1Done, required: 'Name, Email & Phone', accent: C.indigo },
-              { num: 2, label: 'Company Information', done: tab2Done, required: 'Role, Dept & Joining', accent: C.indigo },
-            ].map(tab => (
+              { num: 1, label: 'Personal Information', done: tab1Done, required: 'Name, Email & Phone', desc: 'Personal & contact details', accent: C.indigo },
+              { num: 2, label: 'Company Information', done: tab2Done, required: 'Role, Dept & Joining', desc: 'Employment, probation & role', accent: C.indigo },
+            ].map(tab => {
+              const done = !isProfile && tab.done   // profile mode: always show plain numbers, no green
+              return (
               <div
                 key={tab.num}
                 onClick={() => setActiveTab(tab.num as 1 | 2)}
                 style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', borderRadius: 10, background: activeTab === tab.num ? `${tab.accent}0d` : C.surface, border: `1px solid ${activeTab === tab.num ? `${tab.accent}30` : C.border}`, cursor: 'pointer', transition: 'all 0.15s' }}
               >
-                <div style={{ width: 22, height: 22, borderRadius: '50%', flexShrink: 0, marginTop: 1, background: tab.done ? C.green : activeTab === tab.num ? tab.accent : C.hover, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s' }}>
-                  {tab.done
+                <div style={{ width: 22, height: 22, borderRadius: '50%', flexShrink: 0, marginTop: 1, background: done ? C.green : activeTab === tab.num ? tab.accent : C.hover, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s' }}>
+                  {done
                     ? <Check size={11} color="#fff" strokeWidth={2.5} />
                     : <span style={{ fontSize: 10, fontWeight: 700, color: activeTab === tab.num ? '#fff' : C.muted }}>{tab.num}</span>
                   }
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: tab.done ? C.green : C.navy }}>{tab.label}</p>
-                  <p style={{ margin: '2px 0 0', fontSize: 11, color: C.muted }}>{tab.done ? '✓ Required fields filled' : `Requires: ${tab.required}`}</p>
+                  <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: done ? C.green : C.navy }}>{tab.label}</p>
+                  <p style={{ margin: '2px 0 0', fontSize: 11, color: C.muted }}>{isProfile ? tab.desc : (tab.done ? '✓ Required fields filled' : `Requires: ${tab.required}`)}</p>
                 </div>
               </div>
-            ))}
+              )
+            })}
 
-            {/* Overall readiness */}
+            {/* Overall readiness (create only) */}
+            {!isProfile && (
             <div style={{ marginTop: 2, padding: '8px 12px', borderRadius: 10, background: canSubmit ? 'rgba(16,185,129,0.08)' : C.surface, border: `1px solid ${canSubmit ? 'rgba(16,185,129,0.20)' : C.border}`, display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: canSubmit ? C.green : '#CDD0DC', flexShrink: 0 }} />
               <span style={{ fontSize: 11.5, fontWeight: 600, color: canSubmit ? C.green : C.muted }}>
                 {canSubmit ? 'Ready to submit' : 'Fill both tabs to submit'}
               </span>
             </div>
+            )}
           </div>
 
           {/* Role preview */}
@@ -447,7 +613,7 @@ export default function AddEmployeePage() {
         </div>
 
         {/* ════ RIGHT CONTENT ════ */}
-        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 0 }}>
+        <fieldset className="emp-fields" disabled={readOnly} style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 0, border: 0, margin: 0, padding: 0 }}>
 
 
           {/* ══════════════════════════════════════════════
@@ -476,7 +642,8 @@ export default function AddEmployeePage() {
                 </div>
               )}
 
-              {/* ── Upload option banner ── */}
+              {/* ── Upload option banner (create only) ── */}
+              {!isProfile && <>
               <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 18px', background: 'linear-gradient(135deg, rgba(99,102,241,0.05), rgba(99,102,241,0.09))', border: '1px solid rgba(99,102,241,0.18)', borderRadius: 14 }}>
                 <div style={{ width: 42, height: 42, borderRadius: 11, background: 'rgba(99,102,241,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <FileSpreadsheet size={20} color={C.indigo} />
@@ -502,6 +669,7 @@ export default function AddEmployeePage() {
                 <span style={{ fontSize: 11.5, fontWeight: 600, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.07em', whiteSpace: 'nowrap' }}>Or fill fields manually below</span>
                 <div style={{ flex: 1, height: 1, background: C.border }} />
               </div>
+              </>}
 
               {/* 1. Personal Details */}
               <FormSection icon={<User size={15} color={C.indigo} />} title="Personal Details" subtitle="Core identity and contact information" accent={C.indigo}>
@@ -707,7 +875,8 @@ export default function AddEmployeePage() {
                 </div>
               </FormSection>
 
-              {/* Tab 1 footer */}
+              {/* Tab 1 footer (create only) */}
+              {!isProfile && (
               <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, padding: '14px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div>
                   {!tab1Done && (
@@ -733,6 +902,7 @@ export default function AddEmployeePage() {
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </button>
               </div>
+              )}
 
             </div>
             )}
@@ -927,18 +1097,164 @@ export default function AddEmployeePage() {
               {/* 1a. Employment Details */}
               <FormSection icon={<Briefcase size={15} color={C.indigo} />} title="Employment Details" subtitle="Job role, department, reporting structure and tenure" accent={C.indigo}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px 20px' }}>
-                  <FSelect label="Employee Type"     required options={['Regular', 'Contract', 'Intern', 'Part-time', 'Consultant']} value={empType}      onChange={setEmpType} />
+                  <FSelect label="Employee Type"     required options={['Regular', 'Contract', 'Intern', 'Part-time', 'Consultant']} value={empType}      onChange={handleEmpTypeChange} />
                   <FInput  label="Email Address"     required placeholder="john@gmail.com" value={email} onChange={setEmail} type="email" />
                   <FInput  label="Designation"       required placeholder="e.g. UI/UX Designer"    value={designation}  onChange={setDesignation} />
                   <FSelect label="Department"        required options={['Engineering', 'Design', 'QA & Testing', 'DevOps', 'Product', 'IT Operations', 'HR', 'Finance']} value={department} onChange={setDepartment} />
                   <FSelect label="Level"                      options={['Junior', 'Mid-level', 'Senior Executive', 'Lead', 'Manager', 'Director', 'VP']} value={level} onChange={setLevel} />
                   <FSelect label="Reporting Manager"          options={['David Brown', 'Priya Sharma', 'Rohan Mehta', 'Nina Volkov']} value={manager}     onChange={setManager} />
                   <FInput  label="Date of Joining"   required placeholder=""  value={joinDate}     onChange={setJoinDate}    type="date" />
-                  <FInput  label="Confirmation Date"          placeholder=""  value={confirmDate}  onChange={setConfirmDate} type="date" />
                 </div>
                 <div style={{ marginTop: 16 }}>
                   <FTextarea label="Job Description" placeholder="Briefly describe the role responsibilities…" value={jobDesc} onChange={setJobDesc} rows={2} />
                 </div>
+              </FormSection>
+
+              {/* 1a-2. Probation Period */}
+              <FormSection icon={<CalendarClock size={15} color={C.amber} />} title="Probation Period" subtitle="Set the probation window that determines the confirmation date" accent={C.amber}>
+
+                {/* Applicable toggle */}
+                <FToggle
+                  label="Probation Applicable"
+                  hint={probationApplicable
+                    ? 'Employee serves a probation period before being confirmed'
+                    : 'Employee is confirmed from the date of joining — no probation'}
+                  checked={probationApplicable}
+                  onChange={v => { setProbationApplicable(v); setConfirmEdited(false); if (v) { setProbStartEdited(false); setProbEndEdited(false) } }}
+                />
+
+                {probationApplicable ? (
+                  <div style={{ marginTop: 18, display: 'flex', flexDirection: 'column', gap: 18 }}>
+
+                    {/* Status strip */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 15px', background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.20)', borderRadius: 10 }}>
+                      <span style={{ width: 8, height: 8, borderRadius: '50%', background: C.amber, flexShrink: 0 }} />
+                      <span style={{ fontSize: 12.5, fontWeight: 700, color: '#B45309' }}>Initial Status · On Probation</span>
+                      <span style={{ fontSize: 12, color: C.muted, marginLeft: 'auto' }}>
+                        Auto-confirms on <strong style={{ color: C.navy, fontWeight: 700 }}>{confirmDate ? fmtDate(confirmDate) : '—'}</strong>
+                      </span>
+                    </div>
+
+                    {/* Duration — segmented pills */}
+                    <div>
+                      <FieldLabel text="Probation Duration" required />
+                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                        {[{ v: '3', l: '3 months' }, { v: '6', l: '6 months' }, { v: '9', l: '9 months' }, { v: '12', l: '12 months' }, { v: 'custom', l: 'Custom' }].map(opt => {
+                          const active = probDuration === opt.v
+                          return (
+                            <button
+                              key={opt.v}
+                              onClick={() => { setProbDuration(opt.v); setProbEndEdited(false) }}
+                              style={{ height: 32, padding: '0 13px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 700, fontFamily: "'DM Sans', system-ui, sans-serif", border: `1.5px solid ${active ? C.indigo : C.border}`, background: active ? 'rgba(99,102,241,0.10)' : '#fff', color: active ? C.indigo : C.muted, transition: 'all 0.15s' }}
+                              onMouseEnter={e => { if (!active) { e.currentTarget.style.borderColor = C.indigo; e.currentTarget.style.color = C.indigo } }}
+                              onMouseLeave={e => { if (!active) { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted } }}
+                            >
+                              {opt.l}
+                            </button>
+                          )
+                        })}
+                        {probDuration === 'custom' && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 2 }}>
+                            <input
+                              type="number" min={1} max={24} value={probCustom} placeholder="0"
+                              onChange={e => { setProbCustom(e.target.value); setProbEndEdited(false) }}
+                              style={{ ...inputBase, width: 80, height: 32, textAlign: 'center', fontSize: 12.5, border: `1.5px solid ${probCustomInvalid ? C.red : C.indigo}`, background: '#fff' }}
+                            />
+                            <span style={{ fontSize: 13, fontWeight: 600, color: C.muted }}>months</span>
+                          </div>
+                        )}
+                      </div>
+                      {probCustomInvalid && (
+                        <p style={{ margin: '8px 0 0', fontSize: 11.5, color: C.red, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 5 }}>
+                          <AlertCircle size={12} /> Enter a duration between 1 and 24 months.
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Dates */}
+                    <div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px 20px' }}>
+                        <FInput label="Probation Start Date" value={probStart}   type="date" onChange={v => { setProbStart(v); setProbStartEdited(true) }} />
+                        <FInput label="Probation End Date"   value={probEnd}     type="date" onChange={v => { setProbEnd(v);   setProbEndEdited(true) }} />
+                        <FInput label="Confirmation Date"    value={confirmDate} type="date" onChange={v => { setConfirmDate(v); setConfirmEdited(true) }} />
+                      </div>
+
+                      {/* helper + reset */}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginTop: 9, flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: 11.5, color: C.muted, display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <Info size={12} /> Start mirrors the joining date; end &amp; confirmation auto-calculate from duration — edit any field to override.
+                        </span>
+                        {(probStartEdited || probEndEdited || confirmEdited) && (
+                          <button onClick={resetProbationAuto} style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: 12, fontWeight: 700, color: '#B45309', fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+                            <RotateCcw size={12} /> Reset to auto
+                          </button>
+                        )}
+                      </div>
+
+                      {/* validation messages */}
+                      {(probStartBeforeJoin || probEndBeforeStart || confirmBeforeEnd) && (
+                        <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 5 }}>
+                          {[
+                            probStartBeforeJoin && 'Probation start cannot be before the date of joining.',
+                            probEndBeforeStart  && 'Probation end must be after the start date.',
+                            confirmBeforeEnd    && 'Confirmation date cannot be before probation ends.',
+                          ].filter(Boolean).map((msg, i) => (
+                            <p key={i} style={{ margin: 0, fontSize: 11.5, color: C.red, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 5 }}>
+                              <AlertCircle size={12} /> {msg}
+                            </p>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Timeline preview */}
+                    {joinDate && probEnd && !probEndBeforeStart && durMonths > 0 && (
+                      <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 12, padding: '16px 20px' }}>
+                        <p style={{ margin: '0 0 16px', fontSize: 10.5, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Probation Timeline</p>
+                        <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                          {/* start node */}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 5, flexShrink: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                              <div style={{ width: 10, height: 10, borderRadius: '50%', background: C.indigo }} />
+                              <span style={{ fontSize: 12.5, fontWeight: 700, color: C.navy }}>Joins</span>
+                            </div>
+                            <span style={{ fontSize: 12, color: C.muted, paddingLeft: 17 }}>{fmtDate(probStart || joinDate)}</span>
+                          </div>
+                          {/* connector */}
+                          <div style={{ flex: 1, margin: '5px 14px 0', position: 'relative' }}>
+                            <div style={{ height: 3, borderRadius: 2, background: 'linear-gradient(90deg, #6366F1, #F59E0B, #10B981)' }} />
+                            <span style={{ position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap', fontSize: 11, fontWeight: 700, color: '#B45309', background: '#fff', border: '1px solid rgba(245,158,11,0.30)', borderRadius: 999, padding: '2px 12px' }}>
+                              On Probation · {durMonths} {durMonths === 1 ? 'month' : 'months'}
+                            </span>
+                          </div>
+                          {/* end node */}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 5, alignItems: 'flex-end', flexShrink: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                              <span style={{ fontSize: 12.5, fontWeight: 700, color: C.green }}>Confirmed</span>
+                              <div style={{ width: 10, height: 10, borderRadius: '50%', background: C.green }} />
+                            </div>
+                            <span style={{ fontSize: 12, color: C.muted, paddingRight: 17 }}>{fmtDate(confirmDate || probEnd)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Remarks */}
+                    <FTextarea label="Remarks (optional)" placeholder="Any notes about probation terms, review checkpoints, etc." value={probRemarks} onChange={setProbRemarks} rows={2} />
+                  </div>
+                ) : (
+                  /* Not applicable */
+                  <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px', background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.20)', borderRadius: 12 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 9, background: 'rgba(16,185,129,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <Check size={17} color={C.green} strokeWidth={2.5} />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: C.navy }}>Confirmed from Day One</p>
+                      <p style={{ margin: '2px 0 0', fontSize: 12, color: C.muted }}>No probation applies. Confirmation date is set to the date of joining{joinDate ? ` — ${fmtDate(joinDate)}` : ''}.</p>
+                    </div>
+                    <span style={{ flexShrink: 0, padding: '4px 12px', borderRadius: 7, fontSize: 12, fontWeight: 700, color: '#0A8A58', background: 'rgba(16,168,106,0.10)', border: '1px solid rgba(16,168,106,0.20)' }}>Confirmed</span>
+                  </div>
+                )}
               </FormSection>
 
               {/* 1b. Workplace & Schedule */}
@@ -958,13 +1274,16 @@ export default function AddEmployeePage() {
                   <FSelect label="System Role" required options={['Employee', 'Manager', 'Admin']} value={role}    onChange={setRole} />
                   <FSelect label="Assign to Project" options={['Concert IDC Platform', 'HR Analytics Dashboard', 'Payroll Automation Suite', 'Mobile Workforce App', '— None —']} value={project} onChange={setProject} />
                 </div>
+                {!isProfile && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   <FToggle label="Send Welcome Email"       hint="Send login credentials to the employee's email address" checked={sendEmail} onChange={setSendEmail} />
                   <FToggle label="Auto-generate Password"   hint="A secure temporary password will be created and emailed" checked={autoPass}  onChange={setAutoPass} />
                 </div>
+                )}
               </FormSection>
 
-              {/* Documents note */}
+              {/* Documents note (create only) */}
+              {!isProfile && (
               <div style={{ background: 'rgba(99,102,241,0.04)', border: `1px dashed rgba(99,102,241,0.25)`, borderRadius: 14, padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 14 }}>
                 <BookOpen size={18} style={{ color: C.indigo, flexShrink: 0 }} />
                 <div>
@@ -972,8 +1291,10 @@ export default function AddEmployeePage() {
                   <p style={{ margin: '2px 0 0', fontSize: 12, color: C.muted }}>Offer letter, ID proof, address proof and other documents can be attached in the employee profile once the account is active.</p>
                 </div>
               </div>
+              )}
 
-              {/* Tab 2 footer */}
+              {/* Tab 2 footer (create only) */}
+              {!isProfile && (
               <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, padding: '14px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <button
                   onClick={() => setActiveTab(1)}
@@ -990,7 +1311,7 @@ export default function AddEmployeePage() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                       <AlertCircle size={13} style={{ color: C.amber }} />
                       <span style={{ fontSize: 12.5, color: C.amber, fontWeight: 500 }}>
-                        {!tab1Done ? 'Tab 1 incomplete' : 'Fill Designation, Dept, Type, Joining & Role'}
+                        {!tab1Done ? 'Tab 1 incomplete' : !tab2Done ? 'Fill Designation, Dept, Type, Joining & Role' : 'Resolve probation period dates'}
                       </span>
                     </div>
                   )}
@@ -1015,11 +1336,12 @@ export default function AddEmployeePage() {
                   </button>
                 </div>
               </div>
+              )}
 
             </div>
           )}
 
-        </div>{/* end right content */}
+        </fieldset>{/* end right content */}
       </div>
 
       {/* ════ Confirmation Modal ════ */}
@@ -1059,7 +1381,7 @@ export default function AddEmployeePage() {
                   { label: 'Date of Joining',value: fmtDate(joinDate) },
                   { label: 'Employee Type',  value: empType      || '—' },
                   { label: 'Work Location',  value: workLocation || '—' },
-                  { label: 'Phone',          value: phone        || '—' },
+                  { label: 'Probation',      value: probationApplicable ? `${durMonths} mo · confirms ${fmtDate(confirmDate)}` : 'Not applicable' },
                 ].map(r => (
                   <div key={r.label} style={{ padding: '11px 14px', background: C.surface, borderRadius: 10 }}>
                     <p style={{ margin: '0 0 3px', fontSize: 10.5, fontWeight: 600, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{r.label}</p>

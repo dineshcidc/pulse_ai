@@ -2,7 +2,9 @@ import { useState } from 'react'
 import {
   FileText, CalendarDays, Clock, AlertTriangle, Send, ShieldCheck,
   User, Briefcase, Building2, CheckCircle2, Undo2, CalendarX,
+  CalendarCheck2, XCircle, MessageSquare, ArrowRight,
 } from 'lucide-react'
+import { PreviewSwitcher, type OffboardingTabProps } from './offboardingShared'
 
 const C = {
   navy: '#1C2035',
@@ -113,7 +115,7 @@ function SectionCard({ title, subtitle, children }: { title: string; subtitle?: 
   )
 }
 
-export default function ResignationRequestPage() {
+export default function ResignationRequestPage({ reviewState, onReviewChange }: OffboardingTabProps) {
   const today = new Date()
   const suggestedLWD = addDays(today, EMPLOYEE.noticePeriodDays)
 
@@ -154,6 +156,7 @@ export default function ResignationRequestPage() {
   function confirmSubmitFinal() {
     setConfirmSubmit(false)
     setStatus('submitted')
+    onReviewChange('pending')
   }
 
   function confirmWithdrawFinal() {
@@ -163,53 +166,151 @@ export default function ResignationRequestPage() {
 
   /* ══════════════════════════ SUBMITTED STATE ══════════════════════════ */
   if (status === 'submitted') {
+    const managerName = EMPLOYEE.manager
+    const initials = managerName.split(' ').map(w => w[0]).join('').slice(0, 2)
+    const acceptedRemarks = "Thanks for the heads-up. Let's set up your handover plan this week — I've looped in HR to begin your clearance. All the best!"
+    const rejectionReason = 'Please align your last working day with the full 90-day notice period, or speak with me about an early-release / buyout before resubmitting.'
+
+    const banner = {
+      pending:  { bg: 'rgba(245,158,11,0.07)', border: 'rgba(245,158,11,0.28)', iconBg: 'rgba(245,158,11,0.14)', color: '#B45309', Icon: Clock,        title: 'Submitted — Pending Manager Approval', sub: `Request ID ${requestId} · Submitted on ${fmtDate(today)}` },
+      approved: { bg: 'rgba(14,168,106,0.07)', border: 'rgba(14,168,106,0.28)', iconBg: 'rgba(14,168,106,0.14)', color: '#0A7040', Icon: CheckCircle2, title: `Accepted by ${managerName}`,             sub: `Request ID ${requestId} · Accepted on ${fmtDate(today)}` },
+      rejected: { bg: 'rgba(232,72,85,0.06)',  border: 'rgba(232,72,85,0.28)',  iconBg: 'rgba(232,72,85,0.12)',  color: '#C0202E', Icon: XCircle,      title: 'Not Accepted',                        sub: `Request ID ${requestId} · Reviewed on ${fmtDate(today)}` },
+    }[reviewState]
+    const BIcon = banner.Icon
+
+    const steps: { label: string; mode: 'done' | 'active' | 'todo' | 'rejected' }[] =
+      reviewState === 'approved'
+        ? [{ label: 'Submitted', mode: 'done' }, { label: 'Manager Review', mode: 'done' }, { label: 'Accepted', mode: 'done' }]
+        : reviewState === 'rejected'
+        ? [{ label: 'Submitted', mode: 'done' }, { label: 'Manager Review', mode: 'done' }, { label: 'Rejected', mode: 'rejected' }]
+        : [{ label: 'Submitted', mode: 'done' }, { label: 'Manager Review', mode: 'active' }, { label: 'Accepted', mode: 'todo' }]
+
+    const subtitle = reviewState === 'approved'
+      ? 'Your resignation has been accepted. Here are the details of your exit.'
+      : reviewState === 'rejected'
+      ? 'Your resignation was not accepted. See your manager’s note below.'
+      : 'Your resignation has been submitted and is under review.'
+
     return (
       <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
-        {/* Section header */}
-        <div style={{ marginBottom: 18 }}>
-          <h2 style={{ fontSize: 17, fontWeight: 700, color: C.navy, margin: 0 }}>Resignation / Exit Request</h2>
-          <p style={{ fontSize: 13, color: C.muted, fontWeight: 500, margin: '3px 0 0' }}>Your resignation has been submitted and is under review.</p>
+        {/* Section header + preview switcher */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 18 }}>
+          <div>
+            <h2 style={{ fontSize: 17, fontWeight: 700, color: C.navy, margin: 0 }}>Resignation / Exit Request</h2>
+            <p style={{ fontSize: 13, color: C.muted, fontWeight: 500, margin: '3px 0 0' }}>{subtitle}</p>
+          </div>
+          <PreviewSwitcher value={reviewState} onChange={onReviewChange} />
         </div>
 
         {/* Status banner */}
-        <div style={{ background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.28)', borderRadius: 14, padding: '18px 20px', display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(245,158,11,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <Clock size={22} strokeWidth={2} style={{ color: '#B45309' }} />
+        <div style={{ background: banner.bg, border: `1px solid ${banner.border}`, borderRadius: 14, padding: '18px 20px', display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: banner.iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <BIcon size={22} strokeWidth={2} style={{ color: banner.color }} />
           </div>
           <div style={{ flex: 1 }}>
-            <h3 style={{ fontSize: 15, fontWeight: 700, color: '#B45309', margin: 0 }}>Submitted — Pending Manager Approval</h3>
-            <p style={{ fontSize: 12.5, color: '#B45309', opacity: 0.85, margin: '2px 0 0', fontWeight: 500 }}>
-              Request ID <strong>{requestId}</strong> · Submitted on {fmtDate(today)}
-            </p>
+            <h3 style={{ fontSize: 15, fontWeight: 700, color: banner.color, margin: 0 }}>{banner.title}</h3>
+            <p style={{ fontSize: 12.5, color: banner.color, opacity: 0.85, margin: '2px 0 0', fontWeight: 500 }}>{banner.sub}</p>
           </div>
         </div>
 
         {/* Progress steps */}
         <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, padding: '20px 22px', marginBottom: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            {[
-              { label: 'Submitted', done: true },
-              { label: 'Manager Review', done: false, active: true },
-              { label: 'Accepted', done: false },
-            ].map((s, i, arr) => (
-              <div key={s.label} style={{ display: 'flex', alignItems: 'center', flex: i < arr.length - 1 ? 1 : 'unset' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-                  <div style={{
-                    width: 30, height: 30, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: s.done ? '#0EA86A' : s.active ? 'rgba(245,158,11,0.15)' : C.bg,
-                    border: s.active ? '2px solid #F59E0B' : 'none',
-                  }}>
-                    {s.done
-                      ? <CheckCircle2 size={17} strokeWidth={2.4} style={{ color: '#fff' }} />
-                      : <span style={{ fontSize: 12, fontWeight: 700, color: s.active ? '#B45309' : C.muted }}>{i + 1}</span>}
+            {steps.map((s, i, arr) => {
+              const nextRejected = arr[i + 1]?.mode === 'rejected'
+              const connector = s.mode === 'done' ? (nextRejected ? '#E84855' : '#0EA86A') : C.border
+              return (
+                <div key={s.label} style={{ display: 'flex', alignItems: 'center', flex: i < arr.length - 1 ? 1 : 'unset' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                    <div style={{
+                      width: 30, height: 30, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: s.mode === 'done' ? '#0EA86A' : s.mode === 'rejected' ? '#E84855' : s.mode === 'active' ? 'rgba(245,158,11,0.15)' : C.bg,
+                      border: s.mode === 'active' ? '2px solid #F59E0B' : 'none',
+                    }}>
+                      {s.mode === 'done'
+                        ? <CheckCircle2 size={17} strokeWidth={2.4} style={{ color: '#fff' }} />
+                        : s.mode === 'rejected'
+                        ? <XCircle size={17} strokeWidth={2.4} style={{ color: '#fff' }} />
+                        : <span style={{ fontSize: 12, fontWeight: 700, color: s.mode === 'active' ? '#B45309' : C.muted }}>{i + 1}</span>}
+                    </div>
+                    <span style={{ fontSize: 11.5, fontWeight: 600, color: s.mode === 'todo' ? C.muted : C.navy, whiteSpace: 'nowrap' }}>{s.label}</span>
                   </div>
-                  <span style={{ fontSize: 11.5, fontWeight: 600, color: s.done || s.active ? C.navy : C.muted, whiteSpace: 'nowrap' }}>{s.label}</span>
+                  {i < arr.length - 1 && <div style={{ flex: 1, height: 2, background: connector, margin: '0 10px', marginBottom: 22 }} />}
                 </div>
-                {i < arr.length - 1 && <div style={{ flex: 1, height: 2, background: C.border, margin: '0 10px', marginBottom: 22 }} />}
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
+
+        {/* ── Manager response (accepted / rejected) ── */}
+        {reviewState !== 'pending' && (
+          <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, overflow: 'hidden', marginBottom: 18 }}>
+            <div style={{ padding: '16px 20px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'rgba(99,102,241,0.12)', color: '#5B5FDE', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, flexShrink: 0 }}>{initials}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: C.navy }}>{managerName}</div>
+                <div style={{ fontSize: 12, color: C.muted, fontWeight: 500, marginTop: 1 }}>Reporting Manager · {reviewState === 'approved' ? 'Accepted' : 'Reviewed'} on {fmtDate(today)}</div>
+              </div>
+            </div>
+
+            <div style={{ padding: 20 }}>
+              {reviewState === 'approved' ? (
+                <>
+                  {/* Confirmed LWD highlight */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 12, background: 'rgba(14,168,106,0.06)', border: '1px solid rgba(14,168,106,0.22)' }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(14,168,106,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <CalendarCheck2 size={20} strokeWidth={1.9} style={{ color: '#0A7040' }} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: '#0A7040', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Confirmed Last Working Day</div>
+                      <div style={{ fontSize: 16, fontWeight: 800, color: C.navy, marginTop: 2 }}>{fmtDate(lwd)}</div>
+                    </div>
+                  </div>
+
+                  {/* Manager note */}
+                  <div style={{ marginTop: 16 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                      <MessageSquare size={13} strokeWidth={1.9} style={{ color: C.muted }} />
+                      <span style={{ fontSize: 11.5, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Manager’s Note</span>
+                    </div>
+                    <p style={{ fontSize: 13, color: '#3D4266', fontWeight: 500, lineHeight: 1.7, margin: 0, fontStyle: 'italic' }}>“{acceptedRemarks}”</p>
+                  </div>
+
+                  {/* Next-step note */}
+                  <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px solid ${C.border}`, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                    <ArrowRight size={15} strokeWidth={2} style={{ color: '#5B5FDE', marginTop: 2, flexShrink: 0 }} />
+                    <p style={{ fontSize: 12.5, color: '#5A6080', fontWeight: 500, lineHeight: 1.6, margin: 0 }}>
+                      Your notice period has started. HR will open your offboarding case and share your clearance checklist. Track everything in <strong style={{ color: C.navy }}>My Offboarding</strong>.
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* Rejection reason */}
+                  <div style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(232,72,85,0.05)', border: '1px solid rgba(232,72,85,0.15)' }}>
+                    <div style={{ fontSize: 11.5, fontWeight: 700, color: '#C0202E', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>Reason for Rejection</div>
+                    <p style={{ fontSize: 13, color: C.navy, fontWeight: 500, lineHeight: 1.7, margin: 0 }}>{rejectionReason}</p>
+                  </div>
+
+                  {/* Resubmit */}
+                  <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+                    <p style={{ fontSize: 12.5, color: C.muted, fontWeight: 500, margin: 0, maxWidth: 420, lineHeight: 1.55 }}>
+                      You can revise the details based on your manager’s feedback and submit a new request.
+                    </p>
+                    <button
+                      onClick={() => { setStatus('draft'); onReviewChange('pending') }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, padding: '10px 18px', borderRadius: 10, border: 'none', background: C.indigo, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.15s' }}
+                      onMouseEnter={e => { e.currentTarget.style.background = '#4F46E5' }}
+                      onMouseLeave={e => { e.currentTarget.style.background = C.indigo }}
+                    >
+                      <Send size={15} strokeWidth={2} /> Submit a New Request
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Submitted details */}
         <SectionCard title="Submitted Details">
@@ -225,22 +326,24 @@ export default function ResignationRequestPage() {
           </div>
         </SectionCard>
 
-        {/* Withdraw */}
-        <div style={{ marginTop: 18, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, padding: '16px 20px' }}>
-          <div>
-            <div style={{ fontSize: 13.5, fontWeight: 700, color: C.navy }}>Changed your mind?</div>
-            <div style={{ fontSize: 12.5, color: C.muted, fontWeight: 500, marginTop: 2 }}>You can withdraw this request while it is still pending manager approval.</div>
+        {/* Withdraw — only while pending */}
+        {reviewState === 'pending' && (
+          <div style={{ marginTop: 18, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, padding: '16px 20px' }}>
+            <div>
+              <div style={{ fontSize: 13.5, fontWeight: 700, color: C.navy }}>Changed your mind?</div>
+              <div style={{ fontSize: 12.5, color: C.muted, fontWeight: 500, marginTop: 2 }}>You can withdraw this request while it is still pending manager approval.</div>
+            </div>
+            <button
+              onClick={() => setConfirmWithdraw(true)}
+              style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, padding: '10px 16px', borderRadius: 9, border: '1px solid rgba(232,72,85,0.35)', background: '#fff', color: '#E84855', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(232,72,85,0.08)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = '#fff' }}
+            >
+              <Undo2 size={15} strokeWidth={2} />
+              Withdraw Request
+            </button>
           </div>
-          <button
-            onClick={() => setConfirmWithdraw(true)}
-            style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, padding: '10px 16px', borderRadius: 9, border: '1px solid rgba(232,72,85,0.35)', background: '#fff', color: '#E84855', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(232,72,85,0.08)' }}
-            onMouseLeave={e => { e.currentTarget.style.background = '#fff' }}
-          >
-            <Undo2 size={15} strokeWidth={2} />
-            Withdraw Request
-          </button>
-        </div>
+        )}
 
         {confirmWithdraw && (
           <ConfirmModal

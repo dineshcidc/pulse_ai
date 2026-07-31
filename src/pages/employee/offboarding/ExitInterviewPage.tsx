@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Star, ShieldCheck, Send, Sparkles } from 'lucide-react'
+import { Star, ShieldCheck, Send, Sparkles, Lock, XCircle } from 'lucide-react'
 import type { ElementType } from 'react'
+import { PreviewSwitcher, type OffboardingTabProps } from './offboardingShared'
 
 const C = {
   navy: '#1C2035',
@@ -121,7 +122,7 @@ function SectionTitle({ n, title, subtitle }: { n: number; title: string; subtit
   )
 }
 
-export default function ExitInterviewPage() {
+export default function ExitInterviewPage({ reviewState, onReviewChange }: OffboardingTabProps) {
   const [submitted, setSubmitted] = useState(false)
   const [ratings, setRatings] = useState<Record<AspectKey, number>>({ overall: 0, culture: 0, manager: 0, pay: 0, growth: 0, balance: 0 })
   const [enjoyed, setEnjoyed] = useState('')
@@ -145,135 +146,140 @@ export default function ExitInterviewPage() {
     setTimeout(() => { setSubmitLoading(false); setConfirm(true) }, 900)
   }
 
-  /* ── Submitted / thank-you state ── */
-  if (submitted) {
-    return (
-      <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
-        <div style={{ marginBottom: 18 }}>
-          <h2 style={{ fontSize: 17, fontWeight: 700, color: C.navy, margin: 0 }}>Exit Interview</h2>
-          <p style={{ fontSize: 13, color: C.muted, fontWeight: 500, margin: '3px 0 0' }}>Thank you for sharing your feedback.</p>
-        </div>
+  const subtitle =
+    reviewState === 'rejected'
+      ? 'Your resignation was not accepted, so there’s no exit interview to complete.'
+      : reviewState === 'pending'
+      ? 'Your exit interview will open once your offboarding begins.'
+      : submitted
+      ? 'Thank you for sharing your feedback.'
+      : 'Help us improve by sharing your honest feedback about your time with us.'
 
-        <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, padding: '32px 28px', textAlign: 'center', marginBottom: 18 }}>
-          <div style={{ width: 60, height: 60, borderRadius: 18, background: 'rgba(14,168,106,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-            <Sparkles size={28} strokeWidth={1.8} style={{ color: '#0A7040' }} />
-          </div>
-          <h3 style={{ fontSize: 18, fontWeight: 700, color: C.navy, margin: '0 0 6px' }}>Your feedback has been submitted</h3>
-          <p style={{ fontSize: 13, color: C.muted, fontWeight: 500, margin: '0 auto', maxWidth: 420, lineHeight: 1.6 }}>
-            Thank you for taking the time to complete your exit interview. Your responses are confidential and help us build a better workplace. We wish you all the best!
-          </p>
-        </div>
-
-        {/* Read-only summary */}
-        <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, padding: 20 }}>
-          <h3 style={{ fontSize: 14, fontWeight: 700, color: C.navy, margin: '0 0 18px' }}>Your Responses</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-            {ASPECTS.map(a => (
-              <div key={a.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 13, color: C.navy, fontWeight: 500 }}>{a.label}</span>
-                <StarRating value={ratings[a.key]} readOnly />
-              </div>
-            ))}
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginTop: 20, paddingTop: 18, borderTop: `1px solid ${C.border}` }}>
-            <Summary label="Would recommend us" value={recommend || '—'} />
-            <Summary label="Would return in future" value={rejoin || '—'} />
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  /* ── Form ── */
   return (
     <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
       <style>{`@keyframes eiSpin { to { transform: rotate(360deg) } }`}</style>
 
-      {/* Section header */}
-      <div style={{ marginBottom: 16 }}>
-        <h2 style={{ fontSize: 17, fontWeight: 700, color: C.navy, margin: 0 }}>Exit Interview</h2>
-        <p style={{ fontSize: 13, color: C.muted, fontWeight: 500, margin: '3px 0 0' }}>
-          Help us improve by sharing your honest feedback about your time with us.
-        </p>
+      {/* Header + preview switcher */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 18 }}>
+        <div>
+          <h2 style={{ fontSize: 17, fontWeight: 700, color: C.navy, margin: 0 }}>Exit Interview</h2>
+          <p style={{ fontSize: 13, color: C.muted, fontWeight: 500, margin: '3px 0 0' }}>{subtitle}</p>
+        </div>
+        <PreviewSwitcher value={reviewState} onChange={onReviewChange} />
       </div>
 
-      {/* Confidentiality note */}
-      <div style={{ display: 'flex', gap: 12, background: 'rgba(14,168,106,0.06)', border: '1px solid rgba(14,168,106,0.22)', borderRadius: 12, padding: '13px 16px', marginBottom: 18 }}>
-        <ShieldCheck size={18} strokeWidth={1.9} style={{ color: '#0A7040', flexShrink: 0, marginTop: 1 }} />
-        <p style={{ fontSize: 12.5, color: '#0A7040', fontWeight: 500, margin: 0, lineHeight: 1.55 }}>
-          Your responses are <strong>confidential</strong> and are used only to improve our workplace. Please be candid.
-        </p>
-      </div>
-
-      {/* One common white card */}
-      <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, padding: 22 }}>
-        {/* 1. Ratings */}
-        <SectionTitle n={1} title="Rate your experience" subtitle="Tap the stars to rate each area." />
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          {ASPECTS.map((a, i) => (
-            <div key={a.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '16px 0', borderBottom: i < ASPECTS.length - 1 ? `1px solid ${C.border}` : 'none' }}>
-              <span style={{ fontSize: 13.5, color: C.navy, fontWeight: 500 }}>
-                {a.label}{'required' in a && a.required && <span style={{ color: '#E84855', marginLeft: 3 }}>*</span>}
-              </span>
-              <StarRating value={ratings[a.key]} onChange={v => setRating(a.key, v)} />
+      {/* ── Gated (pending / rejected) ── */}
+      {reviewState !== 'approved' ? (
+        <LockedNote state={reviewState} />
+      ) : submitted ? (
+        /* ── Submitted / thank-you ── */
+        <>
+          <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, padding: '32px 28px', textAlign: 'center', marginBottom: 18 }}>
+            <div style={{ width: 60, height: 60, borderRadius: 18, background: 'rgba(14,168,106,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+              <Sparkles size={28} strokeWidth={1.8} style={{ color: '#0A7040' }} />
             </div>
-          ))}
-        </div>
-        {errOverall && <p style={{ fontSize: 11.5, color: '#E84855', fontWeight: 600, margin: '8px 0 0' }}>Please rate your overall experience.</p>}
-
-        {/* 2. Feedback */}
-        <div style={{ marginTop: 26, paddingTop: 22, borderTop: `1px solid ${C.border}` }}>
-          <SectionTitle n={2} title="Your feedback" />
-          <div style={{ marginBottom: 16 }}>
-            <FieldLabel>What did you enjoy most?</FieldLabel>
-            <textarea value={enjoyed} onChange={e => setEnjoyed(e.target.value)} onFocus={focusOn} onBlur={focusOff}
-              placeholder="The people, projects, culture, learning…" style={{ ...inputBase, minHeight: 84, resize: 'vertical' }} />
+            <h3 style={{ fontSize: 18, fontWeight: 700, color: C.navy, margin: '0 0 6px' }}>Your feedback has been submitted</h3>
+            <p style={{ fontSize: 13, color: C.muted, fontWeight: 500, margin: '0 auto', maxWidth: 420, lineHeight: 1.6 }}>
+              Thank you for taking the time to complete your exit interview. Your responses are confidential and help us build a better workplace. We wish you all the best!
+            </p>
           </div>
-          <div>
-            <FieldLabel required>What could we improve?</FieldLabel>
-            <textarea value={improve} onChange={e => setImprove(e.target.value)} onFocus={focusOn} onBlur={focusOff}
-              placeholder="Be candid — what would have made you stay or made your experience better?"
-              style={{ ...inputBase, minHeight: 84, resize: 'vertical', borderColor: errImprove ? '#E84855' : C.border }} />
-            {errImprove && <p style={{ fontSize: 11.5, color: '#E84855', fontWeight: 600, margin: '6px 0 0' }}>Please share what we could improve.</p>}
-          </div>
-        </div>
 
-        {/* 3. Recommendation */}
-        <div style={{ marginTop: 26, paddingTop: 22, borderTop: `1px solid ${C.border}` }}>
-          <SectionTitle n={3} title="Recommendation" />
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 22 }}>
-            <div>
-              <FieldLabel required>Would you recommend us as a place to work?</FieldLabel>
-              <Segmented value={recommend} onChange={setRecommend} err={errRecommend} />
-              {errRecommend && <p style={{ fontSize: 11.5, color: '#E84855', fontWeight: 600, margin: '8px 0 0' }}>Please select an option.</p>}
+          <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, padding: 20 }}>
+            <h3 style={{ fontSize: 14, fontWeight: 700, color: C.navy, margin: '0 0 18px' }}>Your Responses</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+              {ASPECTS.map(a => (
+                <div key={a.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 13, color: C.navy, fontWeight: 500 }}>{a.label}</span>
+                  <StarRating value={ratings[a.key]} readOnly />
+                </div>
+              ))}
             </div>
-            <div>
-              <FieldLabel>Would you consider returning in future?</FieldLabel>
-              <Segmented value={rejoin} onChange={setRejoin} />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginTop: 20, paddingTop: 18, borderTop: `1px solid ${C.border}` }}>
+              <Summary label="Would recommend us" value={recommend || '—'} />
+              <Summary label="Would return in future" value={rejoin || '—'} />
             </div>
           </div>
-        </div>
+        </>
+      ) : (
+        /* ── Form ── */
+        <>
+          <div style={{ display: 'flex', gap: 12, background: 'rgba(14,168,106,0.06)', border: '1px solid rgba(14,168,106,0.22)', borderRadius: 12, padding: '13px 16px', marginBottom: 18 }}>
+            <ShieldCheck size={18} strokeWidth={1.9} style={{ color: '#0A7040', flexShrink: 0, marginTop: 1 }} />
+            <p style={{ fontSize: 12.5, color: '#0A7040', fontWeight: 500, margin: 0, lineHeight: 1.55 }}>
+              Your responses are <strong>confidential</strong> and are used only to improve our workplace. Please be candid.
+            </p>
+          </div>
 
-        {/* 4. Additional comments */}
-        <div style={{ marginTop: 26, paddingTop: 22, borderTop: `1px solid ${C.border}` }}>
-          <SectionTitle n={4} title="Additional comments" subtitle="Anything else you'd like to share (optional)." />
-          <textarea value={comments} onChange={e => setComments(e.target.value)} onFocus={focusOn} onBlur={focusOff}
-            placeholder="Optional — any final thoughts for the team or HR…" style={{ ...inputBase, minHeight: 72, resize: 'vertical' }} />
-        </div>
+          <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, padding: 22 }}>
+            {/* 1. Ratings */}
+            <SectionTitle n={1} title="Rate your experience" subtitle="Tap the stars to rate each area." />
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {ASPECTS.map((a, i) => (
+                <div key={a.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '16px 0', borderBottom: i < ASPECTS.length - 1 ? `1px solid ${C.border}` : 'none' }}>
+                  <span style={{ fontSize: 13.5, color: C.navy, fontWeight: 500 }}>
+                    {a.label}{'required' in a && a.required && <span style={{ color: '#E84855', marginLeft: 3 }}>*</span>}
+                  </span>
+                  <StarRating value={ratings[a.key]} onChange={v => setRating(a.key, v)} />
+                </div>
+              ))}
+            </div>
+            {errOverall && <p style={{ fontSize: 11.5, color: '#E84855', fontWeight: 600, margin: '8px 0 0' }}>Please rate your overall experience.</p>}
 
-        {/* Actions */}
-        <div style={{ marginTop: 24, paddingTop: 18, borderTop: `1px solid ${C.border}`, display: 'flex', justifyContent: 'flex-end' }}>
-          <button
-            onClick={handleSubmit}
-            disabled={submitLoading}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minWidth: 200, padding: '11px 22px', borderRadius: 10, border: 'none', background: C.indigo, color: '#fff', fontSize: 13, fontWeight: 600, cursor: submitLoading ? 'not-allowed' : 'pointer', fontFamily: 'inherit', transition: 'background 0.15s', opacity: submitLoading ? 0.85 : 1 }}
-            onMouseEnter={e => { if (!submitLoading) e.currentTarget.style.background = '#4F46E5' }}
-            onMouseLeave={e => { if (!submitLoading) e.currentTarget.style.background = C.indigo }}
-          >
-            {submitLoading ? (<><Spinner /> Submitting…</>) : (<><Send size={15} strokeWidth={2} /> Submit Exit Interview</>)}
-          </button>
-        </div>
-      </div>
+            {/* 2. Feedback */}
+            <div style={{ marginTop: 26, paddingTop: 22, borderTop: `1px solid ${C.border}` }}>
+              <SectionTitle n={2} title="Your feedback" />
+              <div style={{ marginBottom: 16 }}>
+                <FieldLabel>What did you enjoy most?</FieldLabel>
+                <textarea value={enjoyed} onChange={e => setEnjoyed(e.target.value)} onFocus={focusOn} onBlur={focusOff}
+                  placeholder="The people, projects, culture, learning…" style={{ ...inputBase, minHeight: 84, resize: 'vertical' }} />
+              </div>
+              <div>
+                <FieldLabel required>What could we improve?</FieldLabel>
+                <textarea value={improve} onChange={e => setImprove(e.target.value)} onFocus={focusOn} onBlur={focusOff}
+                  placeholder="Be candid — what would have made you stay or made your experience better?"
+                  style={{ ...inputBase, minHeight: 84, resize: 'vertical', borderColor: errImprove ? '#E84855' : C.border }} />
+                {errImprove && <p style={{ fontSize: 11.5, color: '#E84855', fontWeight: 600, margin: '6px 0 0' }}>Please share what we could improve.</p>}
+              </div>
+            </div>
+
+            {/* 3. Recommendation */}
+            <div style={{ marginTop: 26, paddingTop: 22, borderTop: `1px solid ${C.border}` }}>
+              <SectionTitle n={3} title="Recommendation" />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 22 }}>
+                <div>
+                  <FieldLabel required>Would you recommend us as a place to work?</FieldLabel>
+                  <Segmented value={recommend} onChange={setRecommend} err={errRecommend} />
+                  {errRecommend && <p style={{ fontSize: 11.5, color: '#E84855', fontWeight: 600, margin: '8px 0 0' }}>Please select an option.</p>}
+                </div>
+                <div>
+                  <FieldLabel>Would you consider returning in future?</FieldLabel>
+                  <Segmented value={rejoin} onChange={setRejoin} />
+                </div>
+              </div>
+            </div>
+
+            {/* 4. Additional comments */}
+            <div style={{ marginTop: 26, paddingTop: 22, borderTop: `1px solid ${C.border}` }}>
+              <SectionTitle n={4} title="Additional comments" subtitle="Anything else you'd like to share (optional)." />
+              <textarea value={comments} onChange={e => setComments(e.target.value)} onFocus={focusOn} onBlur={focusOff}
+                placeholder="Optional — any final thoughts for the team or HR…" style={{ ...inputBase, minHeight: 72, resize: 'vertical' }} />
+            </div>
+
+            {/* Actions */}
+            <div style={{ marginTop: 24, paddingTop: 18, borderTop: `1px solid ${C.border}`, display: 'flex', justifyContent: 'flex-end' }}>
+              <button
+                onClick={handleSubmit}
+                disabled={submitLoading}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minWidth: 200, padding: '11px 22px', borderRadius: 10, border: 'none', background: C.indigo, color: '#fff', fontSize: 13, fontWeight: 600, cursor: submitLoading ? 'not-allowed' : 'pointer', fontFamily: 'inherit', transition: 'background 0.15s', opacity: submitLoading ? 0.85 : 1 }}
+                onMouseEnter={e => { if (!submitLoading) e.currentTarget.style.background = '#4F46E5' }}
+                onMouseLeave={e => { if (!submitLoading) e.currentTarget.style.background = C.indigo }}
+              >
+                {submitLoading ? (<><Spinner /> Submitting…</>) : (<><Send size={15} strokeWidth={2} /> Submit Exit Interview</>)}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
 
       {confirm && (
         <ConfirmModal
@@ -294,6 +300,27 @@ function Summary({ label, value }: { label: string; value: string }) {
     <div>
       <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.03em', marginBottom: 6 }}>{label}</div>
       <div style={{ fontSize: 14, fontWeight: 700, color: C.navy }}>{value}</div>
+    </div>
+  )
+}
+
+/* ── Locked / not-applicable state shown before approval ── */
+function LockedNote({ state }: { state: 'pending' | 'rejected' }) {
+  const pending = state === 'pending'
+  const Icon: ElementType = pending ? Lock : XCircle
+  const iconColor = pending ? '#B45309' : '#C0202E'
+  const iconBg = pending ? 'rgba(245,158,11,0.12)' : 'rgba(232,72,85,0.10)'
+  const title = pending ? 'Exit Interview isn’t available yet' : 'Exit Interview not applicable'
+  const body = pending
+    ? 'You’ll be able to share your exit feedback once your resignation is approved and your offboarding begins. We’ll open it closer to your last working day.'
+    : 'Your resignation wasn’t accepted, so there’s no exit interview to complete.'
+  return (
+    <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, padding: '48px 24px', textAlign: 'center' }}>
+      <div style={{ width: 56, height: 56, borderRadius: 15, background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+        <Icon size={26} strokeWidth={1.8} style={{ color: iconColor }} />
+      </div>
+      <p style={{ fontSize: 15, fontWeight: 700, color: C.navy, margin: 0 }}>{title}</p>
+      <p style={{ fontSize: 13, color: C.muted, fontWeight: 500, margin: '6px auto 0', maxWidth: 440, lineHeight: 1.65 }}>{body}</p>
     </div>
   )
 }

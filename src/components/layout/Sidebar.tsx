@@ -69,6 +69,15 @@ const EMPLOYEE_OFFBOARDING_ITEM: NavItem = {
   id: 'offboarding', label: 'Offboarding', Icon: DoorOpen,
 }
 
+const TEAM_OFFBOARDING_ITEM: NavItem = {
+  id: 'team-offboarding', label: 'Team Offboarding', Icon: DoorOpen,
+  neutralDots: true,
+  children: [
+    { id: 'offboarding-requests',  label: 'Resignation Requests' },
+    { id: 'offboarding-clearance', label: 'Manager Clearance'    },
+  ],
+}
+
 function buildNav(role: 'employee' | 'manager'): NavSection[] {
   return [
     {
@@ -132,6 +141,7 @@ function buildNav(role: 'employee' | 'manager'): NavSection[] {
         { id: 'payroll', label: 'Payroll', Icon: Wallet    },
         { id: 'reports', label: 'Reports', Icon: BarChart3 },
         ...(role === 'employee' ? [EMPLOYEE_OFFBOARDING_ITEM] : []),
+        ...(role === 'manager' ? [TEAM_OFFBOARDING_ITEM] : []),
       ],
     },
   ]

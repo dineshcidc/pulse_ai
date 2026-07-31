@@ -52,11 +52,11 @@ const STEPS: Step[] = [
     title: 'Complete Your Clearances',
     desc: 'HR opens your case and a clearance checklist is created. Track it all from My Offboarding.',
     points: [
-      'Knowledge Transfer — document your work and hand it over to your team.',
-      'Manager Clearance — your manager confirms the handover is complete.',
+      'Manager Clearance — your manager gives their final team-side sign-off.',
+      'Exit Interview — share your feedback about your time with us.',
+      'Finance & HR Clearance — pending dues are checked and HR signs off.',
       'Asset Return — return your laptop, ID card, and accessories.',
       'IT Access — your access (email, VPN, tools) is revoked on your last day.',
-      'Exit Interview — share your feedback about your time with us.',
     ],
   },
   {

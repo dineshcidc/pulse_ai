@@ -2,11 +2,11 @@ import { useState } from 'react'
 import { BookOpen, Eye, X } from 'lucide-react'
 import ResignationRequestPage from './ResignationRequestPage'
 import MyOffboardingPage from './MyOffboardingPage'
-import HandoverPage from './HandoverPage'
 import ExitInterviewPage from './ExitInterviewPage'
 import AssetReturnPage from './AssetReturnPage'
 import ExitDocumentsPage from './ExitDocumentsPage'
 import OffboardingGuideDrawer from './OffboardingGuideDrawer'
+import type { ReviewState, OffboardingTabProps } from './offboardingShared'
 
 const C = {
   navy: '#1C2035',
@@ -17,15 +17,13 @@ const C = {
 type TabId =
   | 'resignation'
   | 'my'
-  | 'handover'
   | 'exit-interview'
   | 'assets'
   | 'documents'
 
-const TABS: { id: TabId; label: string; Panel: () => React.ReactElement }[] = [
+const TABS: { id: TabId; label: string; Panel: React.ComponentType<OffboardingTabProps> }[] = [
   { id: 'resignation',    label: 'Resignation Request', Panel: ResignationRequestPage },
   { id: 'my',             label: 'My Offboarding',      Panel: MyOffboardingPage      },
-  { id: 'handover',       label: 'Handover / KT',       Panel: HandoverPage           },
   { id: 'exit-interview', label: 'Exit Interview',      Panel: ExitInterviewPage      },
   { id: 'assets',         label: 'Asset Return',        Panel: AssetReturnPage        },
   { id: 'documents',      label: 'Exit Documents',      Panel: ExitDocumentsPage      },
@@ -35,6 +33,7 @@ export default function OffboardingPage() {
   const [activeTab, setActiveTab] = useState<TabId>('resignation')
   const [guideOpen, setGuideOpen] = useState(false)
   const [infoVisible, setInfoVisible] = useState(true)
+  const [reviewState, setReviewState] = useState<ReviewState>('pending')
   const ActivePanel = TABS.find(t => t.id === activeTab)!.Panel
 
   return (
@@ -172,7 +171,7 @@ export default function OffboardingPage() {
 
         {/* Right (10): active tab panel (title + subtext + white card) */}
         <div style={{ minWidth: 0 }}>
-          <ActivePanel />
+          <ActivePanel reviewState={reviewState} onReviewChange={setReviewState} />
         </div>
       </div>
 

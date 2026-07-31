@@ -37,6 +37,10 @@ import ManagerAssetRequestDetailsPage_Case3_SarahJohnson from './assets/ManagerA
 import ReportingOverviewPage from './reporting/ReportingOverviewPage'
 import MyReportProjectsPage from './reporting/MyReportProjectsPage'
 
+// Manager Offboarding pages
+import ResignationRequestsPage from './offboarding/ResignationRequestsPage'
+import ManagerClearancePage from './offboarding/ManagerClearancePage'
+
 interface ManagerAsset {
   id: string
   code: string
@@ -82,6 +86,8 @@ const PAGE_LABELS: Record<string, string> = {
   'my-performance':          'My Performance',
   'team-appraisals':         'Team Appraisals',
   'team-appraisal-history':  'Appraisal History',
+  'offboarding-requests':    'Resignation Requests',
+  'offboarding-clearance':   'Manager Clearance',
 }
 
 function ComingSoon({ id }: { id: string }) {
@@ -171,6 +177,10 @@ function PageContent({
   // Manager Project Reporting
   if (activeItem === 'reporting-overview')  return <ReportingOverviewPage onNavigate={onNavigate} />
   if (activeItem === 'my-report-projects')  return <MyReportProjectsPage />
+
+  // Manager Offboarding
+  if (activeItem === 'offboarding-requests')  return <ResignationRequestsPage />
+  if (activeItem === 'offboarding-clearance') return <ManagerClearancePage />
 
   return <ComingSoon id={activeItem} />
 }
