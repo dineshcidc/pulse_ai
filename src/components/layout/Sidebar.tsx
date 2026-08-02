@@ -18,9 +18,9 @@ import {
   Receipt,
   Ticket,
   Target,
-  DoorOpen,
   ClipboardList,
   LayoutTemplate,
+  ShieldCheck,
 } from 'lucide-react'
 
 
@@ -65,16 +65,39 @@ const MANAGER_PERFORMANCE_ITEM: NavItem = {
   ],
 }
 
-const EMPLOYEE_OFFBOARDING_ITEM: NavItem = {
-  id: 'offboarding', label: 'Offboarding', Icon: DoorOpen,
-}
+// Offboarding menus hidden — old flow retired, pending the new end-to-end Offboarding design.
+// const EMPLOYEE_OFFBOARDING_ITEM: NavItem = {
+//   id: 'offboarding', label: 'Offboarding', Icon: DoorOpen,
+// }
+//
+// const TEAM_OFFBOARDING_ITEM: NavItem = {
+//   id: 'team-offboarding', label: 'Team Offboarding', Icon: DoorOpen,
+//   neutralDots: true,
+//   children: [
+//     { id: 'offboarding-requests',  label: 'Resignation Requests' },
+//     { id: 'offboarding-clearance', label: 'Manager Clearance'    },
+//   ],
+// }
 
-const TEAM_OFFBOARDING_ITEM: NavItem = {
-  id: 'team-offboarding', label: 'Team Offboarding', Icon: DoorOpen,
-  neutralDots: true,
-  children: [
-    { id: 'offboarding-requests',  label: 'Resignation Requests' },
-    { id: 'offboarding-clearance', label: 'Manager Clearance'    },
+// Admin "Management" section — shared by the Admin nav and the System Admin nav
+const ADMIN_MANAGEMENT_SECTION: NavSection = {
+  label: 'MANAGEMENT',
+  items: [
+    {
+      id: 'ticket-management', label: 'Ticket Management', Icon: Receipt,
+      children: [
+        { id: 'admin-tickets', label: 'Tickets' },
+        { id: 'expense-management', label: 'Expense' },
+      ],
+    },
+    {
+      id: 'assets-management', label: 'Assets Management', Icon: Package,
+      children: [
+        { id: 'assets-list', label: 'Assets List' },
+        { id: 'admin-assets', label: 'Assets Allocation' },
+        { id: 'assets-request', label: 'Assets Request' },
+      ],
+    },
   ],
 }
 
@@ -140,8 +163,75 @@ function buildNav(role: 'employee' | 'manager'): NavSection[] {
         ),
         { id: 'payroll', label: 'Payroll', Icon: Wallet    },
         { id: 'reports', label: 'Reports', Icon: BarChart3 },
-        ...(role === 'employee' ? [EMPLOYEE_OFFBOARDING_ITEM] : []),
-        ...(role === 'manager' ? [TEAM_OFFBOARDING_ITEM] : []),
+        // Probation — Employee sees their own probation (Stage 2 of the Probation module).
+        // (Manager's "Team Probation" lives in buildManagerNav's TEAM group.)
+        ...(role === 'employee' ? [{ id: 'probation', label: 'Probation', Icon: ShieldCheck }] : []),
+        // Offboarding menus hidden — old flow retired, pending the new end-to-end Offboarding design.
+        // ...(role === 'employee' ? [EMPLOYEE_OFFBOARDING_ITEM] : []),
+        // ...(role === 'manager' ? [TEAM_OFFBOARDING_ITEM] : []),
+      ],
+    },
+  ]
+}
+
+// Manager sidebar — grouped order: core five · TEAM · MANAGE
+function buildManagerNav(): NavSection[] {
+  return [
+    {
+      label: null,
+      items: [
+        { id: 'dashboard', label: 'Dashboard', Icon: LayoutDashboard },
+        {
+          id: 'timesheets', label: 'Timesheets', Icon: Clock,
+          children: [
+            { id: 'timesheet-add',     label: 'Add Timesheet'     },
+            { id: 'timesheet-history', label: 'Timesheet History' },
+          ],
+        },
+        {
+          id: 'leave', label: 'Leave', Icon: CalendarDays,
+          children: [
+            { id: 'leave-create',  label: 'Create Leave Request'  },
+            { id: 'leave-status',  label: 'Leave Approval Status' },
+          ],
+        },
+        {
+          id: 'hrms', label: 'HRMS', Icon: Users,
+          children: [
+            { id: 'my-profile',    label: 'My Profile'    },
+            { id: 'org-structure', label: 'Org Structure' },
+          ],
+        },
+        { id: 'payroll', label: 'Payroll', Icon: Wallet },
+      ],
+    },
+    {
+      label: 'TEAM',
+      items: [
+        MY_PROJECTS_ITEM,
+        PROJECT_REPORTING_ITEM,
+        MANAGER_PERFORMANCE_ITEM,
+        { id: 'team-probation', label: 'Team Probation', Icon: ShieldCheck },
+      ],
+    },
+    {
+      label: 'MANAGE',
+      items: [
+        {
+          id: 'support-tickets', label: 'Support Tickets', Icon: Ticket,
+          children: [
+            { id: 'tickets', label: 'Tickets' },
+            { id: 'expense', label: 'Expense' },
+          ],
+        },
+        {
+          id: 'assets-management', label: 'Assets Management', Icon: Package,
+          children: [
+            { id: 'my-assets',           label: 'My Assets'           },
+            { id: 'team-asset-requests', label: 'Team Asset Requests' },
+          ],
+        },
+        { id: 'reports', label: 'Reports', Icon: BarChart3 },
       ],
     },
   ]
@@ -236,21 +326,26 @@ function buildAdminNav(): NavSection[] {
       ],
     },
     {
+      label: 'PROBATION',
+      items: [
+        {
+          id: 'probation', label: 'Probation', Icon: ShieldCheck,
+          children: [
+            { id: 'probation-cases',    label: 'Probation Cases'    },
+            { id: 'probation-settings', label: 'Probation Settings' },
+          ],
+        },
+      ],
+    },
+    {
+      // Admin: Ticket Management (Tickets only). Expense removed; Assets Management
+      // is handled by the System Admin role, so it's hidden here.
       label: 'MANAGEMENT',
       items: [
         {
           id: 'ticket-management', label: 'Ticket Management', Icon: Receipt,
           children: [
             { id: 'admin-tickets', label: 'Tickets' },
-            { id: 'expense-management', label: 'Expense' },
-          ],
-        },
-        {
-          id: 'assets-management', label: 'Assets Management', Icon: Package,
-          children: [
-            { id: 'assets-list', label: 'Assets List' },
-            { id: 'admin-assets', label: 'Assets Allocation' },
-            { id: 'assets-request', label: 'Assets Request' },
           ],
         },
       ],
@@ -299,7 +394,7 @@ interface SidebarProps {
   activeItem: string
   onNavigate: (id: string) => void
   onLogout?: () => void
-  role?: 'employee' | 'manager' | 'admin'
+  role?: 'employee' | 'manager' | 'admin' | 'sysadmin'
 }
 
 const C = {
@@ -314,7 +409,26 @@ export default function Sidebar({ isOpen, activeItem, onNavigate, onLogout, role
   const [showLogoutModal, setShowLogoutModal] = useState(false)
   const [logoutLoading, setLogoutLoading]     = useState(false)
 
-  const NAV = role === 'admin' ? buildAdminNav() : buildNav(role)
+  // System Admin = all Employee menus (minus Offboarding) + the Admin "Management"
+  // section, but with Expense removed from Ticket Management (Tickets only).
+  const sysAdminManagement: NavSection = {
+    ...ADMIN_MANAGEMENT_SECTION,
+    items: ADMIN_MANAGEMENT_SECTION.items.map(it =>
+      it.id === 'ticket-management'
+        ? { ...it, children: it.children?.filter(c => c.id !== 'expense-management') }
+        : it
+    ),
+  }
+  const NAV = role === 'admin'
+    ? buildAdminNav()
+    : role === 'manager'
+      ? buildManagerNav()
+      : role === 'sysadmin'
+        ? [
+            ...buildNav('employee').map(s => ({ ...s, items: s.items.filter(it => it.id !== 'offboarding') })),
+            sysAdminManagement,
+          ]
+        : buildNav(role)
 
   async function handleConfirmLogout() {
     setLogoutLoading(true)

@@ -44,6 +44,8 @@ import ReportMonitoringPage from './reporting/ReportMonitoringPage'
 import TemplateBuilderPage from './reporting/TemplateBuilderPage'
 import type { ReportTemplate } from './reporting/reportingTemplatesData'
 import ProjectsDashboardPage from './portfolio/ProjectsDashboardPage'
+import AdminProbationModule from './probation/AdminProbationModule'
+import ProbationSettingsPage from './probation/ProbationSettingsPage'
 
 const PAGE_LABELS: Record<string, string> = {
   'my-profile':           'My Profile',
@@ -95,6 +97,8 @@ const PAGE_LABELS: Record<string, string> = {
   'report-monitoring':         'Report Monitoring',
   'projects-dashboard':        'Projects Dashboard',
   'projects':                  'Projects',
+  'probation-cases':           'Probation Cases',
+  'probation-settings':        'Probation Settings',
 }
 
 function ComingSoon({ id }: { id: string }) {
@@ -173,6 +177,8 @@ function PageContent({ activeItem, onNavigate, onOpenBuilder }: { activeItem: st
   if (activeItem === 'project-assignment')        return <ProjectAssignmentPage />
   if (activeItem === 'report-monitoring')         return <ReportMonitoringPage />
   if (activeItem === 'projects-dashboard')        return <ProjectsDashboardPage />
+  if (activeItem === 'probation-cases')           return <AdminProbationModule />
+  if (activeItem === 'probation-settings')        return <ProbationSettingsPage />
   return <ComingSoon id={activeItem} />
 }
 

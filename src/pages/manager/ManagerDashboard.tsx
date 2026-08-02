@@ -41,6 +41,9 @@ import MyReportProjectsPage from './reporting/MyReportProjectsPage'
 import ResignationRequestsPage from './offboarding/ResignationRequestsPage'
 import ManagerClearancePage from './offboarding/ManagerClearancePage'
 
+// Manager Probation module (Stage 3 — list + review detail)
+import ManagerProbationModule from './probation/ManagerProbationModule'
+
 interface ManagerAsset {
   id: string
   code: string
@@ -88,6 +91,7 @@ const PAGE_LABELS: Record<string, string> = {
   'team-appraisal-history':  'Appraisal History',
   'offboarding-requests':    'Resignation Requests',
   'offboarding-clearance':   'Manager Clearance',
+  'team-probation':          'Team Probation',
 }
 
 function ComingSoon({ id }: { id: string }) {
@@ -181,6 +185,9 @@ function PageContent({
   // Manager Offboarding
   if (activeItem === 'offboarding-requests')  return <ResignationRequestsPage />
   if (activeItem === 'offboarding-clearance') return <ManagerClearancePage />
+
+  // Manager Probation (Stage 3)
+  if (activeItem === 'team-probation')        return <ManagerProbationModule />
 
   return <ComingSoon id={activeItem} />
 }

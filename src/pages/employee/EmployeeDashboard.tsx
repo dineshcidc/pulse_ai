@@ -16,6 +16,14 @@ import ExpensePage from './expense/ExpensePage'
 import ReportsPage from './reports/ReportsPage'
 import MyAppraisalPage from './appraisal/MyAppraisalPage'
 import OffboardingPage from './offboarding/OffboardingPage'
+import MyProbationPage from './probation/MyProbationPage'
+// Admin "Management" pages — reused for the System Admin role
+import AdminTicketsPage from '../admin/tickets/AdminTicketsPage'
+import AdminAssetManagementPage from '../admin/assets/AdminAssetManagementPage'
+import AdminAssetsListPage from '../admin/assets/AdminAssetsListPage'
+import AdminAddAssetPage from '../admin/assets/AdminAddAssetPage'
+import AdminUploadBulkAssetsPage from '../admin/assets/AdminUploadBulkAssetsPage'
+import AdminAssetsRequestPage from '../admin/assets/AdminAssetsRequestPage'
 
 const PAGE_LABELS: Record<string, string> = {
   'timesheet-add':     'Add Timesheet',
@@ -31,6 +39,12 @@ const PAGE_LABELS: Record<string, string> = {
   'performance-appraisal': 'Performance Appraisal',
   'appraisal-self-assessment': 'KPI Self-Assessment',
   offboarding: 'Employee Offboarding',
+  probation:   'My Probation',
+  'admin-tickets':      'Support Tickets',
+  'expense-management': 'Expense',
+  'assets-list':        'Assets List',
+  'admin-assets':       'Asset Allocation',
+  'assets-request':     'Assets Request',
 }
 
 function ComingSoon({ id }: { id: string }) {
@@ -83,10 +97,18 @@ function PageContent({ activeItem, onNavigate }: { activeItem: string; onNavigat
   if (activeItem === 'reports')       return <ReportsPage />
   if (activeItem === 'payroll')       return <PayrollPage />
   if (activeItem === 'offboarding')   return <OffboardingPage />
+  if (activeItem === 'probation')     return <MyProbationPage />
+  // Admin "Management" pages (System Admin role)
+  if (activeItem === 'admin-tickets')      return <AdminTicketsPage allowedTypes={['System Admin']} />
+  if (activeItem === 'admin-assets')       return <AdminAssetManagementPage onNavigate={onNavigate} />
+  if (activeItem === 'assets-list')        return <AdminAssetsListPage onNavigate={onNavigate} />
+  if (activeItem === 'add-asset')          return <AdminAddAssetPage onBack={() => onNavigate('assets-list')} onSave={() => onNavigate('assets-list')} />
+  if (activeItem === 'upload-bulk-assets') return <AdminUploadBulkAssetsPage onBack={() => onNavigate('assets-list')} />
+  if (activeItem === 'assets-request')     return <AdminAssetsRequestPage />
   return <ComingSoon id={activeItem} />
 }
 
-export default function EmployeeDashboard({ onLogout }: { onLogout: () => void }) {
+export default function EmployeeDashboard({ onLogout, role = 'employee' }: { onLogout: () => void; role?: 'employee' | 'sysadmin' }) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [activeItem, setActiveItem]   = useState('dashboard')
 
@@ -100,6 +122,7 @@ export default function EmployeeDashboard({ onLogout }: { onLogout: () => void }
         activeItem={activeItem}
         onNavigate={setActiveItem}
         onLogout={onLogout}
+        role={role}
       />
 
       <div className="flex flex-col flex-1 overflow-hidden min-w-0">
@@ -108,6 +131,7 @@ export default function EmployeeDashboard({ onLogout }: { onLogout: () => void }
           onToggleSidebar={() => setSidebarOpen(p => !p)}
           onNavigate={setActiveItem}
           onLogout={onLogout}
+          userRole={role === 'sysadmin' ? 'System Admin' : 'Employee'}
         />
 
         <main className="flex-1 overflow-auto py-6 px-8 scrollbar-hide">

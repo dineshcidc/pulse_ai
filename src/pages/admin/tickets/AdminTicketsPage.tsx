@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import {
   Ticket, Search, X, Eye, ArrowLeft,
-  Monitor, FolderOpen, Users, Laptop, DollarSign, LayoutGrid,
+  Monitor, FolderOpen, Users, DollarSign, LayoutGrid,
   CheckCircle, ChevronDown, Send,
   Download, FileText, Paperclip, RefreshCw,
   UserCircle, Calendar, MessageSquare, AlertCircle, Clock,
@@ -44,7 +44,6 @@ interface AdminTicketRecord {
 const TYPES = [
   { id: 'All',                  label: 'All Types',           Icon: LayoutGrid },
   { id: 'HR',                   label: 'HR',                  Icon: Users      },
-  { id: 'IT & Admin',           label: 'IT & Admin',          Icon: Laptop     },
   { id: 'System Admin',         label: 'System Admin',        Icon: Monitor    },
   { id: 'Finance Manager',      label: 'Finance Manager',     Icon: DollarSign },
   { id: 'Project Allocation',   label: 'Project Allocation',  Icon: FolderOpen },
@@ -53,12 +52,44 @@ const TYPES = [
 
 const TICKETS: AdminTicketRecord[] = [
   {
-    id: 'TKT-2405', employee: 'Priya Sharma', employeeCode: 'EMP009', employeeAvatar: 'PS', department: 'Engineering', role: 'Junior Developer', type: 'IT & Admin',
-    category: 'IT - Software related queries', subject: 'Need access to development staging environment',
-    description: 'I have been assigned to the new web redesign project and need immediate access to the staging environment to test the latest changes. My teammate has already been set up but I am still waiting for credentials. This is blocking my progress on assigned tasks.',
-    createdDate: '2026-05-22', priority: 'High', status: 'Open',
-    assignedTo: 'Arjun Menon', lastUpdated: '2026-05-22', hasAttachment: false,
+    id: 'TKT-2411', employee: 'Rahul Verma', employeeCode: 'EMP011', employeeAvatar: 'RV', department: 'IT Operations', role: 'System Engineer', type: 'System Admin',
+    category: 'Sys - Server access request', subject: 'Production server SSH access for deployment',
+    description: 'I need SSH access to the production deployment servers (prod-app-01 and prod-app-02) to carry out the scheduled release for the Pulse.AI v2 build on May 24. My access was revoked during the last quarterly review and has not been reinstated. Please provision access at the earliest as the deployment window is time-bound.',
+    createdDate: '2026-05-23', priority: 'High', status: 'Open',
+    assignedTo: 'Arjun Menon', lastUpdated: '2026-05-23', hasAttachment: false,
     comments: [],
+  },
+  {
+    id: 'TKT-2409', employee: 'Divya Rao', employeeCode: 'EMP012', employeeAvatar: 'DR', department: 'Engineering', role: 'DevOps Engineer', type: 'System Admin',
+    category: 'Sys - User account provisioning', subject: 'Create service account for CI/CD pipeline',
+    description: 'We are setting up a new CI/CD pipeline for the mobile workforce app and require a dedicated service account with scoped permissions for the build agents. The account should have read access to the artifact registry and write access to the staging deployment bucket. Please create the account and share the credentials securely.',
+    createdDate: '2026-05-21', priority: 'Medium', status: 'Pending',
+    assignedTo: 'Dev Team', lastUpdated: '2026-05-22', hasAttachment: true,
+    comments: [
+      { id: 'sc1', author: 'Admin Support', role: 'Admin', text: 'Hi Divya, we have created the service account (svc-cicd-mwa) with the requested scoped permissions. Credentials have been shared via the secure vault — please rotate the token after first use.', timestamp: '2026-05-22T10:15:00' },
+    ],
+  },
+  {
+    id: 'TKT-2408', employee: 'Sanjay Gupta', employeeCode: 'EMP013', employeeAvatar: 'SG', department: 'IT Operations', role: 'Network Admin', type: 'System Admin',
+    category: 'Sys - Access management', subject: 'Reset multi-factor authentication for locked account',
+    description: 'My account got locked after multiple failed MFA attempts following a phone reset. I am unable to authenticate into any internal systems. Please reset my MFA enrollment so I can re-register the authenticator app.',
+    createdDate: '2026-05-19', priority: 'Critical', status: 'Resolved',
+    assignedTo: 'Arjun Menon', lastUpdated: '2026-05-20', hasAttachment: false,
+    comments: [
+      { id: 'sc2', author: 'Arjun Menon', role: 'Admin', text: 'Hi Sanjay, your MFA enrollment has been reset. Please re-register your authenticator app from the self-service portal within 24 hours.', timestamp: '2026-05-19T15:40:00' },
+      { id: 'sc3', author: 'Sanjay Gupta', role: 'Employee', text: 'Re-registered successfully, thanks for the quick turnaround!', timestamp: '2026-05-20T09:05:00' },
+    ],
+  },
+  {
+    id: 'TKT-2404', employee: 'Neha Kapoor', employeeCode: 'EMP014', employeeAvatar: 'NK', department: 'Engineering', role: 'Backend Developer', type: 'System Admin',
+    category: 'Sys - Software installation', subject: 'Install Docker and Kubernetes CLI on dev workstation',
+    description: 'I need Docker Desktop and the Kubernetes CLI (kubectl) installed on my development workstation to work on the containerization tasks for the new microservices. Admin rights are required for the installation.',
+    createdDate: '2026-05-10', priority: 'Medium', status: 'Closed',
+    assignedTo: 'Dev Team', lastUpdated: '2026-05-13', hasAttachment: false,
+    comments: [
+      { id: 'sc4', author: 'Admin Support', role: 'Admin', text: 'Hi Neha, Docker Desktop and kubectl have been installed and configured on your workstation. Please restart the machine to complete setup.', timestamp: '2026-05-11T12:00:00' },
+      { id: 'sc5', author: 'Admin Support', role: 'Admin', text: '[Ticket Closed] Installation verified and working. Closing this ticket.', timestamp: '2026-05-13T10:30:00' },
+    ],
   },
   {
     id: 'TKT-2402', employee: 'Nikhil Desai', employeeCode: 'EMP010', employeeAvatar: 'ND', department: 'Product', role: 'Product Manager', type: 'Project Allocation',
@@ -66,14 +97,6 @@ const TICKETS: AdminTicketRecord[] = [
     description: 'Three new team members have been allocated to the Q2 initiative starting May 23. They require system access setup, project documentation, and initial onboarding sessions scheduled. Please coordinate with HR and the IT team for smooth onboarding.',
     createdDate: '2026-05-21', priority: 'Medium', status: 'Open',
     assignedTo: 'Raj Kumar', lastUpdated: '2026-05-21', hasAttachment: false,
-    comments: [],
-  },
-  {
-    id: 'TKT-2401', employee: 'Sarah Johnson', employeeCode: 'EMP001', employeeAvatar: 'SJ', department: 'Engineering', role: 'Senior Developer', type: 'IT & Admin',
-    category: 'IT - Hardware related queries', subject: 'Laptop not connecting to corporate VPN',
-    description: 'My laptop has been unable to connect to the corporate VPN for the past 3 days. I have tried reinstalling the Cisco AnyConnect client and resetting credentials, but the issue persists. Error code: VPN_AUTH_FAILED. This is blocking access to all internal tools and repositories.',
-    createdDate: '2026-05-20', priority: 'High', status: 'Pending',
-    assignedTo: 'Arjun Menon', lastUpdated: '2026-05-21', hasAttachment: true,
     comments: [],
   },
   {
@@ -85,16 +108,6 @@ const TICKETS: AdminTicketRecord[] = [
     comments: [
       { id: 'c1', author: 'Priya Mehta', role: 'Admin', text: 'Hi Ravi, I have updated your emergency contacts in the HRMS system. Primary: Anitha Kumar (+91 98765 43210), Secondary: Spouse details added. Please log in and verify the changes.', timestamp: '2026-05-19T10:30:00' },
       { id: 'c2', author: 'Ravi Kumar', role: 'Employee', text: 'Thank you Priya! I verified the changes and everything looks correct.', timestamp: '2026-05-20T09:15:00' },
-    ],
-  },
-  {
-    id: 'TKT-2395', employee: 'Meera Pillai', employeeCode: 'EMP003', employeeAvatar: 'MP', department: 'Finance', role: 'Finance Manager', type: 'IT & Admin',
-    category: 'IT - Software related queries', subject: 'Unable to access HRMS portal — persistent login error',
-    description: 'I have been unable to log into the HRMS portal since 16 May 2026. After entering credentials the system shows a loading spinner for approximately 30 seconds and then displays a blank white screen. I have reproduced the issue on Chrome, Firefox and Edge browsers across both my laptop and mobile. Clearing cache and cookies has not resolved it.',
-    createdDate: '2026-05-16', priority: 'Critical', status: 'Pending',
-    assignedTo: 'Dev Team', lastUpdated: '2026-05-21', hasAttachment: true,
-    comments: [
-      { id: 'c3', author: 'Admin Support', role: 'Admin', text: 'Hi Meera, we have escalated this to the Dev Team. We identified a session token issue affecting a subset of users. The team is working on a fix — ETA is 22 May EOD.', timestamp: '2026-05-17T14:00:00' },
     ],
   },
   {
@@ -127,17 +140,6 @@ const TICKETS: AdminTicketRecord[] = [
     ],
   },
   {
-    id: 'TKT-2368', employee: 'Sarah Johnson', employeeCode: 'EMP001', employeeAvatar: 'SJ', department: 'Engineering', role: 'Senior Developer', type: 'IT & Admin',
-    category: 'IT - Hardware related queries', subject: 'Request for additional 27-inch monitor for workstation',
-    description: 'My current workstation has a single 24-inch display which significantly limits productivity when working across multiple applications simultaneously. I would like to request an additional 27-inch monitor to improve my workflow efficiency.',
-    createdDate: '2026-04-28', priority: 'Low', status: 'Closed',
-    assignedTo: 'Arjun Menon', lastUpdated: '2026-05-02', hasAttachment: false,
-    comments: [
-      { id: 'c7', author: 'Arjun Menon', role: 'Admin', text: 'Hi Sarah, a 27-inch Dell monitor has been allocated for your workstation. Please collect it from the IT store room (Room 204) with this ticket reference.', timestamp: '2026-04-30T13:00:00' },
-      { id: 'c8', author: 'Admin Support', role: 'Admin', text: 'Ticket closed as monitor has been collected and set up. Closing this ticket.', timestamp: '2026-05-02T10:00:00' },
-    ],
-  },
-  {
     id: 'TKT-2361', employee: 'Kiran Babu', employeeCode: 'EMP007', employeeAvatar: 'KB', department: 'Finance', role: 'Finance Analyst', type: 'HR',
     category: 'HR - Leave related queries', subject: 'April 2026 salary slip not received via email',
     description: 'I have not received my April 2026 salary slip via email. The slip is typically dispatched on the 5th of the following month but as of April 22 it has not arrived. I have checked my spam and junk folders thoroughly with no result. Please resend the April 2026 salary slip to my registered email address.',
@@ -145,16 +147,6 @@ const TICKETS: AdminTicketRecord[] = [
     assignedTo: 'Sunita Rao', lastUpdated: '2026-04-24', hasAttachment: false,
     comments: [
       { id: 'c9', author: 'Sunita Rao', role: 'Admin', text: 'Hi Kiran, we have resent your April 2026 salary slip to your registered email address. If you still don\'t receive it within 30 minutes, please let us know.', timestamp: '2026-04-23T09:30:00' },
-    ],
-  },
-  {
-    id: 'TKT-2354', employee: 'Pooja Iyer', employeeCode: 'EMP008', employeeAvatar: 'PI', department: 'Operations', role: 'Operations Coordinator', type: 'IT & Admin',
-    category: 'IT - Hardware related queries', subject: 'Attendance not syncing — biometric data missing for 3 days',
-    description: 'My attendance for May 14, 15, and 16 has not been recorded in the HRMS portal despite using the biometric scanner each day. I have the physical tokens as proof. This may affect my leave balance and payroll calculations.',
-    createdDate: '2026-05-17', priority: 'High', status: 'Pending',
-    assignedTo: 'Dev Team', lastUpdated: '2026-05-20', hasAttachment: true,
-    comments: [
-      { id: 'c10', author: 'Admin Support', role: 'Admin', text: 'Hi Pooja, we have raised this with the biometric sync team. Manual entries for May 14–16 have been added as a temporary fix. The root cause is being investigated.', timestamp: '2026-05-18T11:00:00' },
     ],
   },
 ]
@@ -174,12 +166,17 @@ const PRIORITY_STYLE: Record<Priority, { bg: string; color: string; dot: string;
 }
 
 const CAT_BADGE: Record<string, { bg: string; color: string }> = {
-  'IT - Hardware related queries':      { bg: 'rgba(99,102,241,0.10)',  color: '#5B5FDE' },
-  'IT - Software related queries':      { bg: 'rgba(99,102,241,0.10)',  color: '#5B5FDE' },
+  'Sys - Hardware related queries':      { bg: 'rgba(99,102,241,0.10)',  color: '#5B5FDE' },
+  'Sys - Software related queries':      { bg: 'rgba(99,102,241,0.10)',  color: '#5B5FDE' },
   'HR - Profile update':                { bg: 'rgba(14,168,106,0.10)',  color: '#0A7040' },
   'HR - Leave related queries':         { bg: 'rgba(14,168,106,0.10)',  color: '#0A7040' },
   'Fin - Salary A/c opening/conversion': { bg: 'rgba(245,158,11,0.10)', color: '#B45309' },
   'PA–Addition/Deletion of Resource':   { bg: 'rgba(124,58,237,0.10)',  color: '#7C3AED' },
+  'Sys - Server access request':        { bg: 'rgba(13,148,136,0.10)',  color: '#0D9488' },
+  'Sys - User account provisioning':    { bg: 'rgba(13,148,136,0.10)',  color: '#0D9488' },
+  'Sys - Access management':            { bg: 'rgba(13,148,136,0.10)',  color: '#0D9488' },
+  'Sys - Software installation':        { bg: 'rgba(13,148,136,0.10)',  color: '#0D9488' },
+  'Sys - Backup & recovery':            { bg: 'rgba(13,148,136,0.10)',  color: '#0D9488' },
 }
 
 const AVATAR_URL: Record<string, string> = {
@@ -191,6 +188,11 @@ const AVATAR_URL: Record<string, string> = {
   'Vikram Sharma': 'https://i.pravatar.cc/40?img=11',
   'Kiran Babu':    'https://i.pravatar.cc/40?img=13',
   'Pooja Iyer':    'https://i.pravatar.cc/40?img=15',
+  'Rahul Verma':   'https://i.pravatar.cc/40?img=17',
+  'Divya Rao':     'https://i.pravatar.cc/40?img=19',
+  'Sanjay Gupta':  'https://i.pravatar.cc/40?img=12',
+  'Neha Kapoor':   'https://i.pravatar.cc/40?img=20',
+  'Arun Prasad':   'https://i.pravatar.cc/40?img=33',
 }
 
 const SUPPORT_TEAM: { name: string; role: string }[] = [
@@ -240,17 +242,25 @@ function EmployeeAvatar({ name, size = 32 }: { name: string; size?: number }) {
 }
 
 // ── Main Component ─────────────────────────────────────────────────────────────
-export default function AdminTicketsPage() {
+export default function AdminTicketsPage({ allowedTypes }: { allowedTypes?: string[] } = {}) {
+  // Restrict the ticket set + type filter (e.g. System Admin sees only System Admin tickets)
+  const visibleTypes = allowedTypes
+    ? TYPES.filter(t => allowedTypes.includes(t.id))
+    : TYPES
+  const initialTickets = allowedTypes
+    ? TICKETS.filter(t => allowedTypes.includes(t.type))
+    : TICKETS
+
   // ── List state ──
   const [view,           setView]           = useState<View>('list')
-  const [activeType, setActiveType] = useState('All')
+  const [activeType, setActiveType] = useState(allowedTypes && allowedTypes.length ? allowedTypes[0] : 'All')
   const [searchQuery,    setSearchQuery]    = useState('')
   const [statusFilter,   setStatusFilter]   = useState<TStatus | 'All'>('All')
   const [selectedTicket, setSelectedTicket] = useState<AdminTicketRecord | null>(null)
   const [catDropOpen,    setCatDropOpen]    = useState(false)
 
   // ── Detail state ──
-  const [tickets,          setTickets]          = useState<AdminTicketRecord[]>(TICKETS)
+  const [tickets,          setTickets]          = useState<AdminTicketRecord[]>(initialTickets)
   const [newStatus,        setNewStatus]         = useState<TStatus>('Open')
   const [responseText,     setResponseText]      = useState('')
   const [responseLoading,  setResponseLoading]   = useState(false)
@@ -459,7 +469,7 @@ export default function AdminTicketsPage() {
               })()}
               {catDropOpen && (
                 <div style={{ position: 'absolute', top: 'calc(100% + 7px)', left: 0, minWidth: 238, background: '#fff', border: `1px solid ${C.border}`, borderRadius: 15, boxShadow: '0 10px 36px rgba(28,32,53,0.13)', zIndex: 200, padding: '7px' }}>
-                  {TYPES.map(typ => {
+                  {visibleTypes.map(typ => {
                     const TypIcon  = typ.Icon
                     const isActive = activeType === typ.id
                     const count    = typeCount(typ.id)
@@ -917,8 +927,8 @@ export default function AdminTicketsPage() {
                   </div>
                 </div>
 
-                {/* Assign Ticket — only for Open status */}
-                {t.status === 'Open' && (
+                {/* Assign Ticket — only for Open status (hidden in restricted / System Admin view) */}
+                {!allowedTypes && t.status === 'Open' && (
                   <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden' }}>
                     <div style={{ padding: '14px 18px', borderBottom: `1px solid ${C.border}`, background: '#FAFBFE' }}>
                       <div className="flex items-center gap-2">

@@ -1,11 +1,17 @@
 import { useState } from 'react'
 import {
   Eye, EyeOff, Mail, Lock, ArrowRight,
-  User, Users, Building2,
+  User, Users, Building2, ShieldCheck,
   CheckCircle2,
 } from 'lucide-react'
 
-type Role = 'employee' | 'manager' | 'admin'
+type Role = 'employee' | 'manager' | 'admin' | 'sysadmin'
+
+interface RoleTheme {
+  badgeBg: string; badgeText: string
+  hintBg: string; hintBorder: string; hintTitle: string
+  featIcon: string; featText: string
+}
 
 interface RoleConfig {
   label: string
@@ -19,6 +25,7 @@ interface RoleConfig {
   features: string[]
   accentLight: string
   accentText: string
+  theme: RoleTheme
 }
 
 const ROLES: Record<Role, RoleConfig> = {
@@ -33,6 +40,7 @@ const ROLES: Record<Role, RoleConfig> = {
     features: ['Daily Task Management', 'Timesheet Tracking', 'Team Collaboration'],
     accentLight: 'bg-blue-50',
     accentText: 'text-blue-600',
+    theme: { badgeBg: '#EFF6FF', badgeText: '#2563EB', hintBg: '#EFF6FF', hintBorder: '#DBEAFE', hintTitle: '#1D4ED8', featIcon: '#2563EB', featText: '#1E40AF' },
   },
   manager: {
     label: 'Project Manager',
@@ -45,6 +53,7 @@ const ROLES: Record<Role, RoleConfig> = {
     features: ['Project Oversight', 'Resource Planning', 'Team Analytics'],
     accentLight: 'bg-amber-50',
     accentText: 'text-amber-600',
+    theme: { badgeBg: '#FFFBEB', badgeText: '#D97706', hintBg: '#FFFBEB', hintBorder: '#FDE68A', hintTitle: '#B45309', featIcon: '#D97706', featText: '#92400E' },
   },
   admin: {
     label: 'Company Admin',
@@ -57,10 +66,24 @@ const ROLES: Record<Role, RoleConfig> = {
     features: ['Workforce Analytics', 'Role Management', 'Company Settings'],
     accentLight: 'bg-violet-50',
     accentText: 'text-violet-600',
+    theme: { badgeBg: '#F5F3FF', badgeText: '#7C3AED', hintBg: '#F5F3FF', hintBorder: '#DDD6FE', hintTitle: '#6D28D9', featIcon: '#7C3AED', featText: '#4C1D95' },
+  },
+  sysadmin: {
+    label: 'System Admin',
+    shortLabel: 'Sys Admin',
+    description: 'Employee workspace plus ticket & asset management',
+    emailLabel: 'System Admin Email',
+    emailPlaceholder: 'sysadmin@yourcompany.com',
+    greeting: 'System Admin Access',
+    Icon: ShieldCheck,
+    features: ['All Employee Features', 'Ticket Management', 'Asset Management'],
+    accentLight: 'bg-emerald-50',
+    accentText: 'text-emerald-600',
+    theme: { badgeBg: '#ECFDF5', badgeText: '#059669', hintBg: '#ECFDF5', hintBorder: '#A7F3D0', hintTitle: '#047857', featIcon: '#059669', featText: '#065F46' },
   },
 }
 
-const ROLE_ORDER: Role[] = ['employee', 'manager', 'admin']
+const ROLE_ORDER: Role[] = ['employee', 'manager', 'admin', 'sysadmin']
 
 const BRAND = {
   navy: '#1C2035',
@@ -313,8 +336,8 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
               <div
                 className="absolute bottom-0 h-[2px] transition-all duration-300 ease-out"
                 style={{
-                  width: `${100 / 3}%`,
-                  left: `${(roleIndex * 100) / 3}%`,
+                  width: `${100 / ROLE_ORDER.length}%`,
+                  left: `${(roleIndex * 100) / ROLE_ORDER.length}%`,
                   background: `linear-gradient(90deg, ${BRAND.navy}, ${BRAND.navyLight})`,
                   borderRadius: '2px 2px 0 0',
                 }}
@@ -350,18 +373,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
                 <div className="flex items-center gap-2 mb-3">
                   <span
                     className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full"
-                    style={{
-                      background: activeRole === 'employee'
-                        ? '#EFF6FF'
-                        : activeRole === 'manager'
-                        ? '#FFFBEB'
-                        : '#F5F3FF',
-                      color: activeRole === 'employee'
-                        ? '#2563EB'
-                        : activeRole === 'manager'
-                        ? '#D97706'
-                        : '#7C3AED',
-                    }}
+                    style={{ background: config.theme.badgeBg, color: config.theme.badgeText }}
                   >
                     <config.Icon size={11} strokeWidth={2.5} />
                     {config.label}
@@ -571,30 +583,11 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
               {/* Role-specific features hint */}
               <div
                 className="mt-6 rounded-xl px-4 py-3"
-                style={{
-                  background: activeRole === 'employee'
-                    ? '#EFF6FF'
-                    : activeRole === 'manager'
-                    ? '#FFFBEB'
-                    : '#F5F3FF',
-                  border: `1px solid ${
-                    activeRole === 'employee'
-                      ? '#DBEAFE'
-                      : activeRole === 'manager'
-                      ? '#FDE68A'
-                      : '#DDD6FE'
-                  }`,
-                }}
+                style={{ background: config.theme.hintBg, border: `1px solid ${config.theme.hintBorder}` }}
               >
                 <div
                   className="text-xs font-semibold mb-2"
-                  style={{
-                    color: activeRole === 'employee'
-                      ? '#1D4ED8'
-                      : activeRole === 'manager'
-                      ? '#B45309'
-                      : '#6D28D9',
-                  }}
+                  style={{ color: config.theme.hintTitle }}
                 >
                   {config.label} Access Includes
                 </div>
@@ -603,24 +596,11 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
                     <div key={f} className="flex items-center gap-2">
                       <CheckCircle2
                         size={12}
-                        style={{
-                          color: activeRole === 'employee'
-                            ? '#2563EB'
-                            : activeRole === 'manager'
-                            ? '#D97706'
-                            : '#7C3AED',
-                          flexShrink: 0,
-                        }}
+                        style={{ color: config.theme.featIcon, flexShrink: 0 }}
                       />
                       <span
                         className="text-xs"
-                        style={{
-                          color: activeRole === 'employee'
-                            ? '#1E40AF'
-                            : activeRole === 'manager'
-                            ? '#92400E'
-                            : '#4C1D95',
-                        }}
+                        style={{ color: config.theme.featText }}
                       >
                         {f}
                       </span>

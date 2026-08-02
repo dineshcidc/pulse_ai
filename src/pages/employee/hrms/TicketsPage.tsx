@@ -54,7 +54,7 @@ const CATEGORIES = [
 
 const TICKETS: TicketRecord[] = [
   {
-    id: 'TKT-2407', type: 'IT & Admin', category: 'IT - Software related queries', subject: 'Urgent: Microsoft Teams audio not working',
+    id: 'TKT-2407', type: 'System Admin', category: 'IT - Software related queries', subject: 'Urgent: Microsoft Teams audio not working',
     description: 'I am unable to hear audio or use microphone in Microsoft Teams during meetings. The audio settings show no input/output devices detected. I have tried reinstalling Teams but the issue persists. This is critical as I have client meetings scheduled daily.',
     createdDate: '2026-05-22', priority: 'Critical', status: 'Open',
     assignedTo: '', lastUpdated: '2026-05-22', hasAttachment: false,
@@ -68,7 +68,7 @@ const TICKETS: TicketRecord[] = [
     comments: [],
   },
   {
-    id: 'TKT-2401', type: 'IT & Admin', category: 'IT - Hardware related queries', subject: 'Laptop not connecting to corporate VPN',
+    id: 'TKT-2401', type: 'System Admin', category: 'IT - Hardware related queries', subject: 'Laptop not connecting to corporate VPN',
     description: 'My laptop has been unable to connect to the corporate VPN for the past 3 days. I have tried reinstalling the Cisco AnyConnect client and resetting credentials, but the issue persists. Error code: VPN_AUTH_FAILED. This is blocking access to all internal tools and repositories.',
     createdDate: '2026-05-20', priority: 'High', status: 'Pending',
     assignedTo: 'Arjun Menon', lastUpdated: '2026-05-21', hasAttachment: true,
@@ -85,7 +85,7 @@ const TICKETS: TicketRecord[] = [
     ],
   },
   {
-    id: 'TKT-2395', type: 'IT & Admin', category: 'IT - Software related queries', subject: 'Unable to access HRMS portal — persistent login error',
+    id: 'TKT-2395', type: 'System Admin', category: 'IT - Software related queries', subject: 'Unable to access HRMS portal — persistent login error',
     description: 'I have been unable to log into the HRMS portal since 16 May 2026. After entering credentials the system shows a loading spinner for approximately 30 seconds and then displays a blank white screen. I have reproduced the issue on Chrome, Firefox and Edge browsers across both my laptop and mobile. Clearing cache and cookies has not resolved it.',
     createdDate: '2026-05-16', priority: 'Critical', status: 'Pending',
     assignedTo: 'Dev Team', lastUpdated: '2026-05-21', hasAttachment: true,
@@ -121,7 +121,7 @@ const TICKETS: TicketRecord[] = [
     ],
   },
   {
-    id: 'TKT-2368', type: 'IT & Admin', category: 'IT - Hardware related queries', subject: 'Request for additional 27-inch monitor for workstation',
+    id: 'TKT-2368', type: 'System Admin', category: 'IT - Hardware related queries', subject: 'Request for additional 27-inch monitor for workstation',
     description: 'My current workstation has a single 24-inch display which significantly limits productivity when working across multiple applications simultaneously. I would like to request an additional 27-inch monitor to improve my workflow efficiency. I am happy to collect the unit from the IT store room at a convenient time.',
     createdDate: '2026-04-28', priority: 'Low', status: 'Closed',
     assignedTo: 'Arjun Menon', lastUpdated: '2026-05-02', hasAttachment: false,
@@ -537,7 +537,6 @@ export default function TicketsPage() {
                   style={{ ...inputBase, height: 40, paddingRight: 36, paddingLeft: 12, border: `1px solid ${C.border}`, background: '#F7F8FC', appearance: 'none', cursor: 'pointer', color: activeType ? C.navy : C.muted, fontSize: 13.5 }}>
                   <option value="All">All Types</option>
                   <option value="HR">HR</option>
-                  <option value="IT & Admin">IT & Admin</option>
                   <option value="System Admin">System Admin</option>
                   <option value="Finance Manager">Finance Manager</option>
                   <option value="Project Allocation">Project Allocation</option>
@@ -661,7 +660,6 @@ export default function TicketsPage() {
                       style={{ ...inputBase, paddingRight: 36, paddingLeft: 14, border: `1px solid ${C.border}`, background: tkType ? '#F5F6FF' : '#fff', appearance: 'none', cursor: 'pointer', color: tkType ? C.navy : C.muted }}>
                       <option value="">— Select Type —</option>
                       <option value="HR">HR</option>
-                      <option value="IT & Admin">IT & Admin</option>
                       <option value="System Admin">System Admin</option>
                       <option value="Finance Manager">Finance Manager</option>
                       <option value="Project Allocation">Project Allocation</option>
