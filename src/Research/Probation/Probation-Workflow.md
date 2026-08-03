@@ -196,3 +196,71 @@ employee journey end-to-end before development.
 
 Foundation → **Stage 2 (Employee)** → Stage 3 (Manager) → Stage 4 (Admin). Each screen is wired
 into its role's `Sidebar.tsx` menu + dashboard route as it's completed.
+
+---
+
+## ✅ FINAL STATUS — End of build (2026-08-02)
+
+> **The full Probation Period module is BUILT across all three roles.** Prototype is
+> complete and the whole app typechecks clean (`npx tsc -p tsconfig.app.json` → EXIT 0).
+> Use this section on Monday to reconfirm quickly.
+
+### What's done, by stage
+
+| Stage | Role | Screen(s) | Status |
+|---|---|---|---|
+| 1 — Setup | Admin | `src/pages/admin/users/AddEmployeePage.tsx` (Probation section) | ✅ Done |
+| 2 — Self-Assessment | Employee | `src/pages/employee/probation/MyProbationPage.tsx` | ✅ Done |
+| 3 — Manager Assessment | Manager | `TeamProbationPage.tsx` + `ManagerReviewPage.tsx` + `ManagerProbationModule.tsx` | ✅ Done |
+| 4 — Final Decision | Admin | `AdminProbationPage.tsx` + `AdminDecisionPage.tsx` + `AdminProbationModule.tsx` | ✅ Done |
+| 5 — Settings (config) | Admin | `src/pages/admin/probation/ProbationSettingsPage.tsx` | ✅ Done |
+
+### File map (all under `src/pages/`)
+
+- **Shared foundation:** `employee/probation/probationShared.tsx` — status lifecycle + `STATUS_META`,
+  `ProbationCase` model, `StatusPill`, `Avatar`, `EmployeeDetailHeader`, `DaysRemainingChip`,
+  `QuestionCard` + `SELF_ASSESSMENT_QUESTIONS`, `SectionCard`, `StatBox`, `ReadField`,
+  `DemoPhaseSwitcher`, and the shared **`ManagerAssessmentForm`** (+ `StarRating`, `COMPETENCIES`,
+  `RECOMMENDATIONS`, `ManagerAssessmentFormValue`). Mock data: `MOCK_MY_CASE`, `MOCK_TEAM_CASES`,
+  `MOCK_ALL_CASES` (spans every status).
+- **Employee:** `employee/probation/MyProbationPage.tsx` — 6 demo phases via `DemoPhaseSwitcher`.
+- **Manager:** `manager/probation/` — list, review detail, module switcher.
+- **Admin:** `admin/probation/` — list (`AdminProbationPage`), decision detail (`AdminDecisionPage`,
+  3 tabs), module switcher (`AdminProbationModule`), settings (`ProbationSettingsPage`).
+
+### Menus (wired)
+
+- **Employee** → `Probation` (MANAGE section).
+- **Manager** → `Team Probation` (TEAM section).
+- **Admin** → `PROBATION` section → **Probation** group → children **Probation Cases** +
+  **Probation Settings**.
+
+### Key decisions locked in
+
+1. **Manager's Assessment is ONE shared form** — `ManagerAssessmentForm` is used by the Manager
+   (editable) and by the Admin's Tab 2 (read-only / filled), so the two never drift. Added optional
+   `competencies` to the `ManagerAssessment` model and filled all mock assessments.
+2. **Admin decision detail** mirrors the Manager's tabbed white-card design, with a 3rd
+   **Final Decision** tab: Confirm → `Confirmed`, Extend → reason + new end date → `Ongoing (Extended)`,
+   Terminate → reason → `Terminated`.
+3. **Probation Settings** = **org-level, GLOBAL-ONLY** (no per-employee override), placed under the
+   PROBATION section. **Trimmed to only the Unlock Timing card** (days-before-end stepper that
+   replaces the hardcoded `SELF_ASSESSMENT_WINDOW_DAYS = 15`). No master toggle, no questions editor,
+   no Save button (applies directly) — per the user, the rest is handled directly for now.
+
+### Known prototype limitations (by design — no shared backend)
+
+- The three roles are **separate logins with no shared state**, so each screen owns its status
+  locally and uses a **dummy `DemoPhaseSwitcher`** to walk every phase live.
+- **Probation Settings does not yet feed the live employee screen** — it's a working config UI in
+  local state. When wired to a real backend, the employee page should read the unlock window from
+  here instead of the constant.
+
+### ▶ Monday reconfirm checklist
+
+1. Log in as **Employee** → Probation → walk all 6 demo phases.
+2. Log in as **Manager** → Team Probation → open a *Pending Manager Review* case → submit an
+   assessment.
+3. Log in as **Admin** → Probation → Probation Cases → **Decide** on Priya / Sofia / Tariq
+   (Confirm / Extend / Terminate) → check Tab 2 shows the manager's form filled & read-only.
+4. Admin → Probation → **Probation Settings** → adjust the unlock-window stepper.

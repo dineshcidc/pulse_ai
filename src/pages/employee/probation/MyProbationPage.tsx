@@ -45,7 +45,7 @@ function refDateForPhase(endDate: string, phase: Phase): Date {
   return new Date(end.getTime() - back * 86_400_000)
 }
 
-// Mock outcome details as if set by the Admin's final decision (Stage 4).
+// Mock outcome details as if set by the reporting manager's final decision (Stage 3).
 const OUTCOME = {
   confirmedOn:    '2026-08-12',
   extendedOn:     '2026-08-12',
@@ -53,7 +53,6 @@ const OUTCOME = {
   extendReason:   "We'd like to see more consistent, independent ownership of the billing module before confirming. A short extension gives you the runway to demonstrate this — everything else has been strong.",
   terminatedOn:   '2026-08-12',
   terminateReason:'After careful review of the self-assessment and the reporting manager\'s feedback, performance during the probation period did not meet the expectations required for the role, despite the guidance and support provided.',
-  decidedBy:      'HR — Admin',
 }
 
 // ─── Main screen ────────────────────────────────────────────────────────────────
@@ -63,11 +62,11 @@ export default function MyProbationPage() {
   const [phase, setPhase] = useState<Phase>('ongoing')
 
   // Self-assessment form state
-  const [form, setForm] = useState<SelfAssessment>({ performance: '', learnings: '', challenges: '', goalsMet: '' })
+  const [form, setForm] = useState<SelfAssessment>({ assignments: '', achievements: '', trainingNeeds: '', generalFeedback: '' })
   const [submitting, setSubmitting] = useState(false)
 
   const set = (k: keyof SelfAssessment) => (v: string) => setForm(p => ({ ...p, [k]: v }))
-  const formComplete = !!form.performance && !!form.learnings && !!form.challenges && !!form.goalsMet
+  const formComplete = !!form.assignments && !!form.achievements && !!form.trainingNeeds && !!form.generalFeedback
 
   // Extended pushes the end date out; other outcome phases keep the original.
   const effectiveEndDate = phase === 'extended' ? OUTCOME.newEndDate : c.endDate
@@ -93,10 +92,10 @@ export default function MyProbationPage() {
   const submitted: SelfAssessment = formComplete
     ? { ...form, submittedOn: '2026-08-04' }
     : {
-        performance: 'I have consistently met my sprint commitments and improved my code-review turnaround over the last quarter.',
-        learnings: 'Deepened my React + TypeScript skills and learned our CI/CD pipeline end to end.',
-        challenges: 'Ramping up on the legacy billing service took longer than I expected.',
-        goalsMet: 'Shipped the notifications module and reduced its p95 latency by 30%.',
+        assignments: 'Handled sprint feature work on the notifications module and regular code reviews across the team.',
+        achievements: 'Shipped the notifications module and reduced its p95 latency by 30%.',
+        trainingNeeds: 'Would like deeper training on our CI/CD pipeline and the legacy billing service.',
+        generalFeedback: 'Onboarding was smooth; clearer docs on the billing service would help new joiners.',
         submittedOn: '2026-08-04',
       }
 
@@ -261,11 +260,11 @@ export default function MyProbationPage() {
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{ margin: 0, fontSize: 13.5, fontWeight: 700, color: PC.navy }}>Self-assessment submitted</p>
               <p style={{ margin: '3px 0 0', fontSize: 12.5, color: '#8A6212', fontWeight: 500 }}>
-                Submitted on {fmtDate(submitted.submittedOn!)}. It's now with your reporting manager for review.
+                Submitted on {fmtDate(submitted.submittedOn!)}. It's now with your reporting manager for review and decision.
               </p>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, fontSize: 12, fontWeight: 600, color: PC.muted }}>
-              You <ArrowRight size={14} /> <span style={{ color: PC.amber, fontWeight: 700 }}>Manager</span> <ArrowRight size={14} /> Admin
+              You <ArrowRight size={14} /> <span style={{ color: PC.amber, fontWeight: 700 }}>Manager</span>
             </div>
           </div>
 
@@ -311,11 +310,11 @@ export default function MyProbationPage() {
             <StatusPill status="Confirmed" />
           </div>
 
-          <SectionCard icon={<CheckCircle2 size={16} color={PC.green} />} title="Decision Summary" subtitle="Final decision recorded by HR" accent={PC.green}>
+          <SectionCard icon={<CheckCircle2 size={16} color={PC.green} />} title="Decision Summary" subtitle="Final decision recorded by your reporting manager" accent={PC.green}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '18px 28px' }}>
               <ReadField label="Final Decision" value="Confirmed — Permanent" accent={PC.green} />
               <ReadField label="Effective Date" value={fmtDate(OUTCOME.confirmedOn)} accent={PC.green} />
-              <ReadField label="Decided By" value={OUTCOME.decidedBy} accent={PC.green} />
+              <ReadField label="Decided By" value={c.reportingManager} accent={PC.green} />
             </div>
             <div style={{ marginTop: 18, padding: '13px 16px', background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.18)', borderRadius: 11 }}>
               <p style={{ margin: 0, fontSize: 12.5, color: '#0A7B54', fontWeight: 500, lineHeight: 1.55 }}>
@@ -340,20 +339,20 @@ export default function MyProbationPage() {
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{ margin: 0, fontSize: 16, fontWeight: 800, color: PC.navy }}>Your probation has been extended</p>
               <p style={{ margin: '4px 0 0', fontSize: 13, color: '#6D28D9', fontWeight: 500, lineHeight: 1.5 }}>
-                HR has extended your probation period. Your new end date is <strong>{fmtDate(OUTCOME.newEndDate)}</strong> — a fresh self-assessment will open again as it approaches.
+                Your reporting manager has extended your probation period. Your new end date is <strong>{fmtDate(OUTCOME.newEndDate)}</strong> — a fresh self-assessment will open again as it approaches.
               </p>
             </div>
             <StatusPill status="Ongoing (Extended)" />
           </div>
 
-          <SectionCard icon={<CalendarPlus size={16} color="#7C3AED" />} title="Extension Details" subtitle="Recorded by HR's final decision" accent="#7C3AED">
+          <SectionCard icon={<CalendarPlus size={16} color="#7C3AED" />} title="Extension Details" subtitle="Recorded by your reporting manager's decision" accent="#7C3AED">
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '18px 28px', marginBottom: 20 }}>
               <ReadField label="Previous End Date" value={fmtDate(c.endDate)} accent="#7C3AED" />
               <ReadField label="New End Date" value={fmtDate(OUTCOME.newEndDate)} accent="#7C3AED" />
               <ReadField label="Extended On" value={fmtDate(OUTCOME.extendedOn)} accent="#7C3AED" />
             </div>
             <div>
-              <p style={{ margin: '0 0 7px', fontSize: 11, fontWeight: 700, color: '#7C3AED', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Reason from Admin</p>
+              <p style={{ margin: '0 0 7px', fontSize: 11, fontWeight: 700, color: '#7C3AED', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Reason from your Reporting Manager</p>
               <div style={{ padding: '14px 16px', background: 'rgba(124,58,237,0.06)', border: '1px solid rgba(124,58,237,0.18)', borderRadius: 11 }}>
                 <p style={{ margin: 0, fontSize: 13.5, color: PC.navy, fontWeight: 500, lineHeight: 1.65 }}>{OUTCOME.extendReason}</p>
               </div>
@@ -382,14 +381,14 @@ export default function MyProbationPage() {
             <StatusPill status="Terminated" />
           </div>
 
-          <SectionCard icon={<FileText size={16} color={PC.red} />} title="Decision Details" subtitle="Recorded by HR's final decision" accent={PC.red}>
+          <SectionCard icon={<FileText size={16} color={PC.red} />} title="Decision Details" subtitle="Recorded by your reporting manager's decision" accent={PC.red}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '18px 28px', marginBottom: 20 }}>
               <ReadField label="Final Decision" value="Terminated" accent={PC.red} />
               <ReadField label="Effective Date" value={fmtDate(OUTCOME.terminatedOn)} accent={PC.red} />
-              <ReadField label="Decided By" value={OUTCOME.decidedBy} accent={PC.red} />
+              <ReadField label="Decided By" value={c.reportingManager} accent={PC.red} />
             </div>
             <div>
-              <p style={{ margin: '0 0 7px', fontSize: 11, fontWeight: 700, color: PC.red, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Reason from Admin</p>
+              <p style={{ margin: '0 0 7px', fontSize: 11, fontWeight: 700, color: PC.red, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Reason from your Reporting Manager</p>
               <div style={{ padding: '14px 16px', background: 'rgba(232,72,85,0.05)', border: '1px solid rgba(232,72,85,0.18)', borderRadius: 11 }}>
                 <p style={{ margin: 0, fontSize: 13.5, color: PC.navy, fontWeight: 500, lineHeight: 1.65 }}>{OUTCOME.terminateReason}</p>
               </div>

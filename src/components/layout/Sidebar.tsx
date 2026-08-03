@@ -332,7 +332,6 @@ function buildAdminNav(): NavSection[] {
           id: 'probation', label: 'Probation', Icon: ShieldCheck,
           children: [
             { id: 'probation-cases',    label: 'Probation Cases'    },
-            { id: 'probation-settings', label: 'Probation Settings' },
           ],
         },
       ],

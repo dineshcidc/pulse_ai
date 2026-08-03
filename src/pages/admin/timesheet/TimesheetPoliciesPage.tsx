@@ -297,23 +297,15 @@ export default function TimesheetPoliciesPage() {
         <AccordionSection
           icon={TrendingUp}
           title="Overtime Rules"
-          sub="Daily and weekly overtime thresholds with weekend and holiday controls"
+          sub="Weekend and holiday logging controls"
           accent="#D97706"
           accentBg="rgba(217,119,6,0.05)"
           isOpen={open.has('overtime')}
           onToggle={() => toggle('overtime')}
           chips={
-            <Chip label={`OT > ${policy.overtimeThresholdDay}h / day`} />
+            <Chip label={policy.weekendLogging ? 'Weekend logging on' : 'Weekend logging off'} />
           }
         >
-          <PolicyRow label="Daily Overtime After" hint="Hours beyond this threshold in one day are marked overtime">
-            <NumInput value={policy.overtimeThresholdDay} onChange={v => set('overtimeThresholdDay', v)} min={policy.stdHoursPerDay} max={24} unit="hrs" />
-          </PolicyRow>
-
-          <PolicyRow label="Weekly Overtime After" hint="Total hours beyond this across the full work week are flagged">
-            <NumInput value={policy.overtimeThresholdWeek} onChange={v => set('overtimeThresholdWeek', v)} min={30} max={84} unit="hrs" />
-          </PolicyRow>
-
           <PolicyRow label="Allow Weekend Logging" hint="Employees can log hours on Saturday and Sunday">
             <Toggle checked={policy.weekendLogging} onChange={v => set('weekendLogging', v)} />
           </PolicyRow>

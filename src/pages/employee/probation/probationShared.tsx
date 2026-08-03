@@ -5,8 +5,11 @@
  * (Employee → Manager → Admin). Everything on every probation screen is driven by
  * the case STATUS, whose lifecycle lives here:
  *
- *   Ongoing → Pending Manager Review → Pending Admin Decision
+ *   Ongoing → Pending Manager Review
  *           → ( Confirmed | Terminated | Ongoing (Extended) ⟳ )
+ *
+ * The reporting MANAGER makes the final decision (Confirm / Extend / Terminate);
+ * Admin only monitors — it has no decision actions.
  *
  * Design note: this is a prototype. Probation and Offboarding are SEPARATE modules;
  * we only borrow Offboarding's house style, not its flow.
@@ -14,7 +17,7 @@
 
 import { useState } from 'react'
 import type React from 'react'
-import { CheckCircle2, Clock3, UserCheck, ShieldCheck, XCircle, RefreshCw, Star } from 'lucide-react'
+import { CheckCircle2, Clock3, UserCheck, XCircle, RefreshCw, Star, CalendarClock, ArrowRight } from 'lucide-react'
 
 // ─── Palette (matches the rest of the app) ──────────────────────────────────────
 
@@ -37,7 +40,6 @@ export const PC = {
 export type ProbationStatus =
   | 'Ongoing'
   | 'Pending Manager Review'
-  | 'Pending Admin Decision'
   | 'Confirmed'
   | 'Terminated'
   | 'Ongoing (Extended)'
@@ -63,13 +65,7 @@ export const STATUS_META: Record<ProbationStatus, StatusMeta> = {
     label: 'Pending Manager Review',
     color: PC.amber, bg: 'rgba(245,158,11,0.10)', border: 'rgba(245,158,11,0.22)',
     Icon: UserCheck,
-    hint: 'Employee submitted self-assessment — awaiting the reporting manager.',
-  },
-  'Pending Admin Decision': {
-    label: 'Pending Admin Decision',
-    color: PC.indigo, bg: 'rgba(99,102,241,0.10)', border: 'rgba(99,102,241,0.22)',
-    Icon: ShieldCheck,
-    hint: 'Manager submitted assessment — awaiting the final admin decision.',
+    hint: 'Employee submitted self-assessment — awaiting the reporting manager\'s review and decision.',
   },
   'Confirmed': {
     label: 'Confirmed',
@@ -95,32 +91,28 @@ export const STATUS_META: Record<ProbationStatus, StatusMeta> = {
 
 /** Employee's self-assessment (Stage 2). */
 export interface SelfAssessment {
-  performance: string      // How they rate their own performance so far
-  learnings: string        // Key learnings / skills gained
-  challenges: string       // Challenges faced
-  goalsMet: string         // Goals achieved during probation
+  assignments: string      // Assignments handled during probation
+  achievements: string     // Significant achievements
+  trainingNeeds: string    // Training and development needs
+  generalFeedback: string  // General feedback on any issues relevant to company
   submittedOn?: string     // ISO date
 }
 
-/** Manager's assessment + recommendation (Stage 3). */
-export type Recommendation = 'Confirm' | 'Extend' | 'Terminate'
+/**
+ * Manager's assessment + final decision (Stage 3).
+ * The manager now makes the BINDING decision — Confirm / Extend / Terminate —
+ * and captures the extra details themselves (Extend → reason + new end date;
+ * Terminate → reason). Admin no longer decides; it only monitors.
+ */
+export type Decision = 'Confirm' | 'Extend' | 'Terminate'
 export interface ManagerAssessment {
   rating: number           // 1–5
   competencies?: Record<string, number>  // per-competency 1–5 (keys = COMPETENCIES)
-  strengths: string
-  areasToImprove: string
   feedback: string
-  recommendation: Recommendation
-  submittedOn?: string
-}
-
-/** Admin's final decision (Stage 4). */
-export type Decision = 'Confirm' | 'Extend' | 'Terminate'
-export interface AdminDecision {
-  decision: Decision
+  decision: Decision       // the binding final decision
   reason?: string          // required for Extend / Terminate
   newEndDate?: string      // required for Extend
-  decidedOn?: string
+  submittedOn?: string     // = the date the decision was recorded
 }
 
 /** One Probation Case — the record that travels Employee → Manager → Admin. */
@@ -142,7 +134,6 @@ export interface ProbationCase {
   status: ProbationStatus
   self?: SelfAssessment
   managerAssessment?: ManagerAssessment
-  adminDecision?: AdminDecision
   extensionCount?: number
 }
 
@@ -360,10 +351,10 @@ export function StatBox({ icon, label, value, accent }: { icon: React.ReactNode;
 
 /** The four employee self-assessment questions — the single source every screen renders from. */
 export const SELF_ASSESSMENT_QUESTIONS: { key: keyof SelfAssessment; label: string; placeholder: string }[] = [
-  { key: 'performance', label: 'How would you rate your overall performance during probation?', placeholder: 'Summarise your performance, ownership, and impact so far…' },
-  { key: 'learnings',   label: 'Key learnings & skills gained', placeholder: 'What did you learn or improve at during this period?' },
-  { key: 'challenges',  label: 'Challenges faced', placeholder: 'What was difficult, and how did you handle it?' },
-  { key: 'goalsMet',    label: 'Goals achieved', placeholder: 'Which goals or deliverables did you complete?' },
+  { key: 'assignments',     label: 'Assignments handled', placeholder: 'Summarise the assignments and work you handled during probation…' },
+  { key: 'achievements',    label: 'Significant achievements', placeholder: 'What are the notable achievements you delivered in this period?' },
+  { key: 'trainingNeeds',   label: 'Training and development needs', placeholder: 'What training or skills would help you grow in your role?' },
+  { key: 'generalFeedback', label: 'General feedback on any issues relevant to company', placeholder: 'Any general feedback or issues you would like to raise…' },
 ]
 
 /**
@@ -414,21 +405,21 @@ export function QuestionCard({
 /** The four competencies the manager star-rates. Shared vocabulary. */
 export const COMPETENCIES = ['Technical Skills', 'Communication', 'Ownership & Reliability', 'Team Collaboration'] as const
 
-/** The three recommendation / decision options + their look. */
-export const RECOMMENDATIONS: { id: Recommendation; label: string; hint: string; color: string; Icon: React.ElementType }[] = [
-  { id: 'Confirm',   label: 'Confirm',   hint: 'Make permanent',   color: PC.green,  Icon: CheckCircle2 },
-  { id: 'Extend',    label: 'Extend',    hint: 'More time needed',  color: '#7C3AED', Icon: RefreshCw },
-  { id: 'Terminate', label: 'Terminate', hint: 'End employment',    color: PC.red,    Icon: XCircle },
+/** The three final-decision options + their look, and the status each results in. */
+export const DECISIONS: { id: Decision; label: string; hint: string; color: string; Icon: React.ElementType; result: ProbationStatus }[] = [
+  { id: 'Confirm',   label: 'Confirm',   hint: 'Make permanent',   color: PC.green,  Icon: CheckCircle2, result: 'Confirmed' },
+  { id: 'Extend',    label: 'Extend',    hint: 'Give more time',    color: '#7C3AED', Icon: RefreshCw,    result: 'Ongoing (Extended)' },
+  { id: 'Terminate', label: 'Terminate', hint: 'End employment',    color: PC.red,    Icon: XCircle,      result: 'Terminated' },
 ]
 
 /** The full value the manager form edits / the admin views. */
 export interface ManagerAssessmentFormValue {
   rating: number
   competencies: Record<string, number>
-  strengths: string
-  areasToImprove: string
   feedback: string
-  recommendation: Recommendation | null
+  decision: Decision | null
+  reason: string           // used for Extend / Terminate
+  newEndDate: string       // used for Extend
 }
 
 /** Star rating — interactive when `onChange` is given, static when `readOnly`. */
@@ -481,12 +472,15 @@ function AssessmentTextArea({ label, placeholder, value, onChange, readOnly }: {
  * manager (editable) and the admin (read-only / filled), so they never drift.
  */
 export function ManagerAssessmentForm({
-  value, onChange, readOnly,
+  value, onChange, readOnly, endDate,
 }: {
   value: ManagerAssessmentFormValue
   onChange?: (patch: Partial<ManagerAssessmentFormValue>) => void
   readOnly?: boolean
+  /** The case's current end date — shown next to the new end date when Extending. */
+  endDate?: string
 }) {
+  const chosen = value.decision ? DECISIONS.find(d => d.id === value.decision)! : null
   return (
     <fieldset disabled={readOnly} style={{ border: 'none', margin: 0, padding: 0 }}>
       {/* Overall rating */}
@@ -514,37 +508,76 @@ export function ManagerAssessmentForm({
 
       {/* Text fields */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 20 }}>
-        <AssessmentTextArea label="Strengths" placeholder="What has this employee done well?" value={value.strengths} onChange={v => onChange?.({ strengths: v })} readOnly={readOnly} />
-        <AssessmentTextArea label="Areas to Improve" placeholder="Where should they focus going forward?" value={value.areasToImprove} onChange={v => onChange?.({ areasToImprove: v })} readOnly={readOnly} />
-        <AssessmentTextArea label="Overall Feedback" placeholder="Summary comments to support your recommendation…" value={value.feedback} onChange={v => onChange?.({ feedback: v })} readOnly={readOnly} />
+        <AssessmentTextArea label="Overall Feedback" placeholder="Summary comments to support your decision…" value={value.feedback} onChange={v => onChange?.({ feedback: v })} readOnly={readOnly} />
       </div>
 
-      {/* Recommendation */}
-      <p style={{ margin: '0 0 10px', fontSize: 12.5, fontWeight: 600, color: PC.label }}>Recommendation {!readOnly && <span style={{ color: PC.red }}>*</span>}</p>
+      {/* Final probation status — the manager's binding call */}
+      <p style={{ margin: '0 0 10px', fontSize: 12.5, fontWeight: 600, color: PC.label }}>Final Probation Status {!readOnly && <span style={{ color: PC.red }}>*</span>}</p>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
-        {RECOMMENDATIONS.map(r => {
-          const active = value.recommendation === r.id
-          const Icon = r.Icon
+        {DECISIONS.map(d => {
+          const active = value.decision === d.id
+          const Icon = d.Icon
           return (
             <button
-              key={r.id} type="button" onClick={() => onChange?.({ recommendation: r.id })}
+              key={d.id} type="button"
+              onClick={() => onChange?.(d.id === 'Confirm' ? { decision: d.id, reason: '', newEndDate: '' } : { decision: d.id })}
               style={{
                 display: 'flex', alignItems: 'center', gap: 11, padding: '14px 16px', borderRadius: 12, cursor: readOnly ? 'default' : 'pointer',
-                background: active ? `${r.color}12` : '#fff', border: `1.5px solid ${active ? r.color : PC.border}`,
+                background: active ? `${d.color}12` : '#fff', border: `1.5px solid ${active ? d.color : PC.border}`,
                 textAlign: 'left', fontFamily: fontStack, transition: 'all 0.14s',
               }}
             >
-              <div style={{ width: 34, height: 34, borderRadius: 9, flexShrink: 0, background: active ? r.color : `${r.color}14`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Icon size={17} color={active ? '#fff' : r.color} />
+              <div style={{ width: 34, height: 34, borderRadius: 9, flexShrink: 0, background: active ? d.color : `${d.color}14`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Icon size={17} color={active ? '#fff' : d.color} />
               </div>
               <div>
-                <p style={{ margin: 0, fontSize: 13.5, fontWeight: 700, color: active ? r.color : PC.navy }}>{r.label}</p>
-                <p style={{ margin: '1px 0 0', fontSize: 11.5, color: PC.muted }}>{r.hint}</p>
+                <p style={{ margin: 0, fontSize: 13.5, fontWeight: 700, color: active ? d.color : PC.navy }}>{d.label}</p>
+                <p style={{ margin: '1px 0 0', fontSize: 11.5, color: PC.muted }}>{d.hint}</p>
               </div>
             </button>
           )
         })}
       </div>
+
+      {/* Conditional detail — Extend needs a new end date + reason; Terminate needs a reason. */}
+      {chosen && value.decision !== 'Confirm' && (
+        <div style={{ marginTop: 16, background: `${chosen.color}08`, border: `1px solid ${chosen.color}2E`, borderRadius: 12, padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {value.decision === 'Extend' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+              <div style={{ fontSize: 12.5, color: PC.muted, fontWeight: 500 }}>
+                Current end date: <span style={{ color: PC.label, fontWeight: 700 }}>{endDate ? fmtDate(endDate) : '—'}</span>
+              </div>
+              <ArrowRight size={15} color={PC.muted} />
+              <div>
+                <p style={{ margin: '0 0 6px', fontSize: 12.5, fontWeight: 600, color: PC.label }}>New End Date {!readOnly && <span style={{ color: PC.red }}>*</span>}</p>
+                {readOnly ? (
+                  <p style={{ margin: 0, fontSize: 13.5, fontWeight: 700, color: PC.navy }}>{value.newEndDate ? fmtDate(value.newEndDate) : '—'}</p>
+                ) : (
+                  <div style={{ position: 'relative' }}>
+                    <CalendarClock size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: PC.muted, pointerEvents: 'none' }} />
+                    <input
+                      type="date" value={value.newEndDate} min={endDate}
+                      onChange={e => onChange?.({ newEndDate: e.target.value })}
+                      style={{
+                        height: 40, padding: '0 14px 0 36px', borderRadius: 10, minWidth: 190,
+                        fontFamily: fontStack, fontSize: 13.5, fontWeight: 600, color: PC.navy,
+                        border: `1px solid ${PC.border}`, background: '#fff', outline: 'none',
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          <AssessmentTextArea
+            label={value.decision === 'Extend' ? 'Reason for extension' : 'Reason for termination'}
+            placeholder={value.decision === 'Extend'
+              ? 'Explain why more time is needed and what the employee must demonstrate…'
+              : 'Explain the basis for ending employment at the close of probation…'}
+            value={value.reason} onChange={v => onChange?.({ reason: v })} readOnly={readOnly}
+          />
+        </div>
+      )}
     </fieldset>
   )
 }
@@ -579,10 +612,10 @@ export const MOCK_TEAM_CASES: ProbationCase[] = [
     designation: 'Software Engineer', department: 'Engineering', reportingManager: 'Rahul Verma',
     durationMonths: 6, startDate: '2026-02-10', endDate: '2026-08-10', status: 'Pending Manager Review',
     self: {
-      performance: 'I have consistently delivered my sprint commitments and improved my code-review turnaround.',
-      learnings: 'Deepened my React and TypeScript skills; learned our CI/CD pipeline end to end.',
-      challenges: 'Ramping up on the legacy billing service took longer than expected.',
-      goalsMet: 'Shipped the notifications module and cut its p95 latency by 30%.',
+      assignments: 'Handled sprint feature work on the notifications module and regular code reviews across the team.',
+      achievements: 'Shipped the notifications module and cut its p95 latency by 30%.',
+      trainingNeeds: 'Would like deeper training on our CI/CD pipeline and the legacy billing service.',
+      generalFeedback: 'Onboarding was smooth; clearer docs on the billing service would help new joiners.',
       submittedOn: '2026-07-28',
     },
   },
@@ -596,21 +629,19 @@ export const MOCK_TEAM_CASES: ProbationCase[] = [
     id: 'PRB-1061', empId: 'EMP-4850', name: 'Priya Nair', avatarInitials: 'PN',
     avatarUrl: 'https://randomuser.me/api/portraits/women/44.jpg',
     designation: 'Product Designer', department: 'Design', reportingManager: 'Rahul Verma',
-    durationMonths: 6, startDate: '2026-01-20', endDate: '2026-07-20', status: 'Pending Admin Decision',
+    durationMonths: 6, startDate: '2026-01-20', endDate: '2026-07-20', status: 'Confirmed',
     self: {
-      performance: 'Owned the design system refresh and contributed across three product areas.',
-      learnings: 'Grew in cross-functional facilitation and design-ops tooling.',
-      challenges: 'Balancing BAU design requests with the system refresh.',
-      goalsMet: 'Delivered the refreshed component library adopted by all squads.',
+      assignments: 'Owned the design system refresh and supported three product areas with UI work.',
+      achievements: 'Delivered the refreshed component library now adopted by all squads.',
+      trainingNeeds: 'Keen to grow in cross-functional facilitation and design-ops tooling.',
+      generalFeedback: 'Balancing BAU design requests with the refresh was tough — a clearer intake process would help.',
       submittedOn: '2026-07-05',
     },
     managerAssessment: {
       rating: 5,
       competencies: { 'Technical Skills': 5, 'Communication': 5, 'Ownership & Reliability': 5, 'Team Collaboration': 4 },
-      strengths: 'Exceptional ownership and craft; strong collaborator.',
-      areasToImprove: 'Could delegate more of the smaller requests.',
-      feedback: 'A clear asset to the team — ready for confirmation.',
-      recommendation: 'Confirm', submittedOn: '2026-07-10',
+      feedback: 'A clear asset to the team — confirming as permanent.',
+      decision: 'Confirm', submittedOn: '2026-07-10',
     },
   },
   {
@@ -619,10 +650,10 @@ export const MOCK_TEAM_CASES: ProbationCase[] = [
     designation: 'Backend Engineer', department: 'Engineering', reportingManager: 'Rahul Verma',
     durationMonths: 6, startDate: '2026-02-18', endDate: '2026-08-18', status: 'Pending Manager Review',
     self: {
-      performance: 'Took ownership of the payments service and kept our on-call incidents low.',
-      learnings: 'Grew a lot in distributed systems and database performance tuning.',
-      challenges: 'Coordinating releases across three dependent teams.',
-      goalsMet: 'Migrated the payments DB with zero downtime and added full test coverage.',
+      assignments: 'Took ownership of the payments service and its on-call rota.',
+      achievements: 'Migrated the payments DB with zero downtime and added full test coverage.',
+      trainingNeeds: 'Would benefit from advanced training in distributed systems and DB performance tuning.',
+      generalFeedback: 'Coordinating releases across three dependent teams needs a clearer release calendar.',
       submittedOn: '2026-08-01',
     },
   },
@@ -638,21 +669,61 @@ export const MOCK_TEAM_CASES: ProbationCase[] = [
     designation: 'Frontend Engineer', department: 'Engineering', reportingManager: 'Rahul Verma',
     durationMonths: 6, startDate: '2025-12-15', endDate: '2026-06-15', status: 'Confirmed',
     self: {
-      performance: 'Delivered the customer dashboard revamp and mentored two interns.',
-      learnings: 'Levelled up on accessibility and design-system contribution.',
-      challenges: 'Balancing feature work with tech-debt cleanup.',
-      goalsMet: 'Shipped the revamp on time and improved Lighthouse scores across the board.',
+      assignments: 'Delivered the customer dashboard revamp and mentored two interns.',
+      achievements: 'Shipped the revamp on time and improved Lighthouse scores across the board.',
+      trainingNeeds: 'Want to go deeper on accessibility and design-system contribution.',
+      generalFeedback: 'Balancing feature work with tech-debt cleanup was a recurring challenge.',
       submittedOn: '2026-06-02',
     },
     managerAssessment: {
       rating: 4,
       competencies: { 'Technical Skills': 4, 'Communication': 4, 'Ownership & Reliability': 5, 'Team Collaboration': 4 },
-      strengths: 'Reliable, high-quality delivery and a great mentor.',
-      areasToImprove: 'Could be more vocal in planning discussions.',
-      feedback: 'Strong performer — recommend confirmation.',
-      recommendation: 'Confirm', submittedOn: '2026-06-06',
+      feedback: 'Strong performer — confirmed as permanent.',
+      decision: 'Confirm', submittedOn: '2026-06-06',
     },
-    adminDecision: { decision: 'Confirm', decidedOn: '2026-06-11' },
+  },
+  {
+    id: 'PRB-1097', empId: 'EMP-4895', name: 'Meera Joshi', avatarInitials: 'MJ',
+    avatarUrl: 'https://randomuser.me/api/portraits/women/56.jpg',
+    designation: 'UX Researcher', department: 'Design', reportingManager: 'Rahul Verma',
+    durationMonths: 3, startDate: '2026-04-10', endDate: '2026-07-10', status: 'Ongoing (Extended)',
+    extensionCount: 1,
+    self: {
+      assignments: 'Ran usability studies for the onboarding revamp and supported two research sprints.',
+      achievements: 'Delivered the onboarding research report that reshaped the sign-up flow.',
+      trainingNeeds: 'Would like training in quantitative research methods and survey design.',
+      generalFeedback: 'Recruiting participants at short notice was a recurring bottleneck.',
+      submittedOn: '2026-07-04',
+    },
+    managerAssessment: {
+      rating: 3,
+      competencies: { 'Technical Skills': 3, 'Communication': 4, 'Ownership & Reliability': 3, 'Team Collaboration': 4 },
+      feedback: 'Good qualitative instincts; needs a bit more runway to work independently end to end.',
+      decision: 'Extend',
+      reason: 'Strong on qualitative work but should demonstrate independent, end-to-end study ownership before confirmation.',
+      newEndDate: '2026-10-10', submittedOn: '2026-07-04',
+    },
+  },
+  {
+    id: 'PRB-1103', empId: 'EMP-4907', name: 'Nikhil Rao', avatarInitials: 'NR',
+    avatarUrl: 'https://randomuser.me/api/portraits/men/12.jpg',
+    designation: 'Junior Developer', department: 'Engineering', reportingManager: 'Rahul Verma',
+    durationMonths: 3, startDate: '2026-03-01', endDate: '2026-06-01', status: 'Terminated',
+    self: {
+      assignments: 'Worked on bug fixes across the web app and picked up small feature tickets.',
+      achievements: 'Closed a batch of UI bugs and shipped a minor settings page update.',
+      trainingNeeds: 'Need stronger fundamentals in testing and code review practices.',
+      generalFeedback: 'Ramp-up was harder than expected; clearer onboarding tasks would have helped.',
+      submittedOn: '2026-05-24',
+    },
+    managerAssessment: {
+      rating: 2,
+      competencies: { 'Technical Skills': 2, 'Communication': 3, 'Ownership & Reliability': 2, 'Team Collaboration': 3 },
+      feedback: 'Despite guidance and support, delivery consistency and independence did not reach the expected level.',
+      decision: 'Terminate',
+      reason: 'Performance during probation did not meet the expectations required for the role, despite structured guidance and pairing support.',
+      submittedOn: '2026-05-26',
+    },
   },
 ]
 
@@ -663,42 +734,41 @@ export const MOCK_ALL_CASES: ProbationCase[] = [
     id: 'PRB-1102', empId: 'EMP-4901', name: 'Sofia Martinez', avatarInitials: 'SM',
     avatarUrl: 'https://randomuser.me/api/portraits/women/23.jpg',
     designation: 'Marketing Executive', department: 'Marketing', reportingManager: 'Anjali Desai',
-    durationMonths: 6, startDate: '2026-01-25', endDate: '2026-07-25', status: 'Pending Admin Decision',
+    durationMonths: 6, startDate: '2026-01-25', endDate: '2026-07-25', status: 'Confirmed',
     self: {
-      performance: 'Led two campaign launches and grew our webinar pipeline steadily.',
-      learnings: 'Marketing automation, funnel analytics, and content ops.',
-      challenges: 'Attribution across paid and organic channels.',
-      goalsMet: 'Delivered the Q2 campaign calendar and a 20% lift in MQLs.',
+      assignments: 'Ran two campaign launches and managed the webinar pipeline.',
+      achievements: 'Delivered the Q2 campaign calendar and a 20% lift in MQLs.',
+      trainingNeeds: 'Would like training in marketing automation and funnel analytics.',
+      generalFeedback: 'Attribution across paid and organic channels remains hard to measure accurately.',
       submittedOn: '2026-07-12',
     },
     managerAssessment: {
       rating: 4,
       competencies: { 'Technical Skills': 4, 'Communication': 5, 'Ownership & Reliability': 4, 'Team Collaboration': 4 },
-      strengths: 'Creative, data-aware, and a dependable owner of deliverables.',
-      areasToImprove: 'Tighten reporting cadence to stakeholders.',
-      feedback: 'Strong first six months — recommend confirmation.',
-      recommendation: 'Confirm', submittedOn: '2026-07-16',
+      feedback: 'Strong first six months — confirming as permanent.',
+      decision: 'Confirm', submittedOn: '2026-07-16',
     },
   },
   {
     id: 'PRB-1115', empId: 'EMP-4918', name: 'Tariq Hassan', avatarInitials: 'TH',
     avatarUrl: 'https://randomuser.me/api/portraits/men/64.jpg',
     designation: 'Support Engineer', department: 'Customer Success', reportingManager: 'Anjali Desai',
-    durationMonths: 3, startDate: '2026-04-20', endDate: '2026-07-20', status: 'Pending Admin Decision',
+    durationMonths: 3, startDate: '2026-04-20', endDate: '2026-07-20', status: 'Ongoing (Extended)',
+    extensionCount: 1,
     self: {
-      performance: 'Resolved tickets within SLA and picked up product knowledge quickly.',
-      learnings: 'Our support stack, escalation paths, and troubleshooting playbooks.',
-      challenges: 'Handling peak-volume days without a full runbook.',
-      goalsMet: 'Maintained a 92% CSAT across my queue.',
+      assignments: 'Handled a full support queue, resolving tickets within SLA.',
+      achievements: 'Maintained a 92% CSAT across my queue.',
+      trainingNeeds: 'Need more training on the support stack and escalation playbooks.',
+      generalFeedback: 'Peak-volume days were tough to manage without a full runbook.',
       submittedOn: '2026-07-08',
     },
     managerAssessment: {
       rating: 3,
       competencies: { 'Technical Skills': 3, 'Communication': 4, 'Ownership & Reliability': 3, 'Team Collaboration': 3 },
-      strengths: 'Patient with customers and eager to learn.',
-      areasToImprove: 'Needs more consistency on complex, multi-team escalations.',
       feedback: 'Promising but would benefit from a short extension to prove independence.',
-      recommendation: 'Extend', submittedOn: '2026-07-14',
+      decision: 'Extend',
+      reason: 'Needs to show consistent, independent handling of complex multi-team escalations before confirmation.',
+      newEndDate: '2026-10-20', submittedOn: '2026-07-14',
     },
   },
   {
@@ -706,19 +776,18 @@ export const MOCK_ALL_CASES: ProbationCase[] = [
     designation: 'Sales Executive', department: 'Sales', reportingManager: 'Meera Iyer',
     durationMonths: 6, startDate: '2025-12-01', endDate: '2026-06-01', status: 'Confirmed',
     self: {
-      performance: 'Exceeded quota in two of my first three quarters.',
-      learnings: 'Mastered the CRM and our enterprise sales motion.',
-      challenges: 'Long enterprise sales cycles.', goalsMet: 'Closed 4 enterprise logos.',
+      assignments: 'Managed a full enterprise sales pipeline in the CRM.',
+      achievements: 'Exceeded quota in two of my first three quarters and closed 4 enterprise logos.',
+      trainingNeeds: 'Would like to master more of our enterprise sales motion.',
+      generalFeedback: 'Long enterprise sales cycles make short-term targets challenging.',
       submittedOn: '2026-05-18',
     },
     managerAssessment: {
       rating: 4,
       competencies: { 'Technical Skills': 4, 'Communication': 5, 'Ownership & Reliability': 4, 'Team Collaboration': 4 },
-      strengths: 'Strong closer, great rapport with clients.',
-      areasToImprove: 'Pipeline hygiene in the CRM.', feedback: 'Recommend confirmation.',
-      recommendation: 'Confirm', submittedOn: '2026-05-22',
+      feedback: 'Strong closer — confirmed as permanent.',
+      decision: 'Confirm', submittedOn: '2026-05-22',
     },
-    adminDecision: { decision: 'Confirm', decidedOn: '2026-05-28' },
   },
   {
     id: 'PRB-0975', empId: 'EMP-4699', name: 'Neha Kapoor', avatarInitials: 'NK',
@@ -726,16 +795,19 @@ export const MOCK_ALL_CASES: ProbationCase[] = [
     durationMonths: 6, startDate: '2025-11-10', endDate: '2026-05-10', status: 'Ongoing (Extended)',
     extensionCount: 1,
     self: {
-      performance: 'Steady contributor; still building confidence on policy work.',
-      learnings: 'HRMS tooling and onboarding operations.', challenges: 'Handling escalations independently.',
-      goalsMet: 'Ran two onboarding cohorts.', submittedOn: '2026-04-25',
+      assignments: 'Ran two onboarding cohorts and supported day-to-day HR operations.',
+      achievements: 'Successfully delivered both onboarding cohorts.',
+      trainingNeeds: 'Building confidence on policy work; would value HRMS and policy training.',
+      generalFeedback: 'Handling escalations independently is still an area I am working on.',
+      submittedOn: '2026-04-25',
     },
     managerAssessment: {
       rating: 3,
       competencies: { 'Technical Skills': 3, 'Communication': 3, 'Ownership & Reliability': 3, 'Team Collaboration': 4 },
-      strengths: 'Reliable and empathetic.', areasToImprove: 'Needs more autonomy on escalations.',
-      feedback: 'Promising but would benefit from more runway.', recommendation: 'Extend', submittedOn: '2026-04-30',
+      feedback: 'Promising but would benefit from more runway.',
+      decision: 'Extend',
+      reason: 'Needs additional time to demonstrate independent handling of escalations.',
+      newEndDate: '2026-08-10', submittedOn: '2026-04-30',
     },
-    adminDecision: { decision: 'Extend', reason: 'Needs additional time to demonstrate independent handling of escalations.', newEndDate: '2026-08-10', decidedOn: '2026-05-05' },
   },
 ]

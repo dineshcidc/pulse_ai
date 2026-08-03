@@ -1,14 +1,13 @@
 /* ─────────────────────────────────────────────────────────────────────────────
- * Stage 4 — Admin: Probation Cases (list)
+ * Admin: Probation Cases (list) — MONITOR ONLY
  *
- * The Admin's org-wide queue of every employee on probation. Read-only until it's
- * the Admin's turn: rows with status "Pending Admin Decision" are the ones that
- * need the final decision and are surfaced first. Opening a row → the decision
- * detail (built next).
+ * The Admin's org-wide view of every employee on probation. The reporting manager
+ * makes the final decision; the Admin only monitors status and can open any case
+ * to view its full details (read-only). No Confirm / Extend / Terminate actions.
  * ──────────────────────────────────────────────────────────────────────────── */
 
 import { useState, useMemo } from 'react'
-import { Search, ChevronDown, Gavel, Eye } from 'lucide-react'
+import { Search, ChevronDown, Eye } from 'lucide-react'
 import {
   PC, StatusPill, Avatar, fmtDate, daysUntil, SELF_ASSESSMENT_WINDOW_DAYS,
   MOCK_ALL_CASES, type ProbationStatus, type ProbationCase,
@@ -19,14 +18,10 @@ const font = "'DM Sans', system-ui, sans-serif"
 // Status filter options (label → matcher). "All" shows everything.
 const FILTERS: { id: string; label: string; match: (s: ProbationStatus) => boolean }[] = [
   { id: 'all',      label: 'All Statuses',       match: () => true },
-  { id: 'decision', label: 'Awaiting Decision',  match: s => s === 'Pending Admin Decision' },
-  { id: 'ongoing',  label: 'Ongoing',            match: s => s === 'Ongoing' || s === 'Ongoing (Extended)' },
   { id: 'manager',  label: 'With Manager',       match: s => s === 'Pending Manager Review' },
+  { id: 'ongoing',  label: 'Ongoing',            match: s => s === 'Ongoing' || s === 'Ongoing (Extended)' },
   { id: 'done',     label: 'Completed',          match: s => s === 'Confirmed' || s === 'Terminated' },
 ]
-
-// Admin only acts while the case is "Pending Admin Decision".
-const needsDecision = (s: ProbationStatus) => s === 'Pending Admin Decision'
 
 // Grid column template shared by header + rows — even, balanced widths.
 // Employee · Designation · Reporting Manager · Duration · End Date · Time Left · Status · Action
@@ -55,7 +50,7 @@ export default function AdminProbationPage({ onOpenCase }: { onOpenCase?: (id: s
 
   const activeFilter = FILTERS.find(f => f.id === filter)!
 
-  // Filter + search, then float "needs my decision" to the top.
+  // Filter + search.
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase()
     return MOCK_ALL_CASES
@@ -65,10 +60,7 @@ export default function AdminProbationPage({ onOpenCase }: { onOpenCase?: (id: s
         || c.empId.toLowerCase().includes(q)
         || c.designation.toLowerCase().includes(q)
         || c.reportingManager.toLowerCase().includes(q))
-      .sort((a, b) => Number(needsDecision(b.status)) - Number(needsDecision(a.status)))
   }, [query, activeFilter])
-
-  const pendingCount = MOCK_ALL_CASES.filter(c => needsDecision(c.status)).length
 
   return (
     <div style={{ fontFamily: font, display: 'flex', flexDirection: 'column', gap: 18 }}>
@@ -78,19 +70,9 @@ export default function AdminProbationPage({ onOpenCase }: { onOpenCase?: (id: s
         <div>
           <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: PC.navy, letterSpacing: '-0.4px' }}>Probation Cases</h1>
           <p style={{ margin: '4px 0 0', fontSize: 13.5, color: '#787878', fontWeight: 500 }}>
-            Review every employee on probation and make the final decision — confirm, extend, or terminate.
+            Monitor every employee on probation across the organisation. Open any case to view its full details.
           </p>
         </div>
-        {pendingCount > 0 && (
-          <span style={{
-            display: 'inline-flex', alignItems: 'center', gap: 7, padding: '7px 14px', borderRadius: 999,
-            fontSize: 12.5, fontWeight: 700, color: PC.indigo,
-            background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.22)',
-          }}>
-            <Gavel size={14} strokeWidth={2.2} />
-            {pendingCount} awaiting your decision
-          </span>
-        )}
       </div>
 
       {/* Toolbar: white card (14px padding) with search + filter as separate sections */}
@@ -152,7 +134,6 @@ export default function AdminProbationPage({ onOpenCase }: { onOpenCase?: (id: s
                 <p style={{ margin: '4px 0 0', fontSize: 12.5, color: PC.muted }}>Try a different search or filter.</p>
               </div>
             ) : rows.map((c: ProbationCase, i) => {
-              const decide = needsDecision(c.status)
               const done = c.status === 'Confirmed' || c.status === 'Terminated'
               return (
                 <div
@@ -162,10 +143,10 @@ export default function AdminProbationPage({ onOpenCase }: { onOpenCase?: (id: s
                     display: 'grid', gridTemplateColumns: COLS, gap: 14, alignItems: 'center',
                     padding: '15px 22px', cursor: 'pointer',
                     borderBottom: i === rows.length - 1 ? 'none' : `1px solid ${PC.border}`,
-                    background: decide ? 'rgba(99,102,241,0.045)' : '#fff', transition: 'background 0.14s',
+                    background: '#fff', transition: 'background 0.14s',
                   }}
-                  onMouseEnter={e => { e.currentTarget.style.background = decide ? 'rgba(99,102,241,0.09)' : PC.surface }}
-                  onMouseLeave={e => { e.currentTarget.style.background = decide ? 'rgba(99,102,241,0.045)' : '#fff' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = PC.surface }}
+                  onMouseLeave={e => { e.currentTarget.style.background = '#fff' }}
                 >
                   {/* Employee */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 11, minWidth: 0 }}>
@@ -204,26 +185,15 @@ export default function AdminProbationPage({ onOpenCase }: { onOpenCase?: (id: s
 
                   {/* Action */}
                   <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    {decide ? (
-                      <button
-                        onClick={e => { e.stopPropagation(); onOpenCase?.(c.id) }}
-                        style={{ height: 34, padding: '0 15px', borderRadius: 9, cursor: 'pointer', fontFamily: font, fontSize: 12.5, fontWeight: 700, color: PC.indigo, background: 'rgba(99,102,241,0.10)', border: '1px dashed rgba(99,102,241,0.45)', display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}
-                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.18)' }}
-                        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.10)' }}
-                      >
-                        <Gavel size={14} /> Decide
-                      </button>
-                    ) : (
-                      <button
-                        onClick={e => { e.stopPropagation(); onOpenCase?.(c.id) }}
-                        title="View details"
-                        style={{ height: 34, padding: '0 14px', borderRadius: 9, cursor: 'pointer', fontFamily: font, fontSize: 12.5, fontWeight: 600, color: PC.label, background: '#fff', border: `1px solid ${PC.border}`, display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}
-                        onMouseEnter={e => { e.currentTarget.style.background = PC.surface }}
-                        onMouseLeave={e => { e.currentTarget.style.background = '#fff' }}
-                      >
-                        <Eye size={14} /> View
-                      </button>
-                    )}
+                    <button
+                      onClick={e => { e.stopPropagation(); onOpenCase?.(c.id) }}
+                      title="View details"
+                      style={{ height: 34, padding: '0 14px', borderRadius: 9, cursor: 'pointer', fontFamily: font, fontSize: 12.5, fontWeight: 600, color: PC.label, background: '#fff', border: `1px solid ${PC.border}`, display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}
+                      onMouseEnter={e => { e.currentTarget.style.background = PC.surface }}
+                      onMouseLeave={e => { e.currentTarget.style.background = '#fff' }}
+                    >
+                      <Eye size={14} /> View
+                    </button>
                   </div>
                 </div>
               )

@@ -20,7 +20,6 @@ const FILTERS: { id: string; label: string; match: (s: ProbationStatus) => boole
   { id: 'all',      label: 'All Statuses',           match: () => true },
   { id: 'review',   label: 'Awaiting My Review',     match: s => s === 'Pending Manager Review' },
   { id: 'ongoing',  label: 'Ongoing',                match: s => s === 'Ongoing' || s === 'Ongoing (Extended)' },
-  { id: 'admin',    label: 'With Admin',             match: s => s === 'Pending Admin Decision' },
   { id: 'done',     label: 'Completed',              match: s => s === 'Confirmed' || s === 'Terminated' },
 ]
 
@@ -186,7 +185,7 @@ export default function TeamProbationPage({ onOpenCase }: { onOpenCase?: (id: st
                         onMouseEnter={e => { e.currentTarget.style.background = 'rgba(245,158,11,0.20)' }}
                         onMouseLeave={e => { e.currentTarget.style.background = 'rgba(245,158,11,0.12)' }}
                       >
-                        <ClipboardCheck size={14} /> Review
+                        <ClipboardCheck size={14} /> Decision
                       </button>
                     ) : (
                       <button
