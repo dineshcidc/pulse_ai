@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import {
   Bell, HelpCircle, ChevronDown, PanelLeftClose, PanelLeftOpen,
-  LayoutGrid, User, Lock, LogOut, Eye, EyeOff, X,
+  LayoutGrid, User, Lock, LogOut, Eye, EyeOff, X, DoorOpen,
   CalendarCheck, FileText, TicketCheck, TrendingUp, Megaphone,
   Paperclip, Download, Search, Image, Link as LinkIcon,
 } from 'lucide-react'
@@ -255,6 +255,12 @@ export default function Header({ isSidebarOpen, onToggleSidebar, onNavigate, onL
                   <div style={{ width: 34, height: 34, borderRadius: 10, background: C.icon, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Lock size={15} style={{ color: C.muted }} /></div>
                   <div><div style={{ fontSize: 13, fontWeight: 600, color: C.navy }}>Change Password</div><div style={{ fontSize: 11, color: C.muted, marginTop: 1 }}>Update your password</div></div>
                 </button>
+                {userRole === 'Employee' && (
+                  <button onClick={() => { setProfileOpen(false); window.open('?module=offboarding', '_blank', 'noopener') }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: 12, borderRadius: 10, background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left' }} onMouseEnter={e => { e.currentTarget.style.background = C.hover }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}>
+                    <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(99,102,241,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><DoorOpen size={15} style={{ color: '#6366F1' }} /></div>
+                    <div><div style={{ fontSize: 13, fontWeight: 600, color: C.navy }}>Offboarding</div><div style={{ fontSize: 11, color: C.muted, marginTop: 1 }}>Open the offboarding module</div></div>
+                  </button>
+                )}
                 <div style={{ height: 1, background: C.border, margin: '4px 8px' }} />
                 <button onClick={() => { setProfileOpen(false); setShowLogout(true) }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: 12, borderRadius: 10, background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(232,72,85,0.07)' }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}>
                   <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(232,72,85,0.09)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><LogOut size={15} style={{ color: '#E84855' }} /></div>

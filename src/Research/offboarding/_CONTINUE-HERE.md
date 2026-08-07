@@ -6,6 +6,21 @@
 
 ---
 
+## 🟢 BUILD PROGRESS LOG (read this first)
+
+**Approach (BA-approved 2026-08-03):** Offboarding is a **separate standalone module** with its own login/shell, sidebar & header, opened in a **new browser tab** from the Employee profile dropdown (`?module=offboarding`). Sidebar is **role-wise** (Employee · CTO · Manager · System Admin · Finance · HR), each a **collapsible accordion**. Code lives in `src/offboarding/`.
+
+**Done so far — Employee phase (as of 2026-08-03):**
+- ✅ **Entry point** — "Offboarding" option in Employee header profile dropdown → opens the module in a new tab.
+- ✅ **Module shell + role-wise sidebar** (accordion sections; menu names for all 6 roles in workflow order).
+- ✅ **E1 — Offboarding Request** (`OffboardingRequestPage.tsx`): form + Confirm/Withdraw modals; Demo·Prototype switcher walks **Form / Pending / Rejected**.
+- ✅ **E3+E4+E5 — My Offboarding** (`MyOffboardingPage.tsx`): one hub with a **3/9 vertical-tab** layout — **Overview (tracker) · Exit Interview · Exit Documents**; Interview & Documents are **lock-gated**; Demo switcher walks **Clearances / Exit Interview / Completed**. (Exit Interview & Exit Documents are NO LONGER separate sidebar menus.)
+- Whole app typechecks clean (`npx tsc -p tsconfig.app.json` → EXIT 0).
+
+**▶ NEXT (2026-08-04): start Phase 2 — CTO.** Screens **C1 Approval Queue** + **C2 Request Detail & Decision** (Accept + set notice period 30/60/90, or Reject) under sidebar menu `cto-approvals`. Then Manager → System Admin → Finance → HR (last).
+
+---
+
 ## ⚡ 30-second status
 
 - We **scrapped the old offboarding flow** (BA + PM said it was wrong) and wrote a **brand-new, finalized workflow** based on how real HR offboarding works.

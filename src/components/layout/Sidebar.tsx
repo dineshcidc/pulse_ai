@@ -51,8 +51,8 @@ const PROJECT_REPORTING_ITEM: NavItem = {
   id: 'project-reporting', label: 'Project Reporting', Icon: ClipboardList,
   neutralDots: true,
   children: [
-    { id: 'reporting-overview',  label: 'Reporting Dashboard' },
-    { id: 'my-report-projects',  label: 'My Report Projects'  },
+    { id: 'reporting-overview',  label: 'Reports Dashboard' },
+    { id: 'my-report-projects',  label: 'My Project Reports'  },
   ],
 }
 
@@ -295,8 +295,8 @@ function buildAdminNav(): NavSection[] {
         {
           id: 'template-creation', label: 'Template Creation', Icon: LayoutTemplate,
           children: [
-            { id: 'admin-reporting-dashboard', label: 'Reporting Dashboard' },
-            { id: 'project-assignment',        label: 'Project Assignment'  },
+            { id: 'admin-reporting-dashboard', label: 'Report Monitoring' },
+            { id: 'project-assignment',        label: 'Report Frequency Settings'  },
           ],
         },
       ],
