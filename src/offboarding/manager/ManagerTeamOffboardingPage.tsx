@@ -3,6 +3,7 @@ import {
   Users, Search, ChevronDown, ChevronRight, Clock3, CheckCircle2,
   PauseCircle, ShieldAlert, Lock, Inbox,
 } from 'lucide-react'
+import { SHOW_ON_HOLD_FLOW, effStatus } from '../offboardingFlags'
 
 /*
  * Manager (Project Manager) › Team Offboarding — Screen M1 (Queue).
@@ -93,27 +94,32 @@ export default function ManagerTeamOffboardingPage({ onOpen }: { onOpen?: (id: s
   const [query, setQuery]   = useState('')
   const [filter, setFilter] = useState<Filter>('all')
 
+  // On-hold hidden for now (BA): normalise every case's status up-front so the
+  // "On Hold" pill / filter never appears (on-hold → pending).
+  const DATA = useMemo(() => MOCK_TEAM.map(r => ({ ...r, status: effStatus(r.status) })), [])
+
   const counts = useMemo(() => ({
-    all:            MOCK_TEAM.length,
-    pending:        MOCK_TEAM.filter(r => r.status === 'pending').length,
-    'awaiting-cto': MOCK_TEAM.filter(r => r.status === 'awaiting-cto').length,
-    'on-hold':      MOCK_TEAM.filter(r => r.status === 'on-hold').length,
-    cleared:        MOCK_TEAM.filter(r => r.status === 'cleared').length,
-  }), [])
+    all:            DATA.length,
+    pending:        DATA.filter(r => r.status === 'pending').length,
+    'awaiting-cto': DATA.filter(r => r.status === 'awaiting-cto').length,
+    'on-hold':      DATA.filter(r => r.status === 'on-hold').length,
+    cleared:        DATA.filter(r => r.status === 'cleared').length,
+  }), [DATA])
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase()
-    return MOCK_TEAM
+    return DATA
       .filter(r => filter === 'all' ? true : r.status === filter)
       .filter(r => !q || r.name.toLowerCase().includes(q) || r.code.toLowerCase().includes(q) || r.reason.toLowerCase().includes(q))
       .sort((a, b) => SORT_RANK[a.status] - SORT_RANK[b.status] || new Date(b.submittedOn).getTime() - new Date(a.submittedOn).getTime())
-  }, [query, filter])
+  }, [query, filter, DATA])
 
   const FILTERS: { id: Filter; label: string; n: number }[] = [
     { id: 'all',          label: 'All',               n: counts.all },
     { id: 'pending',      label: 'Pending Clearance', n: counts.pending },
     { id: 'awaiting-cto', label: 'Awaiting CTO',      n: counts['awaiting-cto'] },
-    { id: 'on-hold',      label: 'On Hold',           n: counts['on-hold'] },
+    // On Hold filter hidden for now (BA).
+    ...(SHOW_ON_HOLD_FLOW ? [{ id: 'on-hold' as Filter, label: 'On Hold', n: counts['on-hold'] }] : []),
     { id: 'cleared',      label: 'Cleared',           n: counts.cleared },
   ]
 

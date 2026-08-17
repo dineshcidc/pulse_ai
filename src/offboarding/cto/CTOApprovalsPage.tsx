@@ -3,6 +3,7 @@ import {
   ShieldCheck, Search, Clock3, CheckCircle2, XCircle, RotateCcw,
   Inbox, ChevronRight, ChevronDown,
 } from 'lucide-react'
+import { SHOW_REJECT_FLOW } from '../offboardingFlags'
 
 /*
  * CTO (Delivery Head) › Offboarding Approvals — Screen C1 (Approval Queue).
@@ -115,12 +116,15 @@ export default function CTOApprovalsPage({ onOpen }: { onOpen?: (id: string) => 
     pending:  MOCK_REQUESTS.filter(r => r.status === 'pending').length,
     approved: MOCK_REQUESTS.filter(r => r.status === 'approved').length,
     rejected: MOCK_REQUESTS.filter(r => r.status === 'rejected').length,
-    total:    MOCK_REQUESTS.length,
+    // "All" excludes rejected while the reject flow is hidden (BA).
+    total:    MOCK_REQUESTS.filter(r => SHOW_REJECT_FLOW || r.status !== 'rejected').length,
   }), [])
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase()
     return MOCK_REQUESTS
+      // Reject flow hidden for now (BA) — keep rejected requests out of the queue.
+      .filter(r => SHOW_REJECT_FLOW || r.status !== 'rejected')
       .filter(r => filter === 'all' ? true : r.status === filter)
       .filter(r => !q || r.name.toLowerCase().includes(q) || r.code.toLowerCase().includes(q) || r.reason.toLowerCase().includes(q))
       // pending first, then most recently submitted
@@ -135,7 +139,8 @@ export default function CTOApprovalsPage({ onOpen }: { onOpen?: (id: string) => 
     { id: 'all',       label: 'All',       n: counts.total },
     { id: 'pending',   label: 'Pending',   n: counts.pending },
     { id: 'approved',  label: 'Approved',  n: counts.approved },
-    { id: 'rejected',  label: 'Rejected',  n: counts.rejected },
+    // Reject flow hidden for now (BA) — omit the Rejected filter option.
+    ...(SHOW_REJECT_FLOW ? [{ id: 'rejected' as Filter, label: 'Rejected', n: counts.rejected }] : []),
   ]
 
   return (
@@ -146,7 +151,7 @@ export default function CTOApprovalsPage({ onOpen }: { onOpen?: (id: string) => 
       <div className="flex items-start justify-between mb-5">
         <div>
           <h1 className="font-bold mb-1" style={{ fontSize: 22, color: C.navy, letterSpacing: '-0.3px' }}>Offboarding Approvals</h1>
-          <p style={{ fontSize: 13.5, color: '#787878', fontWeight: 500 }}>Review exit requests, set the notice period, or decline</p>
+          <p style={{ fontSize: 13.5, color: '#787878', fontWeight: 500 }}>Review exit requests and set the notice period</p>
         </div>
         <div className="flex items-center justify-center rounded-2xl flex-shrink-0" style={{ width: 60, height: 60, backgroundColor: 'rgba(99,102,241,0.07)', backgroundImage: 'radial-gradient(circle, rgba(99,102,241,0.22) 1px, transparent 1px)', backgroundSize: '8px 8px', border: '1px solid rgba(99,102,241,0.14)' }}>
           <div style={{ animation: 'obFloat 4s ease-in-out infinite' }}>

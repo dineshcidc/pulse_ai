@@ -55,7 +55,7 @@ const PROJECT_REPORTING_ITEM: NavItem = {
     { id: 'my-report-projects',  label: 'My Project Reports'  },
   ],
 }
-
+  
 const MANAGER_PERFORMANCE_ITEM: NavItem = {
   id: 'performance-appraisal', label: 'Performance Appraisal', Icon: Target,
   neutralDots: true,

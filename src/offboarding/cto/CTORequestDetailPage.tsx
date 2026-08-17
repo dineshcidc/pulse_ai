@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import type { OffboardRequest } from './CTOApprovalsPage'
 import { TODAY } from './CTOApprovalsPage'
+import { SHOW_REJECT_FLOW } from '../offboardingFlags'
 
 /*
  * CTO (Delivery Head) › Offboarding Approvals — Screen C2 (Request Detail + Decision).
@@ -293,25 +294,27 @@ function DecisionPanel({
       </div>
 
       <div style={{ padding: 20 }}>
-        {/* approve / reject toggle */}
-        <div className="grid grid-cols-2 gap-2 mb-5">
-          {(['approve', 'reject'] as const).map(m => {
-            const on = mode === m
-            const isApprove = m === 'approve'
-            const col = isApprove ? C.green : C.red
-            return (
-              <button key={m} onClick={() => setMode(m)}
-                className="flex items-center justify-center gap-2"
-                style={{ height: 44, borderRadius: 11, fontSize: 13.5, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s',
-                  border: `1.5px solid ${on ? col : C.border}`,
-                  background: on ? (isApprove ? 'rgba(14,168,106,0.09)' : 'rgba(232,72,85,0.08)') : '#fff',
-                  color: on ? (isApprove ? '#0A8A58' : '#C0334A') : C.muted }}>
-                {isApprove ? <CheckCircle2 size={16} /> : <XCircle size={16} />}
-                {isApprove ? 'Approve' : 'Reject'}
-              </button>
-            )
-          })}
-        </div>
+        {/* approve / reject toggle — reject hidden for now (BA); Approve only */}
+        {SHOW_REJECT_FLOW && (
+          <div className="grid grid-cols-2 gap-2 mb-5">
+            {(['approve', 'reject'] as const).map(m => {
+              const on = mode === m
+              const isApprove = m === 'approve'
+              const col = isApprove ? C.green : C.red
+              return (
+                <button key={m} onClick={() => setMode(m)}
+                  className="flex items-center justify-center gap-2"
+                  style={{ height: 44, borderRadius: 11, fontSize: 13.5, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s',
+                    border: `1.5px solid ${on ? col : C.border}`,
+                    background: on ? (isApprove ? 'rgba(14,168,106,0.09)' : 'rgba(232,72,85,0.08)') : '#fff',
+                    color: on ? (isApprove ? '#0A8A58' : '#C0334A') : C.muted }}>
+                  {isApprove ? <CheckCircle2 size={16} /> : <XCircle size={16} />}
+                  {isApprove ? 'Approve' : 'Reject'}
+                </button>
+              )
+            })}
+          </div>
+        )}
 
         {mode === 'approve' ? (
           <>

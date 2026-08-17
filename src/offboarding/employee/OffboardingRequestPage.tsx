@@ -3,6 +3,7 @@ import {
   DoorOpen, ChevronDown, ShieldCheck, CalendarClock, Users, FileCheck2,
   Clock3, CheckCircle2, XCircle, Info, RotateCcw,
 } from 'lucide-react'
+import { SHOW_REJECT_FLOW } from '../offboardingFlags'
 
 /*
  * Employee › Offboarding Request (E1) — the entry screen of the whole flow.
@@ -134,7 +135,9 @@ export default function OffboardingRequestPage() {
         border: '1px dashed rgba(99,102,241,0.40)', borderRadius: 12, padding: '7px 12px',
       }}>
         <div style={{ display: 'flex', gap: 4, background: '#fff', border: `1px solid ${C.border}`, borderRadius: 9, padding: 3 }}>
-          {([['form', 'Form'], ['pending', 'Pending'], ['rejected', 'Rejected']] as [View, string][]).map(([v, label]) => {
+          {(([['form', 'Form'], ['pending', 'Pending'], ['rejected', 'Rejected']] as [View, string][])
+            .filter(([v]) => SHOW_REJECT_FLOW || v !== 'rejected')
+          ).map(([v, label]) => {
             const on = view === v
             return (
               <button key={v} onClick={() => setView(v)}
@@ -157,7 +160,7 @@ export default function OffboardingRequestPage() {
 
       {view === 'form'     && <FormView {...{ reason, setReason, lwd, setLwd, details, setDetails, ack, setAck, canSubmit, onSubmit: () => setShowConfirm(true) }} />}
       {view === 'pending'  && <PendingView reason={reason} lwd={lwd} details={details} onWithdraw={() => setShowWithdraw(true)} />}
-      {view === 'rejected' && <RejectedView onRaiseNew={() => { resetForm(); setView('form') }} />}
+      {SHOW_REJECT_FLOW && view === 'rejected' && <RejectedView onRaiseNew={() => { resetForm(); setView('form') }} />}
 
       {/* ── Confirm modal ── */}
       {showConfirm && (

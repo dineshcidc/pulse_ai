@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import type { ITClearanceCase, ClearanceStatus } from './ITClearancePage'
 import { TODAY } from './ITClearancePage'
+import { SHOW_ON_HOLD_FLOW } from '../offboardingFlags'
 
 /*
  * System Admin (IT) › IT Clearance — Screen S2 (Detail + IT Clearance).
@@ -299,25 +300,27 @@ function ClearancePanel({
           </div>
         )}
 
-        {/* clear / hold toggle */}
-        <div className="grid grid-cols-2 gap-2 mb-5">
-          {(['clear', 'hold'] as const).map(m => {
-            const on = mode === m
-            const isClear = m === 'clear'
-            const col = isClear ? C.green : C.red
-            return (
-              <button key={m} onClick={() => setMode(m)}
-                className="flex items-center justify-center gap-2"
-                style={{ height: 44, borderRadius: 11, fontSize: 13.5, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s',
-                  border: `1.5px solid ${on ? col : C.border}`,
-                  background: on ? (isClear ? 'rgba(14,168,106,0.09)' : 'rgba(232,72,85,0.08)') : '#fff',
-                  color: on ? (isClear ? '#0A8A58' : '#C0334A') : C.muted }}>
-                {isClear ? <CheckCircle2 size={16} /> : <PauseCircle size={16} />}
-                {isClear ? 'Clear' : 'Hold'}
-              </button>
-            )
-          })}
-        </div>
+        {/* clear / hold toggle — hold hidden for now (BA); Clear only */}
+        {SHOW_ON_HOLD_FLOW && (
+          <div className="grid grid-cols-2 gap-2 mb-5">
+            {(['clear', 'hold'] as const).map(m => {
+              const on = mode === m
+              const isClear = m === 'clear'
+              const col = isClear ? C.green : C.red
+              return (
+                <button key={m} onClick={() => setMode(m)}
+                  className="flex items-center justify-center gap-2"
+                  style={{ height: 44, borderRadius: 11, fontSize: 13.5, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s',
+                    border: `1.5px solid ${on ? col : C.border}`,
+                    background: on ? (isClear ? 'rgba(14,168,106,0.09)' : 'rgba(232,72,85,0.08)') : '#fff',
+                    color: on ? (isClear ? '#0A8A58' : '#C0334A') : C.muted }}>
+                  {isClear ? <CheckCircle2 size={16} /> : <PauseCircle size={16} />}
+                  {isClear ? 'Clear' : 'Hold'}
+                </button>
+              )
+            })}
+          </div>
+        )}
 
         {mode === 'clear' ? (
           <>
