@@ -2,7 +2,7 @@ import { useState } from 'react'
 import {
   ArrowLeft, ShieldCheck, CheckCircle2, XCircle, Clock3, RotateCcw,
   CalendarClock, Mail, Phone, Briefcase, UserCircle2, CalendarDays,
-  FileText, Info, Users, MonitorCheck, Wallet, FileCheck2,
+  FileText, Info, Users, MonitorCheck, Wallet, FileCheck2, UserPlus,
 } from 'lucide-react'
 import type { OffboardRequest } from './CTOApprovalsPage'
 import { TODAY } from './CTOApprovalsPage'
@@ -146,6 +146,7 @@ export default function CTORequestDetailPage({ request, onBack }: { request: Off
             <div className="flex items-center gap-2.5 flex-wrap">
               <span style={{ fontSize: 19, fontWeight: 800, color: C.navy, letterSpacing: '-0.3px' }}>{request.name}</span>
               <span style={{ fontSize: 12.5, fontWeight: 600, color: C.muted, background: C.hover, padding: '2px 9px', borderRadius: 7 }}>{request.code}</span>
+              {request.initiatedBy === 'HR' && <HRBadge />}
             </div>
             <div style={{ fontSize: 13.5, color: '#5C6080', fontWeight: 600, marginTop: 4 }}>{request.designation} · {request.department}</div>
             <div className="flex items-center gap-x-5 gap-y-1.5 flex-wrap" style={{ marginTop: 12 }}>
@@ -171,12 +172,12 @@ export default function CTORequestDetailPage({ request, onBack }: { request: Off
           <Card title="Request Details" Icon={FileText}>
             <div style={{ padding: '18px 22px' }}>
               <div className="grid grid-cols-3 gap-3 mb-5">
-                <Field label="Reason for Leaving" value={request.reason} />
-                <Field label="Intended Last Day" value={fmtDate(request.requestedLwd)} />
+                <Field label={request.initiatedBy === 'HR' ? 'Reason for Offboarding' : 'Reason for Leaving'} value={request.reason} />
+                <Field label="Intended Last Day" value={request.requestedLwd ? fmtDate(request.requestedLwd) : 'Not set'} sub={request.requestedLwd ? undefined : 'CTO decides'} />
                 <Field label="Submitted" value={daysAgo(request.submittedOn)} sub={fmtDate(request.submittedOn)} />
               </div>
               <div>
-                <div style={fieldLabel}>Detailed Reason / Notes</div>
+                <div style={fieldLabel}>{request.initiatedBy === 'HR' ? "HR's Justification" : 'Detailed Reason / Notes'}</div>
                 <div style={{ padding: '14px 16px', background: '#F7F8FC', borderRadius: 12, borderLeft: `3px solid ${C.indigo}`, fontSize: 13.5, color: '#3D4266', lineHeight: 1.7 }}>
                   “{request.notes}”
                 </div>
@@ -431,6 +432,14 @@ function OutcomePanel({ outcome }: { outcome: { type: ReqOutcome; noticeDays?: n
 }
 
 /* ════════════════ small shared bits ════════════════ */
+function HRBadge() {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full" style={{ padding: '3px 10px', background: 'rgba(99,102,241,0.10)', color: '#5B5FDE', fontSize: 11, fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase', border: '1px solid rgba(99,102,241,0.25)' }}>
+      <UserPlus size={12} strokeWidth={2.4} /> Initiated by HR
+    </span>
+  )
+}
+
 function StatusPill({ status }: { status: ReqOutcome | 'pending' }) {
   const meta: Record<string, { label: string; color: string; bg: string }> = {
     pending:   { label: 'Pending Review', color: '#B26905', bg: 'rgba(217,119,6,0.12)' },

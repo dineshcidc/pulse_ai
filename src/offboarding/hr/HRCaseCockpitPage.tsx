@@ -4,7 +4,7 @@ import {
   Mail, Phone, Briefcase, UserCircle2, CalendarDays, CalendarClock,
   ShieldCheck, Users, MonitorCheck, Wallet, FileCheck2, FileText,
   Star, MessageSquareText, Hourglass, Award, ScrollText, Receipt,
-  Upload, Landmark, Send,
+  Upload, Landmark, Send, UserPlus,
 } from 'lucide-react'
 import {
   isClearanceDone, clearedCount, overallStage, STAGE_META, fmtDate, TODAY,
@@ -169,6 +169,11 @@ export default function HRCaseCockpitPage({
               <span style={{ fontSize: 19, fontWeight: 800, color: C.navy, letterSpacing: '-0.3px' }}>{c.name}</span>
               <span style={{ fontSize: 12.5, fontWeight: 600, color: C.muted, background: C.hover, padding: '2px 9px', borderRadius: 7 }}>{c.code}</span>
               <span style={{ fontSize: 11.5, fontWeight: 600, color: C.muted, background: C.hover, padding: '2px 9px', borderRadius: 7 }}>{c.id}</span>
+              {c.initiatedBy === 'HR' && (
+                <span className="inline-flex items-center gap-1.5 rounded-full" style={{ padding: '3px 10px', background: 'rgba(99,102,241,0.10)', color: '#5B5FDE', fontSize: 11, fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase', border: '1px solid rgba(99,102,241,0.25)' }}>
+                  <UserPlus size={12} strokeWidth={2.4} /> Initiated by HR
+                </span>
+              )}
             </div>
             <div style={{ fontSize: 13.5, color: '#5C6080', fontWeight: 600, marginTop: 4 }}>{c.designation} · {c.department}</div>
             <div className="flex items-center gap-x-5 gap-y-1.5 flex-wrap" style={{ marginTop: 12 }}>
@@ -321,7 +326,7 @@ function DeptTab({ tab, c }: { tab: Exclude<TabKey, 'hr'>; c: HRCase }) {
                 ? <MiniInfo Icon={Clock3} label="Notice Period" value={cl.noticeDays ? `${cl.noticeDays} days` : '—'} accent={isDone ? C.green : undefined} />
                 : meta.dept === 'finance' && cl.net != null
                   ? <MiniInfo Icon={Wallet} label="Net F&F Payable" value={inr(cl.net)} accent={C.green} />
-                  : <MiniInfo Icon={CalendarDays} label="Last Working Day" value={fmtDate(dateShown)} />}
+                  : <MiniInfo Icon={CalendarDays} label="Last Working Day" value={dateShown ? fmtDate(dateShown) : '—'} />}
             </div>
             {cl.summary && (
               <div className="flex items-center gap-2" style={{ marginTop: 14, fontSize: 13, color: '#3D4266', fontWeight: 600 }}>

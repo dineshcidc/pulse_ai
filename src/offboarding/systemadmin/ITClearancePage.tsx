@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import {
   MonitorCheck, Search, ChevronDown, ChevronRight, Clock3, CheckCircle2,
-  PauseCircle, ShieldAlert, Lock, Inbox,
+  PauseCircle, ShieldAlert, Lock, Inbox, UserPlus,
 } from 'lucide-react'
 import { SHOW_ON_HOLD_FLOW, effStatus } from '../offboardingFlags'
 
@@ -60,6 +60,7 @@ export type ITClearanceCase = {
   assetsIssued: string[]    // what IT handed out
   holdReason?: string
   clearedOn?: string
+  initiatedBy?: 'HR'         // HR-raised (involuntary) instead of employee-raised
 }
 
 export const MOCK_IT: ITClearanceCase[] = [
@@ -68,6 +69,7 @@ export const MOCK_IT: ITClearanceCase[] = [
   { id: 'OFB-2440', name: 'Rajesh Kumar',  code: 'CC021', designation: 'QA Lead',                  department: 'Quality',     avatar: 'https://randomuser.me/api/portraits/men/45.jpg',   reason: 'Higher Studies',            intendedLwd: '2026-11-01',                             status: 'awaiting-cto', submittedOn: '2026-08-01', manager: 'Priya Sharma', doj: '2020-01-20', email: 'rajesh.kumar@concertidc.com', phone: '+91 99620 77889', notes: 'Admitted to a full-time master’s program starting this fall. Would like to plan the QA handover carefully given the release schedule.', workMode: 'On-site', assetsIssued: ['ThinkPad X1', 'Dell 24" Monitor', 'Access Card #4102'] },
   { id: 'OFB-2436', name: 'Meera Nair',    code: 'CC009', designation: 'Business Analyst',         department: 'Delivery',    avatar: 'https://randomuser.me/api/portraits/women/68.jpg', reason: 'Career Growth / Role Change', intendedLwd: '2026-09-18', lwd: '2026-09-18', noticeDays: 60, status: 'cleared',    submittedOn: '2026-07-20', clearedOn: '2026-08-02', manager: 'Anil Verma', doj: '2019-08-05', email: 'meera.nair@concertidc.com', phone: '+91 98410 33221', notes: 'Moving into a product management track elsewhere that aligns with my long-term goals. Committed to a smooth transition.', workMode: 'Hybrid', assetsIssued: ['MacBook Pro 14"', 'Access Card #3980'] },
   { id: 'OFB-2431', name: 'Arjun Menon',   code: 'CC017', designation: 'DevOps Engineer',          department: 'Platform',    avatar: 'https://randomuser.me/api/portraits/men/52.jpg',   reason: 'Compensation & Benefits',   intendedLwd: '2026-08-25', lwd: '2026-08-25', noticeDays: 30, status: 'on-hold',      submittedOn: '2026-07-10', holdReason: 'Company laptop and YubiKey not yet returned. Production server access remains active pending on-call handover.', manager: 'Karthik Rao', doj: '2021-11-15', email: 'arjun.menon@concertidc.com', phone: '+91 90477 66554', notes: 'Received an offer with a significantly better compensation package. My current project has wrapped up.', workMode: 'Remote', assetsIssued: ['MacBook Pro 16"', 'YubiKey', 'Company SIM'] },
+  { id: 'OFB-2451', name: 'Kabir Anand',   code: 'CC047', designation: 'Software Engineer',        department: 'Engineering', avatar: 'https://randomuser.me/api/portraits/men/29.jpg',   reason: 'Performance',               intendedLwd: '',                                       status: 'awaiting-cto', submittedOn: '2026-08-05', initiatedBy: 'HR', manager: 'Priya Sharma', doj: '2022-04-18', email: 'kabir.anand@concertidc.com', phone: '+91 90256 33447', notes: 'Offboarding initiated by HR due to sustained performance concerns. The employee has remained below role expectations across two consecutive review cycles despite a documented performance-improvement plan (PIP). Awaiting the Delivery Head’s approval before IT clearance can begin.', workMode: 'Hybrid', assetsIssued: ['MacBook Pro 14"', 'Access Card #4610', 'Company SIM'] },
 ]
 
 const STATUS_META: Record<ClearanceStatus, { label: string; color: string; bg: string; Icon: React.ElementType }> = {
@@ -209,14 +211,15 @@ export default function ITClearancePage({ onOpen }: { onOpen?: (id: string) => v
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontSize: 13, fontWeight: 600, color: '#3D4266', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.reason}</div>
                     <div style={{ fontSize: 11, color: C.muted, marginTop: 1 }}>Ref {r.id}</div>
+                    {r.initiatedBy === 'HR' && <div style={{ marginTop: 4 }}><HRPill /></div>}
                   </div>
 
                   {/* Last Working Day + countdown */}
                   <div>
-                    <div style={{ fontSize: 12.5, fontWeight: 600, color: C.navy, whiteSpace: 'nowrap' }}>{fmtDate(dateShown)}</div>
+                    <div style={{ fontSize: 12.5, fontWeight: 600, color: dateShown ? C.navy : C.muted, whiteSpace: 'nowrap' }}>{dateShown ? fmtDate(dateShown) : '—'}</div>
                     <div style={{ fontSize: 11, marginTop: 1 }}>
                       {locked
-                        ? <span style={{ color: C.muted }}>Intended · awaiting approval</span>
+                        ? <span style={{ color: C.muted }}>{dateShown ? 'Intended · awaiting approval' : 'CTO to set date'}</span>
                         : r.status === 'cleared'
                           ? <span style={{ color: C.muted }}>Confirmed</span>
                           : <span style={{ color: dleft <= 10 ? C.red : C.muted, fontWeight: dleft <= 10 ? 700 : 400 }}>{dleft} days left</span>}
@@ -262,6 +265,14 @@ export default function ITClearancePage({ onOpen }: { onOpen?: (id: string) => v
         </div>
       </div>
     </div>
+  )
+}
+
+function HRPill() {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full" style={{ padding: '1px 7px', background: 'rgba(99,102,241,0.10)', color: '#5B5FDE', fontSize: 9.5, fontWeight: 800, letterSpacing: '0.03em', textTransform: 'uppercase', border: '1px solid rgba(99,102,241,0.22)', whiteSpace: 'nowrap' }}>
+      <UserPlus size={9} strokeWidth={2.6} /> HR-Initiated
+    </span>
   )
 }
 

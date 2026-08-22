@@ -54,6 +54,7 @@ export type HRCase = {
   exitInterview: ExitInterview
   hrClosed: boolean
   closedOn?: string
+  initiatedBy?: 'HR'         // HR-raised (involuntary) instead of employee-raised
 }
 
 const JOHN_NOTE = 'I have accepted an offer for a senior role that offers stronger long-term growth and ownership. It was a difficult decision — I have valued my time here and the mentorship on the platform team. I will ensure a clean handover of my modules and complete knowledge transfer before my last day.'
@@ -71,6 +72,21 @@ export const HR_CASES: HRCase[] = [
                  remarks: 'Handover to Rahul; KT sessions scheduled through September.' },
       it:      { status: 'pending', summary: 'Awaiting IT clearance' },
       finance: { status: 'pending', summary: 'Awaiting settlement' },
+    },
+    exitInterview: { submitted: false },
+    hrClosed: false,
+  },
+  {
+    id: 'OFB-2451', name: 'Kabir Anand', code: 'CC047', designation: 'Software Engineer', department: 'Engineering',
+    avatar: 'https://randomuser.me/api/portraits/men/29.jpg', reason: 'Performance', initiatedBy: 'HR',
+    notes: 'Offboarding initiated by HR due to sustained performance concerns. The employee has remained below role expectations across two consecutive review cycles despite a documented performance-improvement plan (PIP). Awaiting the Delivery Head’s approval to confirm the notice period and last working day.',
+    manager: 'Priya Sharma', doj: '2022-04-18', email: 'kabir.anand@concertidc.com', phone: '+91 90256 33447',
+    intendedLwd: '', submittedOn: '2026-08-05',
+    clearances: {
+      cto:     { status: 'pending', summary: 'Awaiting CTO decision' },
+      manager: { status: 'awaiting', summary: 'Locked until CTO approves' },
+      it:      { status: 'awaiting', summary: 'Locked until CTO approves' },
+      finance: { status: 'awaiting', summary: 'Locked until CTO approves' },
     },
     exitInterview: { submitted: false },
     hrClosed: false,

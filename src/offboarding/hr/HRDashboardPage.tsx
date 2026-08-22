@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import {
   LayoutDashboard, Search, ChevronDown, ChevronRight,
-  CheckCircle2, Inbox,
+  CheckCircle2, Inbox, UserPlus,
 } from 'lucide-react'
 import {
   HR_CASES, overallStage, clearedCount, STAGE_META, fmtDate, daysUntil,
@@ -49,10 +49,12 @@ const GRID = '1.8fr 1.3fr 1.7fr 1.4fr 1.2fr 0.9fr'
 const TABLE_MIN = 1120
 
 type Filter = 'all' | OverallStage
+type Origin = 'all' | 'employee' | 'hr'
 
 export default function HRDashboardPage({ onOpen }: { onOpen?: (id: string) => void }) {
   const [query, setQuery]   = useState('')
   const [filter, setFilter] = useState<Filter>('all')
+  const [origin, setOrigin] = useState<Origin>('all')
 
   const stageOf = useMemo(() => new Map(HR_CASES.map(c => [c.id, overallStage(c)])), [])
 
@@ -66,14 +68,23 @@ export default function HRDashboardPage({ onOpen }: { onOpen?: (id: string) => v
     return s
   }, [stageOf])
 
+  const originOf = (c: (typeof HR_CASES)[number]) => (c.initiatedBy === 'HR' ? 'hr' : 'employee')
+
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase()
     return HR_CASES
       .filter(c => filter === 'all' ? true : stageOf.get(c.id) === filter)
+      .filter(c => origin === 'all' ? true : originOf(c) === origin)
       .filter(c => !q || c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q) || c.department.toLowerCase().includes(q))
       .slice()
-      .sort((a, b) => new Date(a.lwd ?? a.intendedLwd).getTime() - new Date(b.lwd ?? b.intendedLwd).getTime())
-  }, [query, filter, stageOf])
+      .sort((a, b) => new Date((a.lwd ?? a.intendedLwd) || '2100-01-01').getTime() - new Date((b.lwd ?? b.intendedLwd) || '2100-01-01').getTime())
+  }, [query, filter, origin, stageOf])
+
+  const originCounts = useMemo(() => ({
+    all:      HR_CASES.length,
+    employee: HR_CASES.filter(c => c.initiatedBy !== 'HR').length,
+    hr:       HR_CASES.filter(c => c.initiatedBy === 'HR').length,
+  }), [])
 
   const FILTERS: { id: Filter; label: string; n: number }[] = [
     { id: 'all',             label: 'All Cases',          n: HR_CASES.length },
@@ -81,6 +92,12 @@ export default function HRDashboardPage({ onOpen }: { onOpen?: (id: string) => v
     { id: 'in-progress',     label: 'In Progress',        n: counts['in-progress'] },
     { id: 'pending-closure', label: 'Pending HR Closure', n: counts['pending-closure'] },
     { id: 'completed',       label: 'Completed',          n: counts.completed },
+  ]
+
+  const ORIGIN_FILTERS: { id: Origin; label: string; n: number }[] = [
+    { id: 'all',      label: 'All Origins',       n: originCounts.all },
+    { id: 'employee', label: 'Employee Request',  n: originCounts.employee },
+    { id: 'hr',       label: 'HR Initiated',      n: originCounts.hr },
   ]
 
   return (
@@ -106,6 +123,13 @@ export default function HRDashboardPage({ onOpen }: { onOpen?: (id: string) => v
           <Search size={15} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: C.muted }} />
           <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search by name, code or department…"
             style={{ width: '100%', height: 40, borderRadius: 10, border: `1px solid ${C.border}`, background: '#FAFBFE', padding: '0 14px 0 36px', fontSize: 13, color: C.navy, outline: 'none', fontFamily: "'DM Sans', system-ui, sans-serif" }} />
+        </div>
+        <div className="relative" style={{ minWidth: 200 }}>
+          <select value={origin} onChange={e => setOrigin(e.target.value as Origin)}
+            style={{ width: '100%', height: 40, borderRadius: 10, border: `1px solid ${C.border}`, background: '#FAFBFE', padding: '0 36px 0 14px', fontSize: 13, fontWeight: 600, color: C.navy, outline: 'none', appearance: 'none', cursor: 'pointer', fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+            {ORIGIN_FILTERS.map(f => <option key={f.id} value={f.id}>{f.label} ({f.n})</option>)}
+          </select>
+          <ChevronDown size={15} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: C.muted, pointerEvents: 'none' }} />
         </div>
         <div className="relative" style={{ minWidth: 210 }}>
           <select value={filter} onChange={e => setFilter(e.target.value as Filter)}
@@ -144,6 +168,7 @@ export default function HRDashboardPage({ onOpen }: { onOpen?: (id: string) => v
                     <div className="min-w-0">
                       <div style={{ fontSize: 13.5, fontWeight: 700, color: C.navy, whiteSpace: 'nowrap' }}>{c.name}</div>
                       <div style={{ fontSize: 11.5, color: C.muted, marginTop: 1 }}>{c.code}</div>
+                      {c.initiatedBy === 'HR' && <div style={{ marginTop: 4 }}><HRPill /></div>}
                     </div>
                   </div>
 
@@ -180,12 +205,12 @@ export default function HRDashboardPage({ onOpen }: { onOpen?: (id: string) => v
 
                   {/* Last Working Day */}
                   <div>
-                    <div style={{ fontSize: 12.5, fontWeight: 600, color: C.navy, whiteSpace: 'nowrap' }}>{fmtDate(dateShown)}</div>
+                    <div style={{ fontSize: 12.5, fontWeight: 600, color: dateShown ? C.navy : C.muted, whiteSpace: 'nowrap' }}>{dateShown ? fmtDate(dateShown) : '—'}</div>
                     <div style={{ fontSize: 11, marginTop: 1 }}>
                       {stage === 'completed'
                         ? <span style={{ color: C.green, fontWeight: 600 }}>Offboarded</span>
                         : stage === 'pending-cto'
-                          ? <span style={{ color: C.muted }}>Intended</span>
+                          ? <span style={{ color: C.muted }}>{dateShown ? 'Intended' : 'CTO to set'}</span>
                           : <span style={{ color: dleft <= 10 ? C.red : C.muted, fontWeight: dleft <= 10 ? 700 : 400 }}>{dleft > 0 ? `${dleft} days left` : 'Due'}</span>}
                     </div>
                   </div>
@@ -208,6 +233,14 @@ export default function HRDashboardPage({ onOpen }: { onOpen?: (id: string) => v
         </div>
       </div>
     </div>
+  )
+}
+
+function HRPill() {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full" style={{ padding: '1px 7px', background: 'rgba(99,102,241,0.10)', color: '#5B5FDE', fontSize: 9.5, fontWeight: 800, letterSpacing: '0.03em', textTransform: 'uppercase', border: '1px solid rgba(99,102,241,0.22)', whiteSpace: 'nowrap' }}>
+      <UserPlus size={9} strokeWidth={2.6} /> HR-Initiated
+    </span>
   )
 }
 

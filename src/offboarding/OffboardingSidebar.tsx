@@ -2,7 +2,7 @@ import { useState } from 'react'
 import {
   ChevronDown, LogOut,
   FileText, LayoutDashboard,
-  ClipboardCheck, Users, MonitorCheck, Wallet, FolderKanban,
+  ClipboardCheck, Users, MonitorCheck, Wallet, FolderKanban, UserPlus,
 } from 'lucide-react'
 
 /*
@@ -61,6 +61,8 @@ export const OFFBOARDING_NAV: NavSection[] = [
     items: [
       // Single HR entry: the case table that opens the Case Cockpit (H1 + H2/H3).
       { id: 'hr-cases', label: 'Offboarding Cases', Icon: FolderKanban },
+      // HR-initiated entry point: raise individual / bulk offboarding cases.
+      { id: 'hr-initiate', label: 'Initiate Offboarding', Icon: UserPlus },
     ],
   },
 ]

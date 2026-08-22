@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import {
   ShieldCheck, Search, Clock3, CheckCircle2, XCircle, RotateCcw,
-  Inbox, ChevronRight, ChevronDown,
+  Inbox, ChevronRight, ChevronDown, UserPlus,
 } from 'lucide-react'
 import { SHOW_REJECT_FLOW } from '../offboardingFlags'
 
@@ -53,12 +53,16 @@ export type OffboardRequest = {
   notes: string             // the employee's written reason
   decidedBy?: string
   rejectReason?: string
+  initiatedBy?: 'HR'         // HR-raised (involuntary) instead of employee-raised
 }
 
 // Fixed "today" for the demo so relative dates stay stable.
 export const TODAY = new Date('2026-08-05')
 
 export const MOCK_REQUESTS: OffboardRequest[] = [
+  { id: 'OFB-2451', name: 'Kabir Anand',    code: 'CC047', designation: 'Software Engineer',        department: 'Engineering', avatar: 'https://randomuser.me/api/portraits/men/29.jpg',   reason: 'Performance',                 requestedLwd: '', submittedOn: '2026-08-05', status: 'pending', initiatedBy: 'HR',
+    manager: 'Priya Sharma', doj: '2022-04-18', email: 'kabir.anand@concertidc.com', phone: '+91 90256 33447',
+    notes: 'Offboarding initiated by HR due to sustained performance concerns. The employee has remained below role expectations across two consecutive review cycles despite a documented performance-improvement plan (PIP). Proceeding with an involuntary exit — requesting the Delivery Head to confirm the notice period and last working day.' },
   { id: 'OFB-2442', name: 'John Doe',       code: 'CC001', designation: 'Senior Software Engineer', department: 'Engineering', avatar: 'https://randomuser.me/api/portraits/men/32.jpg',   reason: 'Better Career Opportunity',   requestedLwd: '2026-10-02', submittedOn: '2026-08-04', status: 'pending',
     manager: 'Priya Sharma', doj: '2021-03-12', email: 'john.doe@concertidc.com', phone: '+91 98840 12345',
     notes: 'I have accepted an offer for a senior role that offers stronger long-term growth and ownership. It was a difficult decision — I have valued my time here and the mentorship on the platform team. I will ensure a clean handover of my modules and complete knowledge transfer before my last day.' },
@@ -225,13 +229,14 @@ export default function CTOApprovalsPage({ onOpen }: { onOpen?: (id: string) => 
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontSize: 13, fontWeight: 600, color: '#3D4266', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.reason}</div>
                     <div style={{ fontSize: 11, color: C.muted, marginTop: 1 }}>Ref {r.id}</div>
+                    {r.initiatedBy === 'HR' && <div style={{ marginTop: 4 }}><HRPill /></div>}
                   </div>
 
                   {/* Requested Last Day */}
                   <div>
-                    <div style={{ fontSize: 12.5, fontWeight: 600, color: C.navy, whiteSpace: 'nowrap' }}>{fmtDate(r.requestedLwd)}</div>
+                    <div style={{ fontSize: 12.5, fontWeight: 600, color: r.requestedLwd ? C.navy : C.muted, whiteSpace: 'nowrap' }}>{r.requestedLwd ? fmtDate(r.requestedLwd) : '—'}</div>
                     <div style={{ fontSize: 11, color: C.muted, marginTop: 1 }}>
-                      {r.status === 'approved' && r.noticeDays ? `${r.noticeDays}-day notice` : `in ${daysUntil(r.requestedLwd)} days`}
+                      {!r.requestedLwd ? 'CTO to set' : r.status === 'approved' && r.noticeDays ? `${r.noticeDays}-day notice` : `in ${daysUntil(r.requestedLwd)} days`}
                     </div>
                   </div>
 
@@ -280,6 +285,14 @@ export default function CTOApprovalsPage({ onOpen }: { onOpen?: (id: string) => 
         </div>
       </div>
     </div>
+  )
+}
+
+function HRPill() {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full" style={{ padding: '1px 7px', background: 'rgba(99,102,241,0.10)', color: '#5B5FDE', fontSize: 9.5, fontWeight: 800, letterSpacing: '0.03em', textTransform: 'uppercase', border: '1px solid rgba(99,102,241,0.22)', whiteSpace: 'nowrap' }}>
+      <UserPlus size={9} strokeWidth={2.6} /> HR-Initiated
+    </span>
   )
 }
 

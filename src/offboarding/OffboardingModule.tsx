@@ -9,6 +9,7 @@ import ManagerClearanceModule from './manager/ManagerClearanceModule'
 import ITClearanceModule from './systemadmin/ITClearanceModule'
 import FinanceClearanceModule from './finance/FinanceClearanceModule'
 import HRDashboardModule from './hr/HRDashboardModule'
+import InitiateOffboardingPage from './hr/InitiateOffboardingPage'
 
 /*
  * Standalone Employee Offboarding module.
@@ -91,6 +92,7 @@ export default function OffboardingModule() {
             : activeItem === 'mgr-clearance' ? <ManagerClearanceModule />
             : activeItem === 'it-clearance' ? <ITClearanceModule />
             : activeItem === 'fin-clearance' ? <FinanceClearanceModule />
+            : activeItem === 'hr-initiate' ? <InitiateOffboardingPage onGoToCases={() => setActiveItem('hr-cases')} />
             : activeItem === 'hr-cases' ? <HRDashboardModule />
             : <WelcomePlaceholder />}
         </main>
