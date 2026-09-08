@@ -24,6 +24,8 @@ import AdminAssetsListPage from '../admin/assets/AdminAssetsListPage'
 import AdminAddAssetPage from '../admin/assets/AdminAddAssetPage'
 import AdminUploadBulkAssetsPage from '../admin/assets/AdminUploadBulkAssetsPage'
 import AdminAssetsRequestPage from '../admin/assets/AdminAssetsRequestPage'
+import NominationModule from '../spotlight/NominationModule'
+import MyNominationsModule from '../spotlight/MyNominationsModule'
 
 const PAGE_LABELS: Record<string, string> = {
   'timesheet-add':     'Add Timesheet',
@@ -40,6 +42,8 @@ const PAGE_LABELS: Record<string, string> = {
   'appraisal-self-assessment': 'KPI Self-Assessment',
   offboarding: 'Employee Offboarding',
   probation:   'My Probation',
+  'spotlight-nominate': 'Rewards & Recognition Nomination',
+  'reward-nominations': 'Reward Nominations',
   'admin-tickets':      'Support Tickets',
   'expense-management': 'Expense',
   'assets-list':        'Assets List',
@@ -98,6 +102,8 @@ function PageContent({ activeItem, onNavigate }: { activeItem: string; onNavigat
   if (activeItem === 'payroll')       return <PayrollPage />
   if (activeItem === 'offboarding')   return <OffboardingPage />
   if (activeItem === 'probation')     return <MyProbationPage />
+  if (activeItem === 'spotlight-nominate') return <NominationModule role="employee" onBack={() => onNavigate('dashboard')} />
+  if (activeItem === 'reward-nominations') return <MyNominationsModule role="employee" onNominate={() => onNavigate('spotlight-nominate')} />
   // Admin "Management" pages (System Admin role)
   if (activeItem === 'admin-tickets')      return <AdminTicketsPage allowedTypes={['System Admin']} />
   if (activeItem === 'admin-assets')       return <AdminAssetManagementPage onNavigate={onNavigate} />

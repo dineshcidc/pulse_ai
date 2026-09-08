@@ -21,6 +21,7 @@ import {
   ClipboardList,
   LayoutTemplate,
   ShieldCheck,
+  Sparkles,
 } from 'lucide-react'
 
 
@@ -326,6 +327,19 @@ function buildAdminNav(): NavSection[] {
       ],
     },
     {
+      label: 'SPOTLIGHT',
+      items: [
+        {
+          id: 'spotlight', label: 'Spotlight', Icon: Sparkles,
+          children: [
+            { id: 'announcements',        label: 'Create Announcement'  },
+            { id: 'response-forms',       label: 'Response Forms'       },
+            { id: 'nomination-templates', label: 'Nomination Templates' },
+          ],
+        },
+      ],
+    },
+    {
       label: 'PROBATION',
       items: [
         {
@@ -357,7 +371,6 @@ function buildAdminNav(): NavSection[] {
           children: [
             { id: 'org-profile',          label: 'Organization Profile'      },
             { id: 'working-hours',        label: 'Working Hours & Holidays'  },
-            { id: 'announcements',        label: 'Announcements'             },
             { id: 'policy-setup',         label: 'Policy Setup'              },
             // { id: 'rewards-recognition',  label: 'Rewards and Recognition'   }, // hidden for now
           ],

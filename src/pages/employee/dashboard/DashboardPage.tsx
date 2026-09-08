@@ -4,6 +4,7 @@ import {
   ChevronDown, X, Shield, FileText, FolderOpen, ExternalLink,
   Target, ArrowRight, ClipboardCheck, ChevronRight, DoorOpen,
 } from 'lucide-react'
+import NominationAlertCard from '../../spotlight/NominationAlertCard'
 
 interface DashboardPageProps {
   managerMode?: boolean
@@ -482,6 +483,9 @@ export default function DashboardPage({ managerMode = false, onNavigate }: Dashb
             </div>
             </div>
           )}
+
+          {/* ── Spotlight R&R nomination card (renders itself only while a campaign is open for this audience) ── */}
+          <NominationAlertCard role={managerMode ? 'manager' : 'employee'} onNavigate={onNavigate} />
 
           {/* ── Offboarding notification card (employee only) ── */}
           {!managerMode && OFFBOARDING_ALERT.active && (

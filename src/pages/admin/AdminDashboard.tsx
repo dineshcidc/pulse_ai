@@ -46,6 +46,8 @@ import type { ReportTemplate } from './reporting/reportingTemplatesData'
 import ProjectsDashboardPage from './portfolio/ProjectsDashboardPage'
 import AdminProbationModule from './probation/AdminProbationModule'
 import ProbationSettingsPage from './probation/ProbationSettingsPage'
+import NominationTemplatesModule from './spotlight/NominationTemplatesModule'
+import ResponseFormsModule from './spotlight/ResponseFormsModule'
 
 const PAGE_LABELS: Record<string, string> = {
   'my-profile':           'My Profile',
@@ -73,7 +75,9 @@ const PAGE_LABELS: Record<string, string> = {
   'org-profile':          'Organization Profile',
   'working-hours':        'Working Hours & Holidays',
   'email-notifications':  'Email Notifications',
-  'announcements':        'Announcements',
+  'announcements':        'Create Announcement',
+  'response-forms':       'Response Forms',
+  'nomination-templates': 'Nomination Templates',
   'rewards-recognition':  'Rewards and Recognition',
   'admin-tickets':        'Support Tickets',
   'designation':          'Designation Management',
@@ -179,6 +183,8 @@ function PageContent({ activeItem, onNavigate, onOpenBuilder }: { activeItem: st
   if (activeItem === 'projects-dashboard')        return <ProjectsDashboardPage />
   if (activeItem === 'probation-cases')           return <AdminProbationModule />
   if (activeItem === 'probation-settings')        return <ProbationSettingsPage />
+  if (activeItem === 'nomination-templates')      return <NominationTemplatesModule />
+  if (activeItem === 'response-forms')            return <ResponseFormsModule />
   return <ComingSoon id={activeItem} />
 }
 

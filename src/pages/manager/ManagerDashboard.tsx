@@ -44,6 +44,10 @@ import ManagerClearancePage from './offboarding/ManagerClearancePage'
 // Manager Probation module (Stage 3 — list + review detail)
 import ManagerProbationModule from './probation/ManagerProbationModule'
 
+// Spotlight — nominator side
+import NominationModule from '../spotlight/NominationModule'
+import MyNominationsModule from '../spotlight/MyNominationsModule'
+
 interface ManagerAsset {
   id: string
   code: string
@@ -92,6 +96,8 @@ const PAGE_LABELS: Record<string, string> = {
   'offboarding-requests':    'Resignation Requests',
   'offboarding-clearance':   'Manager Clearance',
   'team-probation':          'Team Probation',
+  'spotlight-nominate':      'Rewards & Recognition Nomination',
+  'reward-nominations':      'Reward Nominations',
 }
 
 function ComingSoon({ id }: { id: string }) {
@@ -149,6 +155,8 @@ function PageContent({
 }) {
   // Shared employee pages
   if (activeItem === 'dashboard')        return <DashboardPage managerMode onNavigate={onNavigate} onNavigateTeam={onNavigate} />
+  if (activeItem === 'spotlight-nominate') return <NominationModule role="manager" onBack={() => onNavigate('dashboard')} />
+  if (activeItem === 'reward-nominations') return <MyNominationsModule role="manager" onNominate={() => onNavigate('spotlight-nominate')} />
   if (activeItem === 'timesheet-add')    return <AddTimesheetPage />
   if (activeItem === 'timesheet-history') return <TimesheetHistoryPage onNavigate={onNavigate} />
   if (activeItem === 'leave-create')     return <LeaveCreatePage />

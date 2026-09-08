@@ -4,6 +4,7 @@ import {
   LayoutGrid, User, Lock, LogOut, Eye, EyeOff, X, DoorOpen,
   CalendarCheck, FileText, TicketCheck, TrendingUp, Megaphone,
   Paperclip, Download, Search, Image, Link as LinkIcon,
+  Trophy, ChevronRight,
 } from 'lucide-react'
 import RecognitionBadge from '../RecognitionBadge'
 
@@ -103,6 +104,7 @@ const CURRENT_RECOGNITION = {
 export default function Header({ isSidebarOpen, onToggleSidebar, onNavigate, onLogout, userRole = 'Employee' }: HeaderProps) {
   const [notifOpen, setNotifOpen] = useState(false)
   const [announcOpen, setAnnouncOpen] = useState(false)
+  const [appsOpen, setAppsOpen] = useState(false)
   const [expandedAnnouncements, setExpandedAnnouncements] = useState<Set<number>>(new Set())
   const [announcSearch, setAnnouncSearch] = useState('')
   const [announcFilter, setAnnouncFilter] = useState<string | null>(null)
@@ -136,6 +138,21 @@ export default function Header({ isSidebarOpen, onToggleSidebar, onNavigate, onL
   }, [])
 
   const unreadCount = NOTIFICATIONS.filter(n => n.unread).length
+
+  /* Quick-access drawer behind the header's grid icon. Employees and managers reach their
+     Rewards & Recognition history from here — Admins already have Spotlight in their own
+     sidebar, so for them the grid icon stays inert rather than opening an empty drawer. */
+  const QUICK_LINKS =
+    userRole === 'Employee' || userRole === 'Project Manager'
+      ? [{
+          id:    'reward-nominations',
+          label: 'Reward Nominations',
+          desc:  'Your nominations for this month and every month before',
+          Icon:  Trophy,
+          color: '#7C3AED',
+          bg:    'rgba(124,58,237,0.10)',
+        }]
+      : []
 
   const toggleExpandAnnouncement = (id: number) => {
     setExpandedAnnouncements(prev => {
@@ -208,7 +225,15 @@ export default function Header({ isSidebarOpen, onToggleSidebar, onNavigate, onL
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <button style={{ width: 36, height: 36, borderRadius: 11, background: C.icon, color: C.muted, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onMouseEnter={e => { e.currentTarget.style.background = C.hover; e.currentTarget.style.color = C.navy }} onMouseLeave={e => { e.currentTarget.style.background = C.icon; e.currentTarget.style.color = C.muted }}><LayoutGrid size={17} /></button>
+        <button
+          onClick={QUICK_LINKS.length > 0 ? () => setAppsOpen(p => !p) : undefined}
+          title={QUICK_LINKS.length > 0 ? 'Quick access' : undefined}
+          style={{ width: 36, height: 36, borderRadius: 11, background: appsOpen ? C.hover : C.icon, color: appsOpen ? C.navy : C.muted, border: 'none', cursor: QUICK_LINKS.length > 0 ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          onMouseEnter={e => { e.currentTarget.style.background = C.hover; e.currentTarget.style.color = C.navy }}
+          onMouseLeave={e => { e.currentTarget.style.background = appsOpen ? C.hover : C.icon; e.currentTarget.style.color = appsOpen ? C.navy : C.muted }}
+        >
+          <LayoutGrid size={17} />
+        </button>
         <button style={{ width: 36, height: 36, borderRadius: 11, background: C.icon, color: C.muted, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onMouseEnter={e => { e.currentTarget.style.background = C.hover; e.currentTarget.style.color = C.navy }} onMouseLeave={e => { e.currentTarget.style.background = C.icon; e.currentTarget.style.color = C.muted }}><HelpCircle size={17} /></button>
 
         <button onClick={() => setNotifOpen(p => !p)} style={{ width: 36, height: 36, borderRadius: 11, background: notifOpen ? C.hover : C.icon, color: notifOpen ? C.navy : C.muted, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }} onMouseEnter={e => { e.currentTarget.style.background = C.hover; e.currentTarget.style.color = C.navy }} onMouseLeave={e => { e.currentTarget.style.background = notifOpen ? C.hover : C.icon; e.currentTarget.style.color = notifOpen ? C.navy : C.muted }}>
@@ -296,6 +321,54 @@ export default function Header({ isSidebarOpen, onToggleSidebar, onNavigate, onL
                 </div>
               </div>
             )})}
+          </div>
+        </div>
+      </>
+    )}
+
+    {/* Quick-access drawer — same off-canvas shell as Notifications */}
+    {appsOpen && (
+      <>
+        <div onClick={() => setAppsOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 8000, background: 'rgba(10,12,28,0.25)' }} />
+        <div style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: 400, zIndex: 8001, background: '#fff', borderLeft: `1px solid ${C.border}`, boxShadow: '-8px 0 40px rgba(28,32,53,0.13)', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ padding: '22px 24px 18px', borderBottom: `1px solid ${C.border}` }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div>
+                <div style={{ fontSize: 17, fontWeight: 700, color: C.navy }}>Quick Access</div>
+                <p style={{ fontSize: 12.5, color: C.muted, marginTop: 4 }}>Jump straight to a workspace</p>
+              </div>
+              <button onClick={() => setAppsOpen(false)} style={{ width: 34, height: 34, borderRadius: 10, border: 'none', background: C.icon, color: C.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }} onMouseEnter={e => { e.currentTarget.style.background = C.hover; e.currentTarget.style.color = C.navy }} onMouseLeave={e => { e.currentTarget.style.background = C.icon; e.currentTarget.style.color = C.muted }}>
+                <X size={15} />
+              </button>
+            </div>
+          </div>
+
+          <div style={{ flex: 1, overflowY: 'auto', padding: '14px 16px' }}>
+            <div style={{ fontSize: 10.5, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '4px 8px 10px' }}>
+              Rewards &amp; Recognition
+            </div>
+
+            {QUICK_LINKS.map(link => {
+              const Icon = link.Icon
+              return (
+                <button
+                  key={link.id}
+                  onClick={() => { setAppsOpen(false); onNavigate?.(link.id) }}
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 14, padding: 16, background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, marginBottom: 12, cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit', transition: 'background 0.15s' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = '#F7F8FC' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = '#fff' }}
+                >
+                  <div style={{ width: 42, height: 42, borderRadius: 12, background: link.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Icon size={18} style={{ color: link.color }} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: C.navy }}>{link.label}</div>
+                    <p style={{ fontSize: 12.5, color: '#5C6080', lineHeight: 1.55, margin: '3px 0 0' }}>{link.desc}</p>
+                  </div>
+                  <ChevronRight size={16} style={{ color: C.muted, flexShrink: 0 }} />
+                </button>
+              )
+            })}
           </div>
         </div>
       </>
