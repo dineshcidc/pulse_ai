@@ -4,7 +4,6 @@ import {
   Eye, CalendarDays, ChevronDown, ChevronUp, UserX,
 } from 'lucide-react'
 import { C, AWARD_THEME, audienceLabel } from './nominationTemplatesData'
-import AudienceChips from './AudienceChips'
 import {
   CAMPAIGN_STATUS_META, campaignLabel, totalResponded, totalInvited, pct,
   formatDate, daysLeft, responsesForRound, pendingPeople,
@@ -268,14 +267,10 @@ function RoundSummary({ round, search, onSearch, shown }: {
         <div className="min-w-0">
           <div className="flex items-center gap-2" style={{ flexWrap: 'wrap' }}>
             <span style={{ fontSize: 14.5, fontWeight: 800, color: C.navy }}>{round.name}</span>
-            <AudienceChips audiences={round.audiences} compact />
           </div>
-          <div className="flex items-center gap-2.5" style={{ marginTop: 8 }}>
-            <div style={{ width: 130, height: 6, borderRadius: 4, background: C.hover, overflow: 'hidden' }}>
-              <div style={{ width: `${p}%`, height: '100%', borderRadius: 4, background: th.color, opacity: 0.85 }} />
-            </div>
+          <div className="flex items-center gap-2.5" style={{ marginTop: 6 }}>
             <span style={{ fontSize: 12, color: C.muted, fontWeight: 600 }}>
-              {round.responded} of {round.invited} responded · <strong style={{ color: th.color }}>{p}%</strong>
+              {audienceLabel(round.audiences)} · {round.responded} of {round.invited} responded · <strong style={{ color: th.color }}>{p}%</strong>
             </span>
           </div>
         </div>

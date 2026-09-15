@@ -1062,7 +1062,6 @@ export default function AdminAnnouncementsPage() {
                 onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 20px rgba(28,32,53,0.08)'; (e.currentTarget as HTMLDivElement).style.borderColor = '#D8DAEC' }}
                 onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = 'none'; (e.currentTarget as HTMLDivElement).style.borderColor = C.border }}
               >
-                <div style={{ height: 1, background: '#F59E0B' }} />
                 <div style={{ padding: '16px 20px', display: 'flex', alignItems: 'flex-start', gap: 16 }}>
                   <div style={{ width: 42, height: 42, borderRadius: 12, background: annIconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
                     <Megaphone size={18} strokeWidth={1.8} style={{ color: annIconColor }} />
@@ -1138,16 +1137,14 @@ export default function AdminAnnouncementsPage() {
           }
 
           // REWARD & POSTER CARD (Using Rewards & Recognition design)
-          let iconBg, iconColor, topBorderColor
+          let iconBg, iconColor
 
           if (ann.contentType === 'reward') {
             iconBg = statusConfig.bg
             iconColor = statusConfig.color
-            topBorderColor = '#0A8A58'
           } else { // poster
             iconBg = 'rgba(8,145,178,0.10)'
             iconColor = '#0891B2'
-            topBorderColor = '#0891B2'
           }
 
           return (
@@ -1156,7 +1153,6 @@ export default function AdminAnnouncementsPage() {
               onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 20px rgba(28,32,53,0.08)'; (e.currentTarget as HTMLDivElement).style.borderColor = '#D8DAEC' }}
               onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = 'none'; (e.currentTarget as HTMLDivElement).style.borderColor = C.border }}
             >
-              <div style={{ height: 1, background: topBorderColor }} />
               <div style={{ padding: '16px 20px', display: 'flex', alignItems: 'flex-start', gap: 16 }}>
                 <div style={{ width: 42, height: 42, borderRadius: 12, background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
                   {ann.contentType === 'reward' && <Trophy size={18} strokeWidth={1.8} style={{ color: iconColor }} />}

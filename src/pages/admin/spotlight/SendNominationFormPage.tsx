@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import {
   ArrowLeft, ArrowRight, Check, Send, AlertTriangle, CalendarDays,
-  ListChecks, Loader2, X,
+  ListChecks, Loader2,
 } from 'lucide-react'
 import { C, AWARD_THEME, audienceLabel, type NominationTemplate } from './nominationTemplatesData'
 import AudienceChips from './AudienceChips'
@@ -211,50 +211,6 @@ export default function SendNominationFormPage({ templates, campaigns, onBack, o
                   <TemplatePickCard key={t.id} template={t} selected={picked.includes(t.id)} onToggle={() => toggle(t.id)} />
                 ))}
               </div>
-            )}
-          </div>
-
-          {/* Review strip */}
-          <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, padding: '18px 22px' }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>
-              Review
-            </div>
-            {chosen.length === 0 ? (
-              <div style={{ fontSize: 13, color: C.muted }}>Select at least one award template to continue.</div>
-            ) : (
-              <>
-                <div style={{ fontSize: 14, fontWeight: 700, color: C.navy, marginBottom: 12, lineHeight: 1.6 }}>
-                  Sending <strong style={{ color: C.indigo }}>{chosen.length} form{chosen.length === 1 ? '' : 's'}</strong> for{' '}
-                  <strong>{MONTHS[month]} {year}</strong> to <strong style={{ color: C.indigo }}>{recipients} people</strong>.
-                </div>
-                <div className="flex flex-col" style={{ gap: 8 }}>
-                  {chosen.map(t => {
-                    const th = AWARD_THEME[t.award]
-                    const RIcon = th.Icon
-                    return (
-                      <div key={t.id} className="flex items-center gap-3 flex-wrap" style={{ padding: '10px 12px', borderRadius: 10, background: C.surface, border: `1px solid ${C.border}` }}>
-                        <div className="flex items-center justify-center flex-shrink-0" style={{ width: 30, height: 30, borderRadius: 9, background: th.bg, border: `1px solid ${th.border}` }}>
-                          <RIcon size={15} strokeWidth={2} style={{ color: th.color }} />
-                        </div>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: C.navy, flex: '1 1 160px' }}>{t.name}</span>
-                        <AudienceChips audiences={t.audiences} compact />
-                        <span style={{ fontSize: 12, fontWeight: 600, color: C.muted, width: 92, textAlign: 'right', flexShrink: 0 }}>
-                          {audienceSize(t.audiences)} recipients
-                        </span>
-                        <button
-                          onClick={() => toggle(t.id)}
-                          title="Remove"
-                          style={{ width: 28, height: 28, borderRadius: 7, border: `1px solid ${C.border}`, background: '#fff', color: C.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.14s' }}
-                          onMouseEnter={e => { e.currentTarget.style.color = C.red; e.currentTarget.style.borderColor = 'rgba(232,72,85,0.3)' }}
-                          onMouseLeave={e => { e.currentTarget.style.color = C.muted; e.currentTarget.style.borderColor = C.border }}
-                        >
-                          <X size={14} />
-                        </button>
-                      </div>
-                    )
-                  })}
-                </div>
-              </>
             )}
           </div>
         </div>

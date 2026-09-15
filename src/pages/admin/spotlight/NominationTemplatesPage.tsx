@@ -41,7 +41,7 @@ export default function NominationTemplatesPage({ templates, onCreate, onView, o
       `}</style>
 
       {/* ── Header ── */}
-      <div className="flex items-start justify-between gap-4" style={{ marginBottom: 20 }}>
+      <div className="flex items-center justify-between gap-4" style={{ marginBottom: 20 }}>
         <div>
           <h1 className="text-2xl font-bold" style={{ color: C.navy }}>Nomination Templates</h1>
           <p className="text-sm mt-1" style={{ color: '#787878', fontWeight: 500 }}>
@@ -51,9 +51,9 @@ export default function NominationTemplatesPage({ templates, onCreate, onView, o
         <button
           onClick={onCreate}
           className="flex items-center gap-2 cursor-pointer transition-all duration-150 flex-shrink-0"
-          style={{ height: 40, padding: '0 18px', borderRadius: 11, border: 'none', background: C.indigo, color: '#fff', fontSize: 13.5, fontWeight: 700 }}
-          onMouseEnter={e => { e.currentTarget.style.background = '#5B5FDE' }}
-          onMouseLeave={e => { e.currentTarget.style.background = C.indigo }}
+          style={{ height: 40, padding: '0 18px', borderRadius: 11, border: 'none', background: C.navy, color: '#fff', fontSize: 13.5, fontWeight: 700, gap: 7 }}
+          onMouseEnter={e => { e.currentTarget.style.background = '#2A3050' }}
+          onMouseLeave={e => { e.currentTarget.style.background = C.navy }}
         >
           <Plus size={16} strokeWidth={2.5} /> Create Template
         </button>
@@ -148,8 +148,6 @@ export default function NominationTemplatesPage({ templates, onCreate, onView, o
                   e.currentTarget.style.borderColor = C.border
                 }}
               >
-                {/* Accent top strip — light & thin */}
-                <div style={{ height: 2, background: theme.color, opacity: 0.32 }} />
 
                 <div style={{ padding: '18px 20px 16px', display: 'flex', flexDirection: 'column', flex: 1 }}>
                   {/* Top row: icon + status */}

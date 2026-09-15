@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import {
-  ArrowLeft, ChevronDown, Search, Check, Users, Briefcase, UserCog, User,
+  ArrowLeft, ChevronDown, Search, Check, Users,
   FileText, Send, Loader2, AlertCircle,
 } from 'lucide-react'
 import type { AppraisalCycle, Period } from './AdminAppraisalCyclesPage'
@@ -18,12 +18,7 @@ const PERIODS: Period[] = ['Q1', 'Q2', 'Q3', 'Annual']
 const YEARS = [2026, 2027]
 
 type AudienceMode = 'designation' | 'project' | 'manager' | 'individual'
-const MODES: { key: AudienceMode; label: string; Icon: typeof Users }[] = [
-  { key: 'designation', label: 'By Designation', Icon: Users },
-  { key: 'project',     label: 'By Project',     Icon: Briefcase },
-  { key: 'manager',     label: 'By Manager',     Icon: UserCog },
-  { key: 'individual',  label: 'Individual',     Icon: User },
-]
+// Audience mode tabs removed — audience is always selected by designation.
 
 interface Opt { id: string; primary: string; secondary: string; count: number; face?: string }
 
@@ -76,7 +71,7 @@ export default function AdminPublishAppraisalPage({ onBack, onPublished }: Props
   const [period, setPeriod]       = useState<Period>('Q1')
   const [year, setYear]           = useState(2026)
   const [dueDate, setDueDate]     = useState('')
-  const [mode, setMode]           = useState<AudienceMode>('designation')
+  const [mode]                    = useState<AudienceMode>('designation')
   const [search, setSearch]       = useState('')
   const [selected, setSelected]   = useState<Record<AudienceMode, Set<string>>>({
     designation: new Set(), project: new Set(), manager: new Set(), individual: new Set(),
@@ -274,21 +269,6 @@ export default function AdminPublishAppraisalPage({ onBack, onPublished }: Props
             </div>
 
             <div style={{ padding: 20 }}>
-              {/* Mode tabs */}
-              <div className="flex items-center gap-1 flex-wrap" style={{ background: C.hover, borderRadius: 11, padding: 4, marginBottom: 16, width: 'fit-content' }}>
-                {MODES.map(m => {
-                  const active = mode === m.key
-                  return (
-                    <button key={m.key} onClick={() => { setMode(m.key); setSearch('') }}
-                      className="inline-flex items-center gap-2 rounded-lg border-none cursor-pointer font-semibold transition-all duration-150"
-                      style={{ height: 34, padding: '0 14px', fontSize: 12.5, background: active ? '#fff' : 'transparent', color: active ? C.indigo : C.muted, boxShadow: active ? '0 1px 3px rgba(10,12,28,0.08)' : 'none' }}
-                    >
-                      <m.Icon size={14} strokeWidth={2.2} /> {m.label}
-                    </button>
-                  )
-                })}
-              </div>
-
               {/* Search */}
               <div style={{ position: 'relative', marginBottom: 12 }}>
                 <Search size={15} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: '#B0B4C8', pointerEvents: 'none' }} />

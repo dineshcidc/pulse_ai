@@ -1,10 +1,9 @@
 import { useState } from 'react'
 import {
   Plus, Search, ChevronDown, ChevronRight, CalendarDays,
-  Inbox, Clock, Send,
+  Inbox, Clock, Send, UserRoundX,
 } from 'lucide-react'
-import { C, AWARD_THEME } from './nominationTemplatesData'
-import AudienceChips from './AudienceChips'
+import { C, AWARD_THEME, audienceLabel } from './nominationTemplatesData'
 import {
   MONTHS, MONTHS_SHORT, CAMPAIGN_STATUS_META,
   campaignLabel, totalResponded, totalInvited, pct, formatDate, formatDateShort, daysLeft,
@@ -48,7 +47,7 @@ export default function ResponseFormsPage({ campaigns, onSend, onOpen }: Props) 
       `}</style>
 
       {/* ── Header ── */}
-      <div className="flex items-start justify-between gap-4" style={{ marginBottom: 20 }}>
+      <div className="flex items-center justify-between gap-4" style={{ marginBottom: 20 }}>
         <div>
           <h1 className="text-2xl font-bold" style={{ color: C.navy }}>Response Forms</h1>
           <p className="text-sm mt-1" style={{ color: '#787878', fontWeight: 500 }}>
@@ -57,10 +56,10 @@ export default function ResponseFormsPage({ campaigns, onSend, onOpen }: Props) 
         </div>
         <button
           onClick={onSend}
-          className="flex items-center gap-2 cursor-pointer transition-all duration-150 flex-shrink-0"
-          style={{ height: 40, padding: '0 18px', borderRadius: 11, border: 'none', background: C.indigo, color: '#fff', fontSize: 13.5, fontWeight: 700, fontFamily: 'inherit' }}
-          onMouseEnter={e => { e.currentTarget.style.background = '#5B5FDE' }}
-          onMouseLeave={e => { e.currentTarget.style.background = C.indigo }}
+          className="flex items-center justify-center gap-2 cursor-pointer transition-all duration-150 flex-shrink-0"
+          style={{ height: 40, padding: '0 18px', borderRadius: 11, border: 'none', background: C.navy, color: '#fff', fontSize: 13.5, fontWeight: 700, gap: 7, fontFamily: 'inherit' }}
+          onMouseEnter={e => { e.currentTarget.style.background = '#2A3050' }}
+          onMouseLeave={e => { e.currentTarget.style.background = C.navy }}
         >
           <Plus size={16} strokeWidth={2.5} /> Send Nomination Form
         </button>
@@ -215,30 +214,39 @@ function RoundProgressRow({ round }: { round: CampaignRound }) {
   const th  = AWARD_THEME[round.award]
   const RIcon = th.Icon
   const p = pct(round.responded, round.invited)
+  const pending = Math.max(0, round.invited - round.responded)
 
   return (
-    <div className="flex items-center gap-3 flex-wrap" style={{ padding: '17px 0', borderBottom: `1px solid ${C.hover}` }}>
-      {/* Award identity */}
+    <div className="flex items-center gap-4 flex-wrap" style={{ padding: '17px 0', borderBottom: `1px solid ${C.hover}` }}>
+      {/* Award identity — audience now reads as plain text under the name */}
       <div className="flex items-center gap-2.5" style={{ minWidth: 210, flex: '1 1 210px' }}>
         <div className="flex items-center justify-center flex-shrink-0" style={{ width: 34, height: 34, borderRadius: 10, background: th.bg, border: `1px solid ${th.border}` }}>
           <RIcon size={17} strokeWidth={1.9} style={{ color: th.color }} />
         </div>
-        <span style={{ fontSize: 13.5, fontWeight: 700, color: C.navy }}>{th.label}</span>
+        <div className="flex flex-col" style={{ gap: 2, minWidth: 0 }}>
+          <span style={{ fontSize: 13.5, fontWeight: 700, color: C.navy }}>{th.label}</span>
+          <span style={{ fontSize: 11.5, fontWeight: 500, color: C.muted }}>{audienceLabel(round.audiences)}</span>
+        </div>
       </div>
 
-      {/* Audience */}
-      <AudienceChips audiences={round.audiences} />
+      {/* Progress block — bar + % on one row, counts underneath */}
+      <div className="flex flex-col flex-shrink-0" style={{ width: 340, gap: 11 }}>
+        <div className="flex items-center" style={{ gap: 10 }}>
+          <div style={{ flex: 1, minWidth: 0, height: 7, borderRadius: 5, background: C.hover, overflow: 'hidden' }}>
+            <div style={{ width: `${p}%`, height: '100%', borderRadius: 5, background: th.color, opacity: 0.85, animation: 'rfBar 0.6s ease' }} />
+          </div>
+          <span style={{ fontSize: 12.5, fontWeight: 700, color: th.color, width: 38, textAlign: 'right', flexShrink: 0 }}>{p}%</span>
+        </div>
 
-      {/* Bar */}
-      <div style={{ flex: '1 1 160px', minWidth: 120, height: 7, borderRadius: 5, background: C.hover, overflow: 'hidden' }}>
-        <div style={{ width: `${p}%`, height: '100%', borderRadius: 5, background: th.color, opacity: 0.85, animation: 'rfBar 0.6s ease' }} />
+        <div className="flex items-center justify-between" style={{ gap: 10 }}>
+          <span style={{ fontSize: 11.5, fontWeight: 700, color: C.navy }}>
+            {round.responded}/{round.invited} responded
+          </span>
+          <span className="inline-flex items-center gap-1" style={{ fontSize: 11.5, fontWeight: 500, color: C.muted }}>
+            <UserRoundX size={12} strokeWidth={2} /> {pending} not responded
+          </span>
+        </div>
       </div>
-
-      {/* Numbers */}
-      <span style={{ fontSize: 12.5, fontWeight: 700, color: C.navy, width: 108, textAlign: 'right', flexShrink: 0 }}>
-        {round.responded}/{round.invited} responded
-      </span>
-      <span style={{ fontSize: 12.5, fontWeight: 700, color: th.color, width: 40, textAlign: 'right', flexShrink: 0 }}>{p}%</span>
     </div>
   )
 }
@@ -264,9 +272,9 @@ function NoCampaignCard({ month, year, onSend }: { month: number; year: number; 
       <button
         onClick={onSend}
         className="inline-flex items-center gap-2 cursor-pointer"
-        style={{ marginTop: 6, height: 40, padding: '0 18px', borderRadius: 11, border: 'none', background: C.indigo, color: '#fff', fontSize: 13.5, fontWeight: 700, fontFamily: 'inherit', transition: 'all 0.15s' }}
-        onMouseEnter={e => { e.currentTarget.style.background = '#5B5FDE' }}
-        onMouseLeave={e => { e.currentTarget.style.background = C.indigo }}
+        style={{ marginTop: 6, height: 40, padding: '0 18px', borderRadius: 11, border: 'none', background: C.navy, color: '#fff', fontSize: 13.5, fontWeight: 700, fontFamily: 'inherit', transition: 'all 0.15s' }}
+        onMouseEnter={e => { e.currentTarget.style.background = '#2A3050' }}
+        onMouseLeave={e => { e.currentTarget.style.background = C.navy }}
       >
         <Send size={15} strokeWidth={2.2} /> Send Nomination Form
       </button>
@@ -278,7 +286,6 @@ function NoCampaignCard({ month, year, onSend }: { month: number; year: number; 
    History row
 ══════════════════════════════════════════ */
 function CampaignRow({ campaign, first, index, onOpen }: { campaign: Campaign; first: boolean; index: number; onOpen: () => void }) {
-  const stat = CAMPAIGN_STATUS_META[campaign.status]
   const done = totalResponded(campaign)
   const all  = totalInvited(campaign)
 
@@ -296,14 +303,9 @@ function CampaignRow({ campaign, first, index, onOpen }: { campaign: Campaign; f
       <MonthTile month={campaign.month} year={campaign.year} accent={C.muted} small />
 
       {/* Month + meta */}
-      <div style={{ minWidth: 170, flex: '0 1 200px' }}>
+      <div style={{ minWidth: 170, flex: '1 1 200px' }}>
         <div className="flex items-center gap-2">
           <span style={{ fontSize: 14.5, fontWeight: 800, color: C.navy }}>{campaignLabel(campaign)}</span>
-          <span style={{
-            display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 20,
-            fontSize: 10, fontWeight: 700, color: stat.color, background: stat.bg, border: `1px solid ${stat.border}`,
-            textTransform: 'uppercase', letterSpacing: '0.05em',
-          }}>{campaign.status}</span>
         </div>
         <div style={{ fontSize: 11.5, color: C.muted, marginTop: 8, fontWeight: 500, whiteSpace: 'nowrap' }}>
           Sent {formatDateShort(campaign.sentOn)} · {campaign.status === 'Active' ? 'Closes' : 'Closed'} {formatDateShort(campaign.deadline)}
@@ -328,7 +330,7 @@ function CampaignRow({ campaign, first, index, onOpen }: { campaign: Campaign; f
       </div>
 
       {/* Responses */}
-      <div style={{ width: 130, flexShrink: 0, textAlign: 'right' }}>
+      <div style={{ flex: '0 0 150px', textAlign: 'right' }}>
         <div style={{ fontSize: 14, fontWeight: 800, color: C.navy }}>{done} responses</div>
         <div style={{ fontSize: 11.5, color: C.muted, marginTop: 2, fontWeight: 500 }}>of {all} invited · {pct(done, all)}%</div>
       </div>
@@ -336,7 +338,7 @@ function CampaignRow({ campaign, first, index, onOpen }: { campaign: Campaign; f
       {/* Open */}
       <div
         className="flex items-center justify-center flex-shrink-0"
-        style={{ width: 32, height: 32, borderRadius: 9, border: `1px solid ${C.border}`, background: '#fff', color: C.muted }}
+        style={{ width: 32, height: 32, borderRadius: 9, border: `1px solid ${C.border}`, background: '#fff', color: C.muted, marginLeft: 22 }}
       >
         <ChevronRight size={16} strokeWidth={2.2} />
       </div>
